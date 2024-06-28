@@ -20,9 +20,10 @@ def get_options() -> RGBMatrixOptions:
     else:
         options.cols = 128
         options.rows = 64
-        options.hardware_mapping = 'V-mapper'
-        options.chain_length = 3
-        options.parallel = 4
+        options.pixel_mapper_config = 'V-mapper'
+        options.chain_length = 4
+        options.parallel = 3
+        options.disable_hardware_pulsing = True
 
         options.pwm_bits = 7
         # dither?
@@ -78,7 +79,7 @@ class Server:
             port (int, optional): Flask server port. Defaults to 5000.
             debug (bool, optional): Debug mode. Defaults to False.
         """
-        self.app.run(port=port, debug=debug)
+        self.app.run(host='0.0.0.0', port=port, debug=debug)
 
 class Scoreboard:
     """
@@ -145,6 +146,11 @@ class Scoreboard:
     def _clear_game(self, index: int):
         row_offset, column_offset = self._calculate_offsets(index)
 
+        if platform.system() == 'Windows':
+            color = self.my_grey
+        else:
+            color = self.my_black
+
         if self.mode == 'basic':
             length = 192
         elif self.mode == 'detailed':
@@ -152,7 +158,7 @@ class Scoreboard:
 
         for i in range(50):
             graphics.DrawLine(self.canvas, 0 + column_offset, i + row_offset,
-                length + column_offset, i + row_offset, self.my_grey)
+                length + column_offset, i + row_offset, color)
 
     def _print_scores(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -394,7 +400,7 @@ def start_server(server):
 
 def start_scoreboard(scoreboard):
     """Starts the scoreboard"""
-    scoreboard.start(mode = 'detailed')
+    scoreboard.start(mode = 'basic')
 
 def main():
     game_template = {
