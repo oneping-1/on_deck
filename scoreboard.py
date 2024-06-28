@@ -350,10 +350,10 @@ class Scoreboard:
         if self.mode == 'basic':
             return 0
 
-        graphics.DrawLine(self.canvas, 0, 46 + row_offset, 1000, 46 + row_offset, color)
-        # graphics.DrawText(self.canvas, self.ter, 170, 14 + row_offset, color, game['batter'])
-        # graphics.DrawText(self.canvas, self.ter, 170, 29 + row_offset, color, game['pitcher'])
-        # graphics.DrawText(self.canvas, self.ter, 170, 44 + row_offset, color, game['batter'])
+        if game['game_state'] == 'L':
+            self._print_batter_pitcher(game_index, game)
+        elif game['game_state'] == 'F':
+            self._print_pitcher_decisions(game_index, game)
 
     def print_page(self, page_num: int):
         max_games = 5 * self.num_pages
