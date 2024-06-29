@@ -30,6 +30,14 @@ def get_options() -> RGBMatrixOptions:
 
     return options
 
+def recursive_update(d: dict, u: dict) -> dict:
+    for k, v in u.items():
+        if isinstance(v, dict):
+            d[k] = recursive_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
+
 class Server:
     """
     Description: This class is used to create a scoreboard server.
@@ -62,8 +70,7 @@ class Server:
         """
         new_data = request.get_json()
 
-        for key, value in new_data.items():
-            self.games[game_index][key] = value
+        self.games[game_index] = recursive_update(self.games[game_index], new_data)
         self.games[game_index]['display_game'] = True
 
         return_dict = {'new_data': new_data, 'game': self.games[game_index]}
@@ -127,6 +134,18 @@ class Scoreboard:
         self.inning_row_offset = (self.away_row_offset + self.home_row_offset) / 2
         self.inning_column_offset = 100
         self.time_offset = -25
+
+    def _print_line_a(self, color, column_offset, row_offset, line_a):
+        graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+            14 + row_offset, color, line_a)
+
+    def _print_line_b(self, color, column_offset, row_offset, line_b):
+        graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+            29 + row_offset, color, line_b)
+
+    def _print_line_c(self, color, column_offset, row_offset, line_c):
+        graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+            44 + row_offset, color, line_c)
 
     def _calculate_offsets(self, index: int):
         row_offset = 50*index
@@ -261,6 +280,9 @@ class Scoreboard:
         row_offset, column_offset = self._calculate_offsets(index)
         color = self._calculate_color(index)
 
+        line_a = None
+        line_c = None
+
         if game['inning_state'] == 'T':
             line_a = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
             line_c = f'P:{game["matchup"]["pitcher"]} ({game["matchup"]["pitcher_summary"]})'
@@ -269,17 +291,11 @@ class Scoreboard:
             line_a = f'P:{game["matchup"]["pitcher"]} ({game["matchup"]["pitcher_summary"]})'
             line_c = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
 
-        print(line_a)
-        print(line_c)
-        print()
-
         if line_a is not None:
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                14 + row_offset, color, line_a)
+            self._print_line_a(color, column_offset, row_offset, line_a)
 
         if line_c is not None:
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                44 + row_offset, color, line_c)
+            self._print_line_c(color, column_offset, row_offset, line_c)
 
     def _print_pitcher_decisions(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -288,31 +304,49 @@ class Scoreboard:
         away_score = game['away_score']
         home_score = game['home_score']
 
-        winning_pitcher = game['winning_pitcher']
-        losing_pitcher = game['losing_pitcher']
-        save_pitcher = game['save_pitcher']
+        winning_pitcher = game['decisions']['win']
+        losing_pitcher = game['decisions']['loss']
+        save_pitcher = game['decisions']['save']
+
+        line_a = None
+        line_b = None
+        line_c = None
 
         if away_score > home_score:
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                14 + row_offset, color, f'W:{winning_pitcher}')
-
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                44 + row_offset, color, f'L:{losing_pitcher}')
+            line_a = f'W:{winning_pitcher}'
+            line_c = f'L:{losing_pitcher}'
 
             if save_pitcher is not None:
-                graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                    29 + row_offset, color, f'S:{save_pitcher}')
+                line_b = f'S:{save_pitcher}'
 
         elif home_score > away_score:
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                14 + row_offset, color, f'L:{losing_pitcher}')
-
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                44 + row_offset, color, f'W:{winning_pitcher}')
+            line_a = f'L:{losing_pitcher}'
+            line_c = f'W:{winning_pitcher}'
 
             if save_pitcher is not None:
-                graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                    29 + row_offset, color, f'S:{save_pitcher}')
+                line_b = f'S:{save_pitcher}'
+
+        if line_a is not None:
+            self._print_line_a(color, column_offset, row_offset, line_a)
+
+        if line_b is not None:
+            self._print_line_b(color, column_offset, row_offset, line_b)
+
+        if line_c is not None:
+            self._print_line_c(color, column_offset, row_offset, line_c)
+
+    def _print_probable_pitchers(self, index, game):
+        row_offset, column_offset = self._calculate_offsets(index)
+        color = self._calculate_color(index)
+
+        line_a = f'P:{game["probables"]["away"]}'
+        line_c = f'P:{game["probables"]["home"]}'
+
+        if line_a is not None:
+            self._print_line_a(color, column_offset, row_offset, line_a)
+
+        if line_c is not None:
+            self._print_line_c(color, column_offset, row_offset, line_c)
 
     def print_game(self, game_index: int, game: dict):
         self._clear_game(game_index)
@@ -325,6 +359,7 @@ class Scoreboard:
         color = self._calculate_color(game_index)
 
         # Team Abbreviations
+
         graphics.DrawText(self.canvas, self.ter_u32b, 0 + column_offset,
             self.away_row_offset + row_offset, color, game['away_abv'])
 
@@ -356,8 +391,10 @@ class Scoreboard:
 
         if game['game_state'] == 'L':
             self._print_batter_pitcher(game_index, game)
-        if game['game_state'] == 'F':
+        elif game['game_state'] == 'F':
             self._print_pitcher_decisions(game_index, game)
+        elif game['game_state'] == 'P':
+            self._print_probable_pitchers(game_index, game)
 
     def print_page(self, page_num: int):
         max_games = 5 * self.num_pages
