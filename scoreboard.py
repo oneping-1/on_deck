@@ -135,6 +135,9 @@ class Scoreboard:
         self.inning_column_offset = 100
         self.time_offset = -25
 
+        # Detail Mode Offsets
+        self.two_line_offset = 7
+
     def _print_line_a(self, color, column_offset, row_offset, line_a):
         graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
             14 + row_offset, color, line_a)
@@ -292,10 +295,10 @@ class Scoreboard:
             line_c = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
 
         if line_a is not None:
-            self._print_line_a(color, column_offset, row_offset, line_a)
+            self._print_line_a(color, column_offset, row_offset + self.two_line_offset, line_a)
 
         if line_c is not None:
-            self._print_line_c(color, column_offset, row_offset, line_c)
+            self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
     def _print_pitcher_decisions(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -330,14 +333,19 @@ class Scoreboard:
             if save is not None:
                 line_b = f'S:{save} ({save_summary})'
 
+        if line_b is not None:
+            delta_y = 0
+        else:
+            delta_y = self.two_line_offset
+
         if line_a is not None:
-            self._print_line_a(color, column_offset, row_offset, line_a)
+            self._print_line_a(color, column_offset, row_offset + delta_y, line_a)
 
         if line_b is not None:
             self._print_line_b(color, column_offset, row_offset, line_b)
 
         if line_c is not None:
-            self._print_line_c(color, column_offset, row_offset, line_c)
+            self._print_line_c(color, column_offset, row_offset - delta_y, line_c)
 
     def _print_probable_pitchers(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -347,10 +355,10 @@ class Scoreboard:
         line_c = f'P:{game["probables"]["home"]} ({game["probables"]["home_era"]})'
 
         if line_a is not None:
-            self._print_line_a(color, column_offset, row_offset, line_a)
+            self._print_line_a(color, column_offset, row_offset + self.two_line_offset, line_a)
 
         if line_c is not None:
-            self._print_line_c(color, column_offset, row_offset, line_c)
+            self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
     def print_game(self, game_index: int, game: dict):
         self._clear_game(game_index)
