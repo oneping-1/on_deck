@@ -343,8 +343,8 @@ class Scoreboard:
         row_offset, column_offset = self._calculate_offsets(index)
         color = self._calculate_color(index)
 
-        line_a = f'P:{game["probables"]["away"]}'
-        line_c = f'P:{game["probables"]["home"]}'
+        line_a = f'P:{game["probables"]["away"]} ({game["probables"]["away_era"]})'
+        line_c = f'P:{game["probables"]["home"]} ({game["probables"]["home_era"]})'
 
         if line_a is not None:
             self._print_line_a(color, column_offset, row_offset, line_a)
