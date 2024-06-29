@@ -262,18 +262,24 @@ class Scoreboard:
         color = self._calculate_color(index)
 
         if game['inning_state'] == 'T':
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                14 + row_offset, color, f'B:{game["batter"]}')
-
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                44 + row_offset, color, f'P:{game["pitcher"]}')
+            line_a = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
+            line_c = f'P:{game["matchup"]["pitcher"]} ({game["matchup"]["pitcher_summary"]})'
 
         elif game['inning_state'] == 'B':
-            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                14 + row_offset, color, f'P:{game["pitcher"]}')
+            line_a = f'P:{game["matchup"]["pitcher"]} ({game["matchup"]["pitcher_summary"]})'
+            line_c = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
 
+        print(line_a)
+        print(line_c)
+        print()
+
+        if line_a is not None:
             graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
-                44 + row_offset, color, f'B:{game["batter"]}')
+                14 + row_offset, color, line_a)
+
+        if line_c is not None:
+            graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+                44 + row_offset, color, line_c)
 
     def _print_pitcher_decisions(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -330,10 +336,8 @@ class Scoreboard:
             self._print_inning(game_index, game)
             self._print_outs(game_index, game)
             self._print_runners(game_index, game)
-            self._print_batter_pitcher(game_index, game)
         elif game['game_state'] == 'F':
             self._print_scores(game_index, game)
-            self._print_pitcher_decisions(game_index, game)
 
             if game['inning'] != 9:
                 self._print_text(game_index, f'F/{game["inning"]}')
@@ -347,12 +351,12 @@ class Scoreboard:
             else:
                 self._print_text(game_index, game['start_time'], self.time_offset)
 
-        if self.mode == 'basic':
-            return 0
+        # if self.mode == 'basic':
+        #     return None
 
         if game['game_state'] == 'L':
             self._print_batter_pitcher(game_index, game)
-        elif game['game_state'] == 'F':
+        if game['game_state'] == 'F':
             self._print_pitcher_decisions(game_index, game)
 
     def print_page(self, page_num: int):
@@ -400,7 +404,7 @@ def start_server(server):
 
 def start_scoreboard(scoreboard):
     """Starts the scoreboard"""
-    scoreboard.start(mode = 'basic')
+    scoreboard.start(mode = 'detailed')
 
 def main():
     game_template = {
