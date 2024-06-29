@@ -304,27 +304,31 @@ class Scoreboard:
         away_score = game['away_score']
         home_score = game['home_score']
 
-        winning_pitcher = game['decisions']['win']
-        losing_pitcher = game['decisions']['loss']
-        save_pitcher = game['decisions']['save']
+        win = game['decisions']['win']
+        loss = game['decisions']['loss']
+        save = game['decisions']['save']
+
+        win_summary = game['decisions']['win_summary']
+        loss_summary = game['decisions']['loss_summary']
+        save_summary = game['decisions']['save_summary']
 
         line_a = None
         line_b = None
         line_c = None
 
         if away_score > home_score:
-            line_a = f'W:{winning_pitcher}'
-            line_c = f'L:{losing_pitcher}'
+            line_a = f'W:{win} ({win_summary})'
+            line_c = f'L:{loss} ({loss_summary})'
 
-            if save_pitcher is not None:
-                line_b = f'S:{save_pitcher}'
+            if save is not None:
+                line_b = f'S:{save} ({save_summary})'
 
         elif home_score > away_score:
-            line_a = f'L:{losing_pitcher}'
-            line_c = f'W:{winning_pitcher}'
+            line_a = f'L:{loss} ({loss_summary})'
+            line_c = f'W:{win} ({win_summary})'
 
-            if save_pitcher is not None:
-                line_b = f'S:{save_pitcher}'
+            if save is not None:
+                line_b = f'S:{save} ({save_summary})'
 
         if line_a is not None:
             self._print_line_a(color, column_offset, row_offset, line_a)
