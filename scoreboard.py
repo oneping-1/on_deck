@@ -48,6 +48,7 @@ class Server:
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
+        self.app.add_url_rule('/reset', 'reset_games', self.reset_games, methods=['GET'])
         self.app.add_url_rule('/<int:game_index>', 'receive_data',
             self.receive_data, methods=['POST'])
 
@@ -62,6 +63,18 @@ class Server:
             d.append(game)
 
         return jsonify(d), 200
+
+    def reset_games(self):
+        """
+        Description: This function is used to reset all the games.
+        """
+        for game in self.games:
+            game['display_game'] = False
+
+        for i in range(5):
+            self.scoreboard.clear_game(i)
+
+        return jsonify({'message': 'Games reset'}), 200
 
     def receive_data(self, game_index: int):
         """
@@ -81,6 +94,12 @@ class Server:
         return jsonify(return_dict), 200
 
     def print_game_if_on_page(self, game_index: int):
+        """
+        This function is used to print the game if it is on the current page.
+
+        Args:
+            game_index (int): The index of the game to print.
+        """
         games_per_page = 5
         page = math.floor(game_index / games_per_page)
 
@@ -178,7 +197,13 @@ class Scoreboard:
             return self.my_white
         return self.my_green
 
-    def _clear_game(self, index: int):
+    def clear_game(self, index: int):
+        """
+        Clears the game from the scoreboard
+
+        Args:
+            index (int): The index of the game to clear
+        """
         row_offset, column_offset = self._calculate_offsets(index)
 
         if platform.system() == 'Windows':
@@ -381,7 +406,7 @@ class Scoreboard:
             self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
     def print_game(self, game_index: int, game: dict):
-        self._clear_game(game_index)
+        self.clear_game(game_index)
 
         if game['display_game'] is False:
             return None
@@ -489,11 +514,26 @@ def main():
         'outs': None,
         'runners': None,
         'start_time': None,
-        'batter': None,
-        'pitcher': None,
-        'winning_pitcher': None,
-        'losing_pitcher': None,
-        'save_pitcher': None,
+        'matchup': {
+            'batter': None,
+            'batter_summary': None,
+            'pitcher': None,
+            'pitcher_summary': None
+        },
+        'decisions': {
+            'win': None,
+            'win_summary': None,
+            'loss': None,
+            'loss_summary': None,
+            'save': None,
+            'save_summary': None
+        },
+        'probables': {
+            'away': None,
+            'away_era': None,
+            'home': None,
+            'home_era': None
+        },
         'display_game': False
     }
 
