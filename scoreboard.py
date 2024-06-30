@@ -24,9 +24,8 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-
-        options.pwm_bits = 7
-        # dither?
+        options.pwm_bits = 1
+        options.gpio_slowdown = 5
 
     return options
 
