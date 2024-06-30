@@ -4,6 +4,7 @@ import threading
 import platform
 import math
 import time
+import copy
 from flask import Flask, request, jsonify
 
 if platform.system() == 'Windows':
@@ -537,7 +538,7 @@ def main():
         'display_game': False
     }
 
-    games = [game_template.copy() for _ in range(20)]
+    games = [copy.deepcopy(game_template) for _ in range(20)]
 
     scoreboard = Scoreboard(games)
     server = Server(games, scoreboard)
