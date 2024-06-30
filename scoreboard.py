@@ -43,8 +43,9 @@ class Server:
     Description: This class is used to create a scoreboard server.
     Used to recieve data from the game and display it on the scoreboard.
     """
-    def __init__(self, games: List[dict]):
+    def __init__(self, games: List[dict], scoreboard: 'Scoreboard'):
         self.games = games
+        self.scoreboard = scoreboard
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
@@ -75,8 +76,19 @@ class Server:
 
         return_dict = {'new_data': new_data, 'game': self.games[game_index]}
 
+        self.print_game_if_on_page(game_index)
+
         # print(json.dumps(return_dict, indent=4))
         return jsonify(return_dict), 200
+
+    def print_game_if_on_page(self, game_index: int):
+        games_per_page = 5
+        page = math.floor(game_index / games_per_page)
+
+        if page == self.scoreboard.page:
+            self.scoreboard.print_game(game_index % games_per_page, self.games[game_index])
+
+        self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
 
     def start(self, port: int = 5000, debug: bool = False):
         """
@@ -97,6 +109,8 @@ class Scoreboard:
         self.games = games
         self.mode: str = 'basic'
         self.num_pages: int = None
+
+        self.page: int = 0
 
         # Matrix Setup
         self.options = get_options()
@@ -286,11 +300,18 @@ class Scoreboard:
         line_a = None
         line_c = None
 
-        if game['inning_state'] == 'T':
+        is_top_inning = True if game['inning_state'] == 'T' else False
+
+        if game['outs'] == 3:
+            # After the 3rd out is recorded, the data shows the
+            # next half inning's batter and pitcher
+            is_top_inning = not is_top_inning
+
+        if is_top_inning is True:
             line_a = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
             line_c = f'P:{game["matchup"]["pitcher"]} ({game["matchup"]["pitcher_summary"]})'
 
-        elif game['inning_state'] == 'B':
+        elif is_top_inning is False:
             line_a = f'P:{game["matchup"]["pitcher"]} ({game["matchup"]["pitcher_summary"]})'
             line_c = f'B:{game["matchup"]["batter"]} ({game["matchup"]["batter_summary"]})'
 
@@ -364,7 +385,7 @@ class Scoreboard:
         self._clear_game(game_index)
 
         if game['display_game'] is False:
-            return 0
+            return None
 
         row_offset, column_offset = self._calculate_offsets(game_index)
 
@@ -398,8 +419,8 @@ class Scoreboard:
             else:
                 self._print_text(game_index, game['start_time'], self.time_offset)
 
-        # if self.mode == 'basic':
-        #     return None
+        if self.mode == 'basic':
+            return None
 
         if game['game_state'] == 'L':
             self._print_batter_pitcher(game_index, game)
@@ -444,8 +465,8 @@ class Scoreboard:
 
         while True:
             self.num_pages = math.ceil(self._count_games() / 5)
-            for page in range(self.num_pages):
-                self.print_page(page)
+            for self.page in range(self.num_pages):
+                self.print_page(self.page)
 
 def start_server(server):
     """Starts the server"""
@@ -479,8 +500,8 @@ def main():
 
     games = [game_template.copy() for _ in range(20)]
 
-    server = Server(games)
     scoreboard = Scoreboard(games)
+    server = Server(games, scoreboard)
 
     server_thread = threading.Thread(target=start_server, args=(server,))
     scoreboard_thread = threading.Thread(target=start_scoreboard, args=(scoreboard,))
