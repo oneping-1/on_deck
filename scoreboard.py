@@ -406,6 +406,19 @@ class Scoreboard:
         if line_c is not None:
             self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
+    def _print_page_indicator(self, page_num: int):
+        graphics.DrawLine(self.canvas, 0, 255, 384, 255, self.my_black)
+
+        line_length = 5
+        gap = 2
+        total_length = line_length + gap
+
+        for i in range(page_num+1):
+            x0 = 40 + ((i + 1) * total_length)
+            x1 = x0 + line_length - 1 # -1 to account for extra character width
+
+            graphics.DrawLine(self.canvas, x0, 255, x1, 255, self.my_white)
+
     def print_game(self, game_index: int, game: dict):
         self.clear_game(game_index)
 
@@ -472,6 +485,8 @@ class Scoreboard:
 
         for i, game in enumerate(shifted_games):
             self.print_game(i, game)
+
+        self._print_page_indicator(page_num)
 
         self.matrix.SwapOnVSync(self.canvas)
         time.sleep(10)
