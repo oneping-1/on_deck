@@ -366,18 +366,18 @@ class Scoreboard:
         line_c = None
 
         if away_score > home_score:
-            line_a = f'W:{win} ({win_summary})'
-            line_c = f'L:{loss} ({loss_summary})'
+            line_a = f'WP:{win} ({win_summary})'
+            line_c = f'LP:{loss} ({loss_summary})'
 
             if save is not None:
                 line_b = f'S:{save} ({save_summary})'
 
         elif home_score > away_score:
-            line_a = f'L:{loss} ({loss_summary})'
-            line_c = f'W:{win} ({win_summary})'
+            line_a = f'LP:{loss} ({loss_summary})'
+            line_c = f'WP:{win} ({win_summary})'
 
             if save is not None:
-                line_b = f'S:{save} ({save_summary})'
+                line_b = f'SV:{save} ({save_summary})'
 
         if line_b is not None:
             delta_y = 0
@@ -397,8 +397,8 @@ class Scoreboard:
         row_offset, column_offset = self._calculate_offsets(index)
         color = self._calculate_color(index)
 
-        line_a = f'P:{game["probables"]["away"]} ({game["probables"]["away_era"]})'
-        line_c = f'P:{game["probables"]["home"]} ({game["probables"]["home_era"]})'
+        line_a = f'SP:{game["probables"]["away"]} ({game["probables"]["away_era"]})'
+        line_c = f'SP:{game["probables"]["home"]} ({game["probables"]["home_era"]})'
 
         if line_a is not None:
             self._print_line_a(color, column_offset, row_offset + self.two_line_offset, line_a)
