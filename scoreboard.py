@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 import json
 import threading
 import platform
@@ -13,6 +13,12 @@ else:
     from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
 
 def get_options() -> RGBMatrixOptions:
+    """
+    Returns the RGBMatrixOptions object based on the platform.
+
+    Returns:
+        RGBMatrixOptions: RGBMatrixOptions object
+    """
     options = RGBMatrixOptions()
 
     if platform.system() == 'Windows':
@@ -31,6 +37,16 @@ def get_options() -> RGBMatrixOptions:
     return options
 
 def recursive_update(d: dict, u: dict) -> dict:
+    """
+    Recursively updates a dictionary.
+
+    Args:
+        d (dict): Dictionary 1
+        u (dict): Dictionary 2
+
+    Returns:
+        dict: Updated dictionary
+    """
     for k, v in u.items():
         if isinstance(v, dict):
             d[k] = recursive_update(d.get(k, {}), v)
@@ -50,6 +66,8 @@ class Server:
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
         self.app.add_url_rule('/reset', 'reset_games', self.reset_games, methods=['GET'])
+        self.app.add_url_rule('/settings', 'mode', self.settings, methods=['GET'])
+        self.app.add_url_rule('/settings', 'gamecast_id', self.settings, methods=['GET'])
         self.app.add_url_rule('/<int:game_index>', 'receive_data',
             self.receive_data, methods=['POST'])
 
@@ -76,6 +94,41 @@ class Server:
             self.scoreboard.clear_game(i)
 
         return jsonify({'message': 'Games reset'}), 200
+
+    def settings(self):
+        """
+        Description: This function is used to set the mode of the scoreboard.
+        """
+        mode = request.args.get('mode')
+        gameid = request.args.get('id')
+
+        return_dict = {
+            'mode': self.scoreboard.mode,
+            'new_mode': self.scoreboard.new_mode,
+            'gamecast_gameid': self.scoreboard.gamecast_gameid
+        }
+
+        if mode is None and gameid is None:
+            return jsonify({'message': return_dict}), 200
+
+        try:
+            self.scoreboard.new_mode = mode
+        except ValueError:
+            return jsonify({'message': f'Mode {mode} not recognized'}), 200
+
+        if gameid is not None:
+            try:
+                self.scoreboard.gamecast_gameid = int(gameid)
+            except ValueError:
+                return jsonify({'message': 'Game ID not recognized'}), 200
+
+        return_dict = {
+            'mode': self.scoreboard.mode,
+            'new_mode': self.scoreboard.new_mode,
+            'gamecast_gameid': self.scoreboard.gamecast_gameid
+        }
+
+        return jsonify({'message': return_dict}), 200
 
     def receive_data(self, game_index: int):
         """
@@ -124,10 +177,18 @@ class Scoreboard:
     Description: This class is used to create a scoreboard.
     Used to display the data from the game on the scoreboard.
     """
-    def __init__(self, games: List[dict]):
+
+    _acceptable_modes = ('basic', 'detailed', 'gamecast')
+    def __init__(self, games: List[dict], mode: str = 'basic'):
         self.games = games
-        self.mode: str = 'basic'
+
+        # self.mode cannot be changed directly
+        # change self.new_mode instead
+        # problem occurs in self.start()
+        self.mode = mode
+        self._new_mode: str = mode
         self.num_pages: int = None
+        self.gamecast_gameid: int = 0
 
         self.page: int = 0
 
@@ -171,6 +232,19 @@ class Scoreboard:
         # Detail Mode Offsets
         self.two_line_offset = 7
 
+    @property
+    def new_mode(self):
+        return self._new_mode
+
+    @new_mode.setter
+    def new_mode(self, value: Union[str, None]) -> Union[str, None]:
+        if value is None:
+            return None
+        if value not in Scoreboard._acceptable_modes:
+            raise ValueError(f'Invalid mode: {value}')
+        self._new_mode = value
+        return value
+
     def _print_line_a(self, color, column_offset, row_offset, line_a):
         graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
             14 + row_offset, color, line_a)
@@ -212,10 +286,12 @@ class Scoreboard:
         else:
             color = self.my_black
 
-        if self.mode == 'basic':
+        if self.mode in ('basic', 'gamecast'):
             length = 192
         elif self.mode == 'detailed':
             length = 384
+        else:
+            raise ValueError(f'Length not specified for mode: {self.mode}')
 
         for i in range(50):
             graphics.DrawLine(self.canvas, 0 + column_offset, i + row_offset,
@@ -500,13 +576,19 @@ class Scoreboard:
 
         return count
 
-    def start(self, mode: str = 'basic'):
-        self.mode = mode
-
+    def start(self):
         while True:
             self.num_pages = math.ceil(self._count_games() / 5)
             for self.page in range(self.num_pages):
                 self.print_page(self.page)
+
+            if self._new_mode != self.mode:
+                # wait until after all pages are displayed to avoid
+                # potential errors
+
+                # but is a barrier that blocks changes directly to
+                # self.mode. Not intentional but a good byproduct.
+                self.mode = self._new_mode
 
 def start_server(server):
     """Starts the server"""
@@ -514,7 +596,7 @@ def start_server(server):
 
 def start_scoreboard(scoreboard):
     """Starts the scoreboard"""
-    scoreboard.start(mode = 'detailed')
+    scoreboard.start()
 
 def main():
     game_template = {
