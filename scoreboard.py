@@ -90,8 +90,10 @@ class Server:
         for game in self.games:
             game['display_game'] = False
 
-        for i in range(5):
+        for i in range(10):
             self.scoreboard.clear_game(i)
+
+        self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
 
         return jsonify({'message': 'Games reset'}), 200
 
@@ -347,14 +349,14 @@ class Scoreboard:
 
         outs_list = ['o', 'o', 'o']
 
-        if game['outs'] is None:
+        if game['count']['outs'] is None:
             pass
         else:
-            if game['outs'] > 0:
+            if game['count']['outs'] > 0:
                 outs_list[0] = 'O'
-            if game['outs'] > 1:
+            if game['count']['outs'] > 1:
                 outs_list[1] = 'O'
-            if game['outs'] > 2:
+            if game['count']['outs'] > 2:
                 outs_list[2] = 'O'
 
         graphics.DrawText(self.canvas, self.symbols, 130 + column_offset,
@@ -446,7 +448,7 @@ class Scoreboard:
             line_c = f'LP:{loss} ({loss_summary})'
 
             if save is not None:
-                line_b = f'S:{save} ({save_summary})'
+                line_b = f'SV:{save} ({save_summary})'
 
         elif home_score > away_score:
             line_a = f'LP:{loss} ({loss_summary})'
@@ -607,9 +609,11 @@ def main():
         'home_score': None,
         'inning': None,
         'inning_state': None,
-        'balls': None,
-        'strikes': None,
-        'outs': None,
+        'count': {
+            'balls': None,
+            'strikes': None,
+            'outs': None
+        },
         'runners': None,
         'start_time': None,
         'matchup': {
