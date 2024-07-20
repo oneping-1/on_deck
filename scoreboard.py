@@ -412,7 +412,7 @@ class Scoreboard:
 
         is_top_inning = True if game['inning_state'] == 'T' else False
 
-        if game['outs'] == 3:
+        if game['count']['outs'] == 3:
             # After the 3rd out is recorded, the data shows the
             # next half inning's batter and pitcher
             is_top_inning = not is_top_inning
