@@ -149,7 +149,7 @@ class Server:
         # print(json.dumps(return_dict, indent=4))
         return jsonify(return_dict), 200
 
-    def print_game_if_on_page(self, game_index: int):
+    def print_game_if_on_page(self, game_index: int) -> bool:
         """
         This function is used to print the game if it is on the current page.
 
@@ -159,10 +159,17 @@ class Server:
         games_per_page = 5
         page = math.floor(game_index / games_per_page)
 
-        if page == self.scoreboard.page:
-            self.scoreboard.print_game(game_index % games_per_page, self.games[game_index])
+        if self.scoreboard.mode in ('detailed', 'gamecast'):
+            if page != self.scoreboard.page:
+                return False
 
+        if self.scoreboard.mode == 'basic':
+            if page not in (self.scoreboard.page, self.scoreboard.page + 1):
+                return False
+
+        self.scoreboard.print_game(game_index % games_per_page, self.games[game_index])
         self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
+        return True
 
     def start(self, port: int = 5000, debug: bool = False):
         """
