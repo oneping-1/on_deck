@@ -157,17 +157,17 @@ class Server:
             game_index (int): The index of the game to print.
         """
         games_per_page = 5
-        page = math.floor(game_index / games_per_page)
+        shifted_game_index = game_index - (self.scoreboard.page * games_per_page)
 
         if self.scoreboard.mode in ('detailed', 'gamecast'):
-            if page != self.scoreboard.page:
+            if shifted_game_index > 4:
                 return False
 
         if self.scoreboard.mode == 'basic':
-            if page not in (self.scoreboard.page, self.scoreboard.page + 1):
+            if shifted_game_index > 9:
                 return False
 
-        self.scoreboard.print_game(game_index % games_per_page, self.games[game_index])
+        self.scoreboard.print_game(shifted_game_index, self.games[game_index])
         self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
         return True
 
