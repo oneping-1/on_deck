@@ -159,6 +159,9 @@ class Server:
         games_per_page = 5
         shifted_game_index = game_index - (self.scoreboard.page * games_per_page)
 
+        if self.scoreboard.gamecast_gameid == game_index:
+            self.scoreboard.print_gamecast()
+
         if self.scoreboard.mode in ('detailed', 'gamecast'):
             if shifted_game_index > 4:
                 return False
@@ -188,7 +191,7 @@ class Scoreboard:
     """
 
     _acceptable_modes = ('basic', 'detailed', 'gamecast')
-    def __init__(self, games: List[dict], mode: str = 'basic'):
+    def __init__(self, games: List[dict], mode: str = 'gamecast'):
         self.games = games
 
         # self.mode cannot be changed directly
@@ -197,7 +200,7 @@ class Scoreboard:
         self.mode = mode
         self._new_mode: str = mode
         self.num_pages: int = None
-        self.gamecast_gameid: int = 0
+        self.gamecast_gameid: int = 14
 
         self.page: int = 0
 
@@ -212,8 +215,8 @@ class Scoreboard:
         # Letter height = 20 pixels = 38 mm = 1.496 in
         # Slighly larger than OnDeck1 (36 mm)
 
-        self.ter = graphics.Font()
-        self.ter.LoadFont('fonts/Terminus/ter-u18b.bdf')
+        self.ter_u18b = graphics.Font()
+        self.ter_u18b.LoadFont('fonts/Terminus/ter-u18b.bdf')
 
         self.symbols = graphics.Font()
         self.symbols.LoadFont('fonts/symbols.bdf')
@@ -255,15 +258,15 @@ class Scoreboard:
         return value
 
     def _print_line_a(self, color, column_offset, row_offset, line_a):
-        graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+        graphics.DrawText(self.canvas, self.ter_u18b, 170 + column_offset,
             14 + row_offset, color, line_a)
 
     def _print_line_b(self, color, column_offset, row_offset, line_b):
-        graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+        graphics.DrawText(self.canvas, self.ter_u18b, 170 + column_offset,
             29 + row_offset, color, line_b)
 
     def _print_line_c(self, color, column_offset, row_offset, line_c):
-        graphics.DrawText(self.canvas, self.ter, 170 + column_offset,
+        graphics.DrawText(self.canvas, self.ter_u18b, 170 + column_offset,
             44 + row_offset, color, line_c)
 
     def _calculate_offsets(self, index: int):
@@ -517,10 +520,10 @@ class Scoreboard:
         # Team Abbreviations
 
         graphics.DrawText(self.canvas, self.ter_u32b, 0 + column_offset,
-            self.away_row_offset + row_offset, color, game['away_abv'])
+            self.away_row_offset + row_offset, color, game['away']['abv'])
 
         graphics.DrawText(self.canvas, self.ter_u32b, 0 + column_offset,
-            self.home_row_offset + row_offset, color, game['home_abv'])
+            self.home_row_offset + row_offset, color, game['home']['abv'])
 
         if game['game_state'] == 'L':
             self._print_scores(game_index, game)
@@ -542,7 +545,7 @@ class Scoreboard:
             else:
                 self._print_text(game_index, game['start_time'], self.time_offset)
 
-        if self.mode == 'basic':
+        if self.mode != 'detailed':
             return None
 
         if game['game_state'] == 'L':
@@ -551,6 +554,61 @@ class Scoreboard:
             self._print_pitcher_decisions(game_index, game)
         elif game['game_state'] == 'P':
             self._print_probable_pitchers(game_index, game)
+
+    def _clear_gamecast(self):
+        if platform.system() == 'Windows':
+            color = self.my_grey
+        else:
+            color = self.my_black
+
+        for i in range(256):
+            graphics.DrawLine(self.canvas, 192, i, 384, i, color)
+
+    def _print_gamecast_line(self, line_num: int, text:str):
+        row = 16 * (line_num + 1)
+
+        graphics.DrawText(self.canvas, self.ter_u18b, 192, row, self.my_white, text)
+
+    def print_gamecast(self):
+        self._clear_gamecast()
+        game = self.games[self.gamecast_gameid]
+
+        if game['display_game'] is False:
+            return None
+
+        color = self.my_white
+
+        away_row_offset = 14
+        home_row_offset = 30
+        inning_row_offset = (away_row_offset + home_row_offset) / 2
+
+        self._print_gamecast_line(0, game['away']['name'])
+        self._print_gamecast_line(1, game['home']['name'])
+
+        graphics.DrawText(self.canvas, self.ter_u18b, 300, away_row_offset,
+                          color, str(game['away_score']))
+        graphics.DrawText(self.canvas, self.ter_u18b, 300, home_row_offset,
+                          color, str(game['home_score']))
+
+        graphics.DrawText(self.canvas, self.ter_u18b, 320, inning_row_offset,
+                          color, str(game['inning']))
+
+        # Count
+        count = f'{game["count"]["balls"]}-{game["count"]["strikes"]} {game["count"]["outs"]} Outs'
+        self._print_gamecast_line(2, count)
+
+        # Pitch Details
+        # Line 3 Empty
+        self._print_gamecast_line(4, game['pitch_details']['description'])
+        self._print_gamecast_line(5, f'{game["pitch_details"]["speed"]} MPH')
+        self._print_gamecast_line(6, game['pitch_details']['type'])
+        self._print_gamecast_line(7, f'Zone: {game["pitch_details"]["zone"]}')
+
+        # To be added next:
+        # when pitch is in play: hit details (distance, exit velo, launch angle)
+        # when pitch is not in play: run expectency, umpire, win probability
+
+        self.matrix.SwapOnVSync(self.canvas)
 
     def print_page(self, page_num: int):
         max_games = 5 * self.num_pages
@@ -572,6 +630,9 @@ class Scoreboard:
             self.print_game(i, game)
 
         self._print_page_indicator(page_num)
+
+        if self.mode == 'gamecast':
+            self.print_gamecast()
 
         self.matrix.SwapOnVSync(self.canvas)
         time.sleep(10)
@@ -610,12 +671,20 @@ def start_scoreboard(scoreboard):
 def main():
     game_template = {
         'game_state': None,
-        'away_abv': None,
-        'home_abv': None,
         'away_score': None,
         'home_score': None,
         'inning': None,
         'inning_state': None,
+        'away': {
+            'abv': None,
+            'name': None,
+            'location': None,
+        },
+        'home': {
+            'abv': None,
+            'name': None,
+            'location': None
+        },
         'count': {
             'balls': None,
             'strikes': None,
@@ -642,6 +711,13 @@ def main():
             'away_era': None,
             'home': None,
             'home_era': None
+        },
+        'pitch_details': {
+            'description': None,
+            'speed': None,
+            'type': None,
+            'zone': None,
+            'spin_rate': None,
         },
         'display_game': False
     }
