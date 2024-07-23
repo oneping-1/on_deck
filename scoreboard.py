@@ -159,8 +159,9 @@ class Server:
         games_per_page = 5
         shifted_game_index = game_index - (self.scoreboard.page * games_per_page)
 
-        if self.scoreboard.gamecast_gameid == game_index:
-            self.scoreboard.print_gamecast()
+        if self.scoreboard.mode == 'gamecast':
+            if self.scoreboard.gamecast_gameid == game_index:
+                self.scoreboard.print_gamecast()
 
         if self.scoreboard.mode in ('detailed', 'gamecast'):
             if shifted_game_index > 4:
