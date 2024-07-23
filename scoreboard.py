@@ -191,7 +191,7 @@ class Scoreboard:
     """
 
     _acceptable_modes = ('basic', 'detailed', 'gamecast')
-    def __init__(self, games: List[dict], mode: str = 'gamecast'):
+    def __init__(self, games: List[dict], mode: str = 'basic'):
         self.games = games
 
         # self.mode cannot be changed directly
@@ -200,7 +200,7 @@ class Scoreboard:
         self.mode = mode
         self._new_mode: str = mode
         self.num_pages: int = None
-        self.gamecast_gameid: int = 14
+        self.gamecast_gameid: int = 0
 
         self.page: int = 0
 
@@ -564,10 +564,14 @@ class Scoreboard:
         for i in range(256):
             graphics.DrawLine(self.canvas, 192, i, 384, i, color)
 
-    def _print_gamecast_line(self, line_num: int, text:str):
+    def _print_gamecast_line(self, line_num: int, text: Union[str, None]) -> bool:
+        if text is None:
+            return False
+
         row = 16 * (line_num + 1)
 
         graphics.DrawText(self.canvas, self.ter_u18b, 192, row, self.my_white, text)
+        return True
 
     def print_gamecast(self):
         self._clear_gamecast()
@@ -599,6 +603,7 @@ class Scoreboard:
 
         # Pitch Details
         # Line 3 Empty
+        # i think thse throw errors when they are None, so should add a check
         self._print_gamecast_line(4, game['pitch_details']['description'])
         self._print_gamecast_line(5, f'{game["pitch_details"]["speed"]} MPH')
         self._print_gamecast_line(6, game['pitch_details']['type'])
