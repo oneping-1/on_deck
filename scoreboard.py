@@ -1,5 +1,5 @@
 from typing import List, Union
-import json
+import os
 import threading
 import platform
 import math
@@ -210,17 +210,21 @@ class Scoreboard:
         self.matrix = RGBMatrix(options=self.options)
         self.canvas = self.matrix.CreateFrameCanvas()
 
+        scoreboard_path = os.path.dirname(os.path.abspath(__file__))
+        fonts_path = os.path.join(scoreboard_path, 'fonts')
+        terminus_path = os.path.join(fonts_path, 'Terminus')
+
         self.ter_u32b = graphics.Font()
-        self.ter_u32b.LoadFont('fonts/Terminus/ter-u32b.bdf')
+        self.ter_u32b.LoadFont(os.path.join(terminus_path, 'ter-u32b.bdf'))
         # ter-u32b.bdf:
         # Letter height = 20 pixels = 38 mm = 1.496 in
         # Slighly larger than OnDeck1 (36 mm)
 
         self.ter_u18b = graphics.Font()
-        self.ter_u18b.LoadFont('fonts/Terminus/ter-u18b.bdf')
+        self.ter_u18b.LoadFont(os.path.join(terminus_path, 'ter-u18b.bdf'))
 
         self.symbols = graphics.Font()
-        self.symbols.LoadFont('fonts/symbols.bdf')
+        self.symbols.LoadFont(os.path.join(fonts_path, 'symbols.bdf'))
 
         # Matrix Colors
         self.my_white = graphics.Color(255, 255, 255)
