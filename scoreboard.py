@@ -210,6 +210,10 @@ class Scoreboard:
         self.matrix = RGBMatrix(options=self.options)
         self.canvas = self.matrix.CreateFrameCanvas()
 
+        # Emulated matrix server does not start until the first
+        # SwapOnVSync is called
+        self.matrix.SwapOnVSync(self.canvas)
+
         scoreboard_path = os.path.dirname(os.path.abspath(__file__))
         fonts_path = os.path.join(scoreboard_path, 'fonts')
         terminus_path = os.path.join(fonts_path, 'Terminus')
@@ -263,15 +267,15 @@ class Scoreboard:
         return value
 
     def _print_line_a(self, color, column_offset, row_offset, line_a):
-        graphics.DrawText(self.canvas, self.ter_u18b, 170 + column_offset,
+        graphics.DrawText(self.canvas, self.ter_u18b, 175 + column_offset,
             14 + row_offset, color, line_a)
 
     def _print_line_b(self, color, column_offset, row_offset, line_b):
-        graphics.DrawText(self.canvas, self.ter_u18b, 170 + column_offset,
+        graphics.DrawText(self.canvas, self.ter_u18b, 175 + column_offset,
             29 + row_offset, color, line_b)
 
     def _print_line_c(self, color, column_offset, row_offset, line_c):
-        graphics.DrawText(self.canvas, self.ter_u18b, 170 + column_offset,
+        graphics.DrawText(self.canvas, self.ter_u18b, 175 + column_offset,
             44 + row_offset, color, line_c)
 
     def _calculate_offsets(self, index: int):
@@ -530,11 +534,14 @@ class Scoreboard:
         graphics.DrawText(self.canvas, self.ter_u32b, 0 + column_offset,
             self.home_row_offset + row_offset, color, game['home']['abv'])
 
+        # Live
         if game['game_state'] == 'L':
             self._print_scores(game_index, game)
             self._print_inning(game_index, game)
             self._print_outs(game_index, game)
             self._print_runners(game_index, game)
+
+        # Final
         elif game['game_state'] == 'F':
             self._print_scores(game_index, game)
 
@@ -543,22 +550,60 @@ class Scoreboard:
             else:
                 self._print_text(game_index, 'F')
 
+        # Pre-Game
         elif game['game_state'] == 'P':
             if len(game['start_time']) > 4:
                 # -16 to account for extra character width
-                self._print_text(game_index, game['start_time'], self.time_offset - 16)
+                self._print_text(game_index, game['start_time'], self.time_offset - 6)
             else:
-                self._print_text(game_index, game['start_time'], self.time_offset)
+                self._print_text(game_index, game['start_time'], self.time_offset + 10)
 
+        # Suspendend / Postponed
+        elif game['game_state'] == 'S':
+            self._print_scores(game_index, game)
+            self._print_inning(game_index, game)
+
+            if self.mode in ('basic', 'gamecast'):
+                self._print_text(game_index, 'Susp', 25)
+
+        # Delay
+        elif game['game_state'] == 'D':
+            self._print_scores(game_index, game)
+            self._print_inning(game_index, game)
+
+            if self.mode in ('basic', 'gamecast'):
+                self._print_text(game_index, 'Dly', 32)
+
+        # Detailed (2 Columns)
         if self.mode != 'detailed':
             return None
 
+        # Live
         if game['game_state'] == 'L':
             self._print_batter_pitcher(game_index, game)
+
+        # Final
         elif game['game_state'] == 'F':
             self._print_pitcher_decisions(game_index, game)
+
+        # Pre-Game
         elif game['game_state'] == 'P':
             self._print_probable_pitchers(game_index, game)
+
+        # Suspendend / Postponed
+        elif game['game_state'] == 'S':
+            self._print_text(game_index, 'Suspended', 75)
+            self._print_inning(game_index, game)
+            self._print_runners(game_index, game)
+            self._print_outs(game_index, game)
+
+        # Delay
+        elif game['game_state'] == 'D':
+            self._print_text(game_index, 'Delayed', 75)
+            self._print_inning(game_index, game)
+            self._print_runners(game_index, game)
+            self._print_outs(game_index, game)
+
 
     def _clear_gamecast(self):
         if platform.system() == 'Windows':
