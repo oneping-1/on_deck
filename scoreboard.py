@@ -1,3 +1,8 @@
+"""
+Description: This module is used to create a scoreboard server.
+Used to recieve data from the game and display it on the scoreboard.
+"""
+
 from typing import List, Union
 import os
 import threading
@@ -54,7 +59,7 @@ def recursive_update(d: dict, u: dict) -> dict:
             d[k] = v
     return d
 
-class Server:
+class MainServer:
     """
     Description: This class is used to create a scoreboard server.
     Used to recieve data from the game and display it on the scoreboard.
@@ -66,10 +71,10 @@ class Server:
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
         self.app.add_url_rule('/reset', 'reset_games', self.reset_games, methods=['GET'])
-        self.app.add_url_rule('/settings', 'mode', self.settings, methods=['GET'])
-        self.app.add_url_rule('/settings', 'gamecast_id', self.settings, methods=['GET'])
+        self.app.add_url_rule('/settings', 'settings', self.settings, methods=['GET'])
         self.app.add_url_rule('/<int:game_index>', 'receive_data',
             self.receive_data, methods=['POST'])
+        self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['POST'])
 
     def home(self):
         """
@@ -90,6 +95,8 @@ class Server:
         for game in self.games:
             game['display_game'] = False
 
+        self.scoreboard.gamecast_game['display_game'] = False
+
         for i in range(10):
             self.scoreboard.clear_game(i)
 
@@ -106,8 +113,7 @@ class Server:
 
         return_dict = {
             'mode': self.scoreboard.mode,
-            'new_mode': self.scoreboard.new_mode,
-            'gamecast_gameid': self.scoreboard.gamecast_gameid
+            'new_mode': self.scoreboard.new_mode
         }
 
         if mode is None and gameid is None:
@@ -126,8 +132,7 @@ class Server:
 
         return_dict = {
             'mode': self.scoreboard.mode,
-            'new_mode': self.scoreboard.new_mode,
-            'gamecast_gameid': self.scoreboard.gamecast_gameid
+            'new_mode': self.scoreboard.new_mode
         }
 
         return jsonify({'message': return_dict}), 200
@@ -149,6 +154,24 @@ class Server:
         # print(json.dumps(return_dict, indent=4))
         return jsonify(return_dict), 200
 
+    def gamecast(self):
+        """
+        Description: This function is used to receive data from the gamecast.
+        The data is in the form of a JSON object.
+        """
+
+        new_data = request.get_json()
+
+        r = recursive_update(self.scoreboard.gamecast_game, new_data)
+        self.scoreboard.gamecast_game = r
+        self.scoreboard.gamecast_game['display_game'] = True
+
+        if self.scoreboard.mode == 'gamecast':
+            self.scoreboard.print_gamecast()
+
+        return_data = {'new_data': new_data, 'game': self.scoreboard.gamecast_game}
+        return jsonify(return_data), 200
+
     def print_game_if_on_page(self, game_index: int) -> bool:
         """
         This function is used to print the game if it is on the current page.
@@ -158,10 +181,6 @@ class Server:
         """
         games_per_page = 5
         shifted_game_index = game_index - (self.scoreboard.page * games_per_page)
-
-        if self.scoreboard.mode == 'gamecast':
-            if self.scoreboard.gamecast_gameid == game_index:
-                self.scoreboard.print_gamecast()
 
         if self.scoreboard.mode in ('detailed', 'gamecast'):
             if shifted_game_index > 4:
@@ -201,7 +220,9 @@ class Scoreboard:
         self.mode = mode
         self._new_mode: str = mode
         self.num_pages: int = None
-        self.gamecast_gameid: int = 0
+
+        # Copy of the game for gamecast (empty game)
+        self.gamecast_game = copy.deepcopy(games[0])
 
         self.page: int = 0
 
@@ -604,7 +625,6 @@ class Scoreboard:
             self._print_runners(game_index, game)
             self._print_outs(game_index, game)
 
-
     def _clear_gamecast(self):
         if platform.system() == 'Windows':
             color = self.my_grey
@@ -625,9 +645,8 @@ class Scoreboard:
 
     def print_gamecast(self):
         self._clear_gamecast()
-        game = self.games[self.gamecast_gameid]
 
-        if game['display_game'] is False:
+        if self.gamecast_game['display_game'] is False:
             return None
 
         color = self.my_white
@@ -636,28 +655,38 @@ class Scoreboard:
         home_row_offset = 30
         inning_row_offset = (away_row_offset + home_row_offset) / 2
 
-        self._print_gamecast_line(0, game['away']['name'])
-        self._print_gamecast_line(1, game['home']['name'])
+        self._print_gamecast_line(0, self.gamecast_game['away']['name'])
+        self._print_gamecast_line(1, self.gamecast_game['home']['name'])
 
         graphics.DrawText(self.canvas, self.ter_u18b, 300, away_row_offset,
-                          color, str(game['away_score']))
+                          color, str(self.gamecast_game['away_score']))
         graphics.DrawText(self.canvas, self.ter_u18b, 300, home_row_offset,
-                          color, str(game['home_score']))
+                          color, str(self.gamecast_game['home_score']))
 
         graphics.DrawText(self.canvas, self.ter_u18b, 320, inning_row_offset,
-                          color, str(game['inning']))
+                          color, str(self.gamecast_game['inning']))
 
         # Count
-        count = f'{game["count"]["balls"]}-{game["count"]["strikes"]} {game["count"]["outs"]} Outs'
+        count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
+        count += f'{self.gamecast_game["count"]["outs"]} Out'
+        if self.gamecast_game['count']['outs'] != 1:
+            count += 's'
         self._print_gamecast_line(2, count)
 
         # Pitch Details
         # Line 3 Empty
         # i think thse throw errors when they are None, so should add a check
-        self._print_gamecast_line(4, game['pitch_details']['description'])
-        self._print_gamecast_line(5, f'{game["pitch_details"]["speed"]} MPH')
-        self._print_gamecast_line(6, game['pitch_details']['type'])
-        self._print_gamecast_line(7, f'Zone: {game["pitch_details"]["zone"]}')
+        self._print_gamecast_line(4, self.gamecast_game['pitch_details']['description'])
+
+        s = ''
+        if self.gamecast_game['pitch_details']['speed'] is not None:
+            # Both are either a value or None
+            # None on no pitch like step off
+            s += f'{self.gamecast_game["pitch_details"]["speed"]} MPH'
+            s += f' | Zone: {self.gamecast_game["pitch_details"]["zone"]}'
+        self._print_gamecast_line(5, s)
+
+        self._print_gamecast_line(6, self.gamecast_game['pitch_details']['type'])
 
         # To be added next:
         # when pitch is in play: hit details (distance, exit velo, launch angle)
@@ -724,6 +753,9 @@ def start_scoreboard(scoreboard):
     scoreboard.start()
 
 def main():
+    """
+    Description: This function is used to start the scoreboard
+    """
     game_template = {
         'game_state': None,
         'away_score': None,
@@ -780,9 +812,9 @@ def main():
     games = [copy.deepcopy(game_template) for _ in range(20)]
 
     scoreboard = Scoreboard(games)
-    server = Server(games, scoreboard)
+    main_server = MainServer(games, scoreboard)
 
-    server_thread = threading.Thread(target=start_server, args=(server,))
+    server_thread = threading.Thread(target=start_server, args=(main_server,))
     scoreboard_thread = threading.Thread(target=start_scoreboard, args=(scoreboard,))
 
     server_thread.start()
