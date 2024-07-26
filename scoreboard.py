@@ -643,6 +643,42 @@ class Scoreboard:
         graphics.DrawText(self.canvas, self.ter_u18b, 192, row, self.my_white, text)
         return True
 
+    def _print_gamecast_count(self):
+        count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
+        count += f' {self.gamecast_game["count"]["outs"]} Out'
+        if self.gamecast_game['count']['outs'] != 1:
+            count += 's'
+        self._print_gamecast_line(2, count)
+
+    def _print_gamecast_pitch_details(self):
+        self._print_gamecast_line(4, self.gamecast_game['pitch_details']['description'])
+
+        s = ''
+        if self.gamecast_game['pitch_details']['speed'] is not None:
+            # Both are either a value or None
+            # None on no pitch like step off
+            s += f'{self.gamecast_game["pitch_details"]["speed"]} MPH'
+            s += f' | Zone: {self.gamecast_game["pitch_details"]["zone"]}'
+        self._print_gamecast_line(5, s)
+
+        self._print_gamecast_line(6, self.gamecast_game['pitch_details']['type'])
+
+    def _print_gamecast_hit_details(self):
+        game = self.gamecast_game
+
+        if game['hit_details']['distance'] is None:
+            # Check for one of the hit details
+            return False
+
+        self._print_gamecast_line(8, f'Distance: {game["hit_details"]["distance"]} ft')
+        self._print_gamecast_line(9, f'Exit Velo: {game["hit_details"]["exit_velo"]} MPH')
+        self._print_gamecast_line(10, f'Launch Angle: {game["hit_details"]["launch_angle"]}°')
+        count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
+        count += f' {self.gamecast_game["count"]["outs"]} Out'
+        if self.gamecast_game['count']['outs'] != 1:
+            count += 's'
+        self._print_gamecast_line(2, count)
+
     def print_gamecast(self):
         self._clear_gamecast()
 
@@ -658,39 +694,21 @@ class Scoreboard:
         self._print_gamecast_line(0, self.gamecast_game['away']['name'])
         self._print_gamecast_line(1, self.gamecast_game['home']['name'])
 
+        # Scores
         graphics.DrawText(self.canvas, self.ter_u18b, 300, away_row_offset,
                           color, str(self.gamecast_game['away_score']))
         graphics.DrawText(self.canvas, self.ter_u18b, 300, home_row_offset,
                           color, str(self.gamecast_game['home_score']))
-
+        # Inning
         graphics.DrawText(self.canvas, self.ter_u18b, 320, inning_row_offset,
                           color, str(self.gamecast_game['inning']))
 
-        # Count
-        count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
-        count += f'{self.gamecast_game["count"]["outs"]} Out'
-        if self.gamecast_game['count']['outs'] != 1:
-            count += 's'
-        self._print_gamecast_line(2, count)
-
-        # Pitch Details
-        # Line 3 Empty
-        # i think thse throw errors when they are None, so should add a check
-        self._print_gamecast_line(4, self.gamecast_game['pitch_details']['description'])
-
-        s = ''
-        if self.gamecast_game['pitch_details']['speed'] is not None:
-            # Both are either a value or None
-            # None on no pitch like step off
-            s += f'{self.gamecast_game["pitch_details"]["speed"]} MPH'
-            s += f' | Zone: {self.gamecast_game["pitch_details"]["zone"]}'
-        self._print_gamecast_line(5, s)
-
-        self._print_gamecast_line(6, self.gamecast_game['pitch_details']['type'])
+        self._print_gamecast_count()
+        self._print_gamecast_pitch_details()
+        self._print_gamecast_hit_details()
 
         # To be added next:
-        # when pitch is in play: hit details (distance, exit velo, launch angle)
-        # when pitch is not in play: run expectency, umpire, win probability
+        # when pitch is not in play: run expectency, umpire, win probability, matchup
 
         self.matrix.SwapOnVSync(self.canvas)
 
@@ -805,6 +823,11 @@ def main():
             'type': None,
             'zone': None,
             'spin_rate': None,
+        },
+        'hit_details': {
+            'distance': None,
+            'exit_velo': None,
+            'launch_angle': None
         },
         'display_game': False
     }
