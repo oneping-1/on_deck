@@ -650,18 +650,41 @@ class Scoreboard:
             count += 's'
         self._print_gamecast_line(2, count)
 
+    def _print_gamecast_umpire_details(self):
+        game = self.gamecast_game
+
+        if game['umpire']['num_missed'] is None:
+            return False
+
+        if game['umpire']['home_favor'] < 0:
+            abv = game['away']['abv']
+            game['umpire']['home_favor'] *= -1
+        else:
+            abv = game['home']['abv']
+
+        s = f'+{game["umpire"]["home_favor"]:.2f} {abv} ({game["umpire"]["num_missed"]})'
+        self._print_gamecast_line(4, s)
+
+    def _print_gamecast_run_expectancy_details(self):
+        game = self.gamecast_game
+
+        if game['run_expectancy']['average_runs'] is None:
+            return False
+
+        self._print_gamecast_line(5, f'Avg Runs: {game["run_expectancy"]["average_runs"]:.2f}')
+
     def _print_gamecast_pitch_details(self):
-        self._print_gamecast_line(4, self.gamecast_game['pitch_details']['description'])
+        self._print_gamecast_line(7, self.gamecast_game['pitch_details']['description'])
 
         s = ''
         if self.gamecast_game['pitch_details']['speed'] is not None:
             # Both are either a value or None
             # None on no pitch like step off
             s += f'{self.gamecast_game["pitch_details"]["speed"]} MPH'
-            s += f' | Zone: {self.gamecast_game["pitch_details"]["zone"]}'
-        self._print_gamecast_line(5, s)
+            s += f'  Zone:{self.gamecast_game["pitch_details"]["zone"]:>2d}'
+        self._print_gamecast_line(8, s)
 
-        self._print_gamecast_line(6, self.gamecast_game['pitch_details']['type'])
+        self._print_gamecast_line(9, self.gamecast_game['pitch_details']['type'])
 
     def _print_gamecast_hit_details(self):
         game = self.gamecast_game
@@ -670,16 +693,18 @@ class Scoreboard:
             # Check for one of the hit details
             return False
 
-        self._print_gamecast_line(8, f'Distance: {game["hit_details"]["distance"]} ft')
-        self._print_gamecast_line(9, f'Exit Velo: {game["hit_details"]["exit_velo"]} MPH')
-        self._print_gamecast_line(10, f'Launch Angle: {game["hit_details"]["launch_angle"]}°')
+        self._print_gamecast_line(11, f'Distance: {game["hit_details"]["distance"]} ft')
+        self._print_gamecast_line(12, f'Exit Velo: {game["hit_details"]["exit_velo"]} MPH')
+        self._print_gamecast_line(13, f'Launch Angle: {game["hit_details"]["launch_angle"]}°')
         count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
         count += f' {self.gamecast_game["count"]["outs"]} Out'
         if self.gamecast_game['count']['outs'] != 1:
             count += 's'
-        self._print_gamecast_line(2, count)
 
     def print_gamecast(self):
+        """
+        Description: This function is used to print the gamecast on the scoreboard.
+        """
         self._clear_gamecast()
 
         if self.gamecast_game['display_game'] is False:
@@ -704,11 +729,13 @@ class Scoreboard:
                           color, str(self.gamecast_game['inning']))
 
         self._print_gamecast_count()
+        self._print_gamecast_umpire_details()
+        self._print_gamecast_run_expectancy_details()
         self._print_gamecast_pitch_details()
         self._print_gamecast_hit_details()
 
         # To be added next:
-        # when pitch is not in play: run expectency, umpire, win probability, matchup
+        # when pitch is not in play: win probability, matchup
 
         self.matrix.SwapOnVSync(self.canvas)
 
@@ -828,6 +855,13 @@ def main():
             'distance': None,
             'exit_velo': None,
             'launch_angle': None
+        },
+        'umpire': {
+            'num_missed': None,
+            'home_favor': None
+        },
+        'run_expectancy': {
+            'average_runs': None
         },
         'display_game': False
     }
