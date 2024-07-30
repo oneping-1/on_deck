@@ -694,9 +694,9 @@ class Scoreboard:
             # Check for one of the hit details
             return False
 
-        self._print_gamecast_line(11, f'Distance: {game["hit_details"]["distance"]} ft')
-        self._print_gamecast_line(12, f'Exit Velo: {game["hit_details"]["exit_velo"]} MPH')
-        self._print_gamecast_line(13, f'Launch Angle: {game["hit_details"]["launch_angle"]}°')
+        self._print_gamecast_line(11, f'Dist: {game["hit_details"]["distance"]:>5.1f} ft')
+        self._print_gamecast_line(12, f'  EV: {game["hit_details"]["exit_velo"]:>5.1f} MPH')
+        self._print_gamecast_line(13, f'  LA: {game["hit_details"]["launch_angle"]:>5.1f}°')
         count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
         count += f' {self.gamecast_game["count"]["outs"]} Out'
         if self.gamecast_game['count']['outs'] != 1:
