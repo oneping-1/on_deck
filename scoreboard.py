@@ -658,11 +658,12 @@ class Scoreboard:
 
         if game['umpire']['home_favor'] < 0:
             abv = game['away']['abv']
-            game['umpire']['home_favor'] *= -1
+            favor = -1 * game['umpire']['home_favor']
         else:
             abv = game['home']['abv']
+            favor = game['umpire']['home_favor']
 
-        s = f'+{game["umpire"]["home_favor"]:.2f} {abv} ({game["umpire"]["num_missed"]})'
+        s = f'+{favor:.2f} {abv} ({game["umpire"]["num_missed"]})'
         self._print_gamecast_line(4, s)
 
     def _print_gamecast_run_expectancy_details(self):
