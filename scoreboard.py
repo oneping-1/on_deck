@@ -776,19 +776,28 @@ class Scoreboard:
 
         return count
 
+    def _loop(self):
+        self.num_pages = math.ceil(self._count_games() / 5)
+
+        if (self.num_pages <= 2) and (self.mode == 'basic'):
+            # No need to loop, all games fit. would just alternate
+            # the two columns
+            return
+
+        for self.page in range(self.num_pages):
+            self.print_page(self.page)
+
+        if self._new_mode != self.mode:
+            # wait until after all pages are displayed to avoid
+            # potential errors
+
+            # but is a barrier that blocks changes directly to
+            # self.mode. Not intentional but a good byproduct.
+            self.mode = self._new_mode
+
     def start(self):
         while True:
-            self.num_pages = math.ceil(self._count_games() / 5)
-            for self.page in range(self.num_pages):
-                self.print_page(self.page)
-
-            if self._new_mode != self.mode:
-                # wait until after all pages are displayed to avoid
-                # potential errors
-
-                # but is a barrier that blocks changes directly to
-                # self.mode. Not intentional but a good byproduct.
-                self.mode = self._new_mode
+            self._loop()
 
 def start_server(server):
     """Starts the server"""
