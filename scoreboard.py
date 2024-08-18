@@ -211,7 +211,7 @@ class Scoreboard:
     """
 
     _acceptable_modes = ('basic', 'detailed', 'gamecast')
-    def __init__(self, games: List[dict], mode: str = 'basic'):
+    def __init__(self, games: List[dict], mode: str = 'gamecast'):
         self.games = games
 
         # self.mode cannot be changed directly
@@ -643,6 +643,56 @@ class Scoreboard:
         graphics.DrawText(self.canvas, self.ter_u18b, 192, row, self.my_white, text)
         return True
 
+    def _print_gamecast_innig_arrows(self):
+        if self.gamecast_game['inning_state'] == 'T':
+            graphics.DrawText(self.canvas, self.symbols, 320, 8, self.my_white, '_')
+        elif self.gamecast_game['inning_state'] == 'B':
+            graphics.DrawText(self.canvas, self.symbols, 320, 29, self.my_white, 'w')
+
+    def _print_gamecast_bases(self):
+        second_base_column_offset = 347
+        second_base_row_offset = 15
+        base_length = 5
+        base_gap = 2
+        base_offset = base_length + base_gap
+
+        bases_list = ['c', 'c', 'c']
+        if self.gamecast_game['runners'] & 1:
+            bases_list[0] = 'C'
+        if self.gamecast_game['runners'] & 2:
+            bases_list[1] = 'C'
+        if self.gamecast_game['runners'] & 4:
+            bases_list[2] = 'C'
+
+        x0 = second_base_column_offset + base_offset
+        y0 = second_base_row_offset + base_offset
+        graphics.DrawText(self.canvas, self.symbols, x0, y0, self.my_white, bases_list[0])
+
+        x1 = second_base_column_offset
+        y1 = second_base_row_offset
+        graphics.DrawText(self.canvas, self.symbols, x1, y1, self.my_white, bases_list[1])
+
+        x2 = second_base_column_offset - base_offset
+        y2 = second_base_row_offset + base_offset
+        graphics.DrawText(self.canvas, self.symbols, x2, y2, self.my_white, bases_list[2])
+
+    def _print_gamecast_outs(self):
+        outs_list = ['p', 'p', 'p']
+
+        if self.gamecast_game['count']['outs'] is None:
+            pass
+        else:
+            if self.gamecast_game['count']['outs'] > 0:
+                outs_list[0] = 'P'
+            if self.gamecast_game['count']['outs'] > 1:
+                outs_list[1] = 'P'
+            if self.gamecast_game['count']['outs'] > 2:
+                outs_list[2] = 'P'
+
+        graphics.DrawText(self.canvas, self.symbols, 344, 28, self.my_white, outs_list[0])
+        graphics.DrawText(self.canvas, self.symbols, 350, 28, self.my_white, outs_list[1])
+        graphics.DrawText(self.canvas, self.symbols, 356, 28, self.my_white, outs_list[2])
+
     def _print_gamecast_count(self):
         count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
         count += f' {self.gamecast_game["count"]["outs"]} Out'
@@ -663,7 +713,7 @@ class Scoreboard:
             abv = game['home']['abv']
             favor = game['umpire']['home_favor']
 
-        s = f'+{favor:.2f} {abv} ({game["umpire"]["num_missed"]})'
+        s = f'Ump: +{favor:.2f} {abv} ({game["umpire"]["num_missed"]})'
         self._print_gamecast_line(4, s)
 
     def _print_gamecast_run_expectancy_details(self):
@@ -748,6 +798,9 @@ class Scoreboard:
         graphics.DrawText(self.canvas, self.ter_u18b, 320, inning_row_offset,
                           color, str(self.gamecast_game['inning']))
 
+        self._print_gamecast_innig_arrows()
+        self._print_gamecast_bases()
+        self._print_gamecast_outs()
         self._print_gamecast_count()
         self._print_gamecast_umpire_details()
         self._print_gamecast_run_expectancy_details()
