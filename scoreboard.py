@@ -674,8 +674,27 @@ class Scoreboard:
 
         self._print_gamecast_line(5, f'Avg Runs: {game["run_expectancy"]["average_runs"]:.2f}')
 
+    def _print_gamecast_win_probability_details(self):
+        game = self.gamecast_game
+
+        if game['win_probability']['away'] is None:
+            return False
+
+        away_win = game['win_probability']['away'] * 100
+        home_win = game['win_probability']['home'] * 100
+
+        if away_win > home_win:
+            win = away_win
+            abv = game['away']['abv']
+        else:
+            win = home_win
+            abv = game['home']['abv']
+
+        s = f'Win Prob: {win:.1f}% {abv}'
+        self._print_gamecast_line(6, s)
+
     def _print_gamecast_pitch_details(self):
-        self._print_gamecast_line(7, self.gamecast_game['pitch_details']['description'])
+        self._print_gamecast_line(8, self.gamecast_game['pitch_details']['description'])
 
         s = ''
         if self.gamecast_game['pitch_details']['speed'] is not None:
@@ -683,9 +702,9 @@ class Scoreboard:
             # None on no pitch like step off
             s += f'{self.gamecast_game["pitch_details"]["speed"]} MPH'
             s += f'  Zone:{self.gamecast_game["pitch_details"]["zone"]:>2d}'
-        self._print_gamecast_line(8, s)
+        self._print_gamecast_line(9, s)
 
-        self._print_gamecast_line(9, self.gamecast_game['pitch_details']['type'])
+        self._print_gamecast_line(10, self.gamecast_game['pitch_details']['type'])
 
     def _print_gamecast_hit_details(self):
         game = self.gamecast_game
@@ -694,9 +713,9 @@ class Scoreboard:
             # Check for one of the hit details
             return False
 
-        self._print_gamecast_line(11, f'Dist: {game["hit_details"]["distance"]:>5.1f} ft')
-        self._print_gamecast_line(12, f'  EV: {game["hit_details"]["exit_velo"]:>5.1f} MPH')
-        self._print_gamecast_line(13, f'  LA: {game["hit_details"]["launch_angle"]:>5.1f}°')
+        self._print_gamecast_line(12, f'Dist: {game["hit_details"]["distance"]:>5.1f} ft')
+        self._print_gamecast_line(13, f'  EV: {game["hit_details"]["exit_velo"]:>5.1f} MPH')
+        self._print_gamecast_line(14, f'  LA: {game["hit_details"]["launch_angle"]:>5.1f}°')
         count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
         count += f' {self.gamecast_game["count"]["outs"]} Out'
         if self.gamecast_game['count']['outs'] != 1:
@@ -732,6 +751,7 @@ class Scoreboard:
         self._print_gamecast_count()
         self._print_gamecast_umpire_details()
         self._print_gamecast_run_expectancy_details()
+        self._print_gamecast_win_probability_details()
         self._print_gamecast_pitch_details()
         self._print_gamecast_hit_details()
 
@@ -872,6 +892,11 @@ def main():
         },
         'run_expectancy': {
             'average_runs': None
+        },
+        'win_probability':{
+            'away': None,
+            'home': None,
+            'extras': None
         },
         'display_game': False
     }
