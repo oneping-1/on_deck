@@ -855,6 +855,10 @@ class Scoreboard:
         if (self.num_pages <= 2) and (self.mode == 'basic'):
             # No need to loop, all games fit. would just alternate
             # the two columns
+
+            # check for new mode or else you get soft locked
+            if self._new_mode != self.mode:
+                self.mode = self._new_mode
             return
 
         for self.page in range(self.num_pages):
