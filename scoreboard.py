@@ -211,7 +211,7 @@ class Scoreboard:
     """
 
     _acceptable_modes = ('basic', 'detailed', 'gamecast')
-    def __init__(self, games: List[dict], mode: str = 'gamecast'):
+    def __init__(self, games: List[dict], mode: str = 'basic'):
         self.games = games
 
         # self.mode cannot be changed directly
