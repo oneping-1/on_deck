@@ -945,7 +945,8 @@ def main():
         },
         'umpire': {
             'num_missed': None,
-            'home_favor': None
+            'home_favor': None,
+            'home_wpa': None
         },
         'run_expectancy': {
             'average_runs': None
