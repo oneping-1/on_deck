@@ -95,12 +95,14 @@ class MainServer:
         for game in self.games:
             game['display_game'] = False
 
-        self.scoreboard.gamecast_game['display_game'] = False
+        # self.scoreboard.gamecast_game['display_game'] = False
+        self.scoreboard.gamecast.gamecast_game['display_game'] = False
 
         for i in range(10):
-            self.scoreboard.clear_game(i)
+            self.scoreboard.all_games.clear_game(i)
 
-        self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
+        # self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
+        self.scoreboard.display_manager.swap_frame()
 
         return jsonify({'message': 'Games reset'}), 200
 
@@ -126,7 +128,7 @@ class MainServer:
 
         if gameid is not None:
             try:
-                self.scoreboard.gamecast_gameid = int(gameid)
+                self.scoreboard.gamecast.game_id = int(gameid)
             except ValueError:
                 return jsonify({'message': 'Game ID not recognized'}), 200
 
@@ -162,14 +164,14 @@ class MainServer:
 
         new_data = request.get_json()
 
-        r = recursive_update(self.scoreboard.gamecast_game, new_data)
-        self.scoreboard.gamecast_game = r
-        self.scoreboard.gamecast_game['display_game'] = True
+        r = recursive_update(self.scoreboard.gamecast.gamecast_game, new_data)
+        self.scoreboard.gamecast.gamecast_game = r
+        self.scoreboard.gamecast.gamecast_game['display_game'] = True
 
         if self.scoreboard.mode == 'gamecast':
-            self.scoreboard.print_gamecast()
+            self.scoreboard.gamecast.print_gamecast()
 
-        return_data = {'new_data': new_data, 'game': self.scoreboard.gamecast_game}
+        return_data = {'new_data': new_data, 'game': self.scoreboard.gamecast.gamecast_game}
         return jsonify(return_data), 200
 
     def print_game_if_on_page(self, game_index: int) -> bool:
@@ -180,18 +182,18 @@ class MainServer:
             game_index (int): The index of the game to print.
         """
         games_per_page = 5
-        shifted_game_index = game_index - (self.scoreboard.page * games_per_page)
+        shifted_game_index = game_index - (self.scoreboard.all_games.page * games_per_page)
 
-        if self.scoreboard.mode in ('detailed', 'gamecast'):
+        if self.scoreboard.mode in ('basic', 'detailed', 'gamecast'):
             if shifted_game_index > 4:
                 return False
 
-        if self.scoreboard.mode == 'basic':
+        if self.scoreboard.mode == 'dual':
             if shifted_game_index > 9:
                 return False
 
-        self.scoreboard.print_game(shifted_game_index, self.games[game_index])
-        self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
+        self.scoreboard.all_games.print_game(shifted_game_index, self.games[game_index])
+        self.scoreboard.display_manager.swap_frame()
         return True
 
     def start(self, port: int = 5000, debug: bool = False):
@@ -204,37 +206,17 @@ class MainServer:
         """
         self.app.run(host='0.0.0.0', port=port, debug=debug)
 
-class Scoreboard:
-    """
-    Description: This class is used to create a scoreboard.
-    Used to display the data from the game on the scoreboard.
-    """
+class Colors:
+    def __init__(self):
+        self.white = graphics.Color(255, 255, 255)
+        self.red = graphics.Color(255, 0, 0)
+        self.green = graphics.Color(0, 255, 0)
+        self.blue = graphics.Color(0, 0, 255)
+        self.grey = graphics.Color(20, 20, 20)
+        self.black = graphics.Color(0, 0, 0)
 
-    _acceptable_modes = ('basic', 'detailed', 'gamecast')
-    def __init__(self, games: List[dict], mode: str = 'basic'):
-        self.games = games
-
-        # self.mode cannot be changed directly
-        # change self.new_mode instead
-        # problem occurs in self.start()
-        self.mode = mode
-        self._new_mode: str = mode
-        self.num_pages: int = None
-
-        # Copy of the game for gamecast (empty game)
-        self.gamecast_game = copy.deepcopy(games[0])
-
-        self.page: int = 0
-
-        # Matrix Setup
-        self.options = get_options()
-        self.matrix = RGBMatrix(options=self.options)
-        self.canvas = self.matrix.CreateFrameCanvas()
-
-        # Emulated matrix server does not start until the first
-        # SwapOnVSync is called
-        self.matrix.SwapOnVSync(self.canvas)
-
+class Fonts:
+    def __init__(self):
         scoreboard_path = os.path.dirname(os.path.abspath(__file__))
         fonts_path = os.path.join(scoreboard_path, 'fonts')
         terminus_path = os.path.join(fonts_path, 'Terminus')
@@ -251,18 +233,56 @@ class Scoreboard:
         self.symbols = graphics.Font()
         self.symbols.LoadFont(os.path.join(fonts_path, 'symbols.bdf'))
 
-        # Matrix Colors
-        self.my_white = graphics.Color(255, 255, 255)
-        self.my_red = graphics.Color(255, 0, 0)
-        self.my_green = graphics.Color(0, 255, 0)
-        self.my_blue = graphics.Color(0, 0, 255)
-        self.my_grey = graphics.Color(20, 20, 20)
-        self.my_black = graphics.Color(0, 0, 0)
+class DisplayManager:
+    def __init__(self):
+        self.options = get_options()
+        self.matrix = RGBMatrix(options=self.options)
+        self.canvas = self.matrix.CreateFrameCanvas()
+
+        self.colors = Colors()
+        self.fonts = Fonts()
 
         if platform.system() == 'Windows':
-            # Fill the screen with grey
-            # Can see pixels in emulation
+            # Fill the screen with grey so that the pixels can be seen
+            # on the emulated display
             self.matrix.Fill(20, 20, 20)
+
+    def swap_frame(self):
+        self.matrix.SwapOnVSync(self.canvas)
+
+    def draw_text(self, font: graphics.Font, x: int, y: int, color: graphics.Color, text: str):
+        graphics.DrawText(self.canvas, font, x, y, color, text)
+
+    def clear_section(self, x1, y1, x2, y2):
+        num_rows = y2 - y1 + 1
+
+        if platform.system() == 'Windows':
+            color = self.colors.grey
+        else:
+            color = self.colors.black
+
+        for i in range(num_rows):
+            graphics.DrawLine(self.canvas, x1, y1 + i, x2, y1 + i, color)
+
+class AllGames:
+    """
+    Description: This class is used to create a scoreboard.
+    Used to display the data from the game on the scoreboard.
+    """
+    def __init__(self, display_manager: DisplayManager, games: List[dict], mode: str = 'basic'):
+        self.display_manager = display_manager
+        self.games = games
+
+        self.mode: str = None
+
+        self.ter_u32b = self.display_manager.fonts.ter_u32b
+        self.ter_u18b = self.display_manager.fonts.ter_u18b
+        self.symbols = self.display_manager.fonts.symbols
+
+        self._new_mode: str = mode
+        self.num_pages: int = None
+
+        self.page: int = 0
 
         # Scoreboard Offsets
         self.away_row_offset = 22
@@ -274,30 +294,19 @@ class Scoreboard:
         # Detail Mode Offsets
         self.two_line_offset = 7
 
-    @property
-    def new_mode(self):
-        return self._new_mode
-
-    @new_mode.setter
-    def new_mode(self, value: Union[str, None]) -> Union[str, None]:
-        if value is None:
-            return None
-        if value not in Scoreboard._acceptable_modes:
-            raise ValueError(f'Invalid mode: {value}')
-        self._new_mode = value
-        return value
+        self._gamecast_color = self.display_manager.colors.white
 
     def _print_line_a(self, color, column_offset, row_offset, line_a):
-        graphics.DrawText(self.canvas, self.ter_u18b, 175 + column_offset,
-            14 + row_offset, color, line_a)
+        graphics.DrawText(self.display_manager.canvas, self.ter_u18b,
+            175 + column_offset, 14 + row_offset, color, line_a)
 
     def _print_line_b(self, color, column_offset, row_offset, line_b):
-        graphics.DrawText(self.canvas, self.ter_u18b, 175 + column_offset,
-            29 + row_offset, color, line_b)
+        graphics.DrawText(self.display_manager.canvas, self.ter_u18b,
+            175 + column_offset, 29 + row_offset, color, line_b)
 
     def _print_line_c(self, color, column_offset, row_offset, line_c):
-        graphics.DrawText(self.canvas, self.ter_u18b, 175 + column_offset,
-            44 + row_offset, color, line_c)
+        graphics.DrawText(self.display_manager.canvas, self.ter_u18b,
+            175 + column_offset, 44 + row_offset, color, line_c)
 
     def _calculate_offsets(self, index: int):
         row_offset = 50*index
@@ -311,8 +320,8 @@ class Scoreboard:
 
     def _calculate_color(self, index: int):
         if index % 2 == 0:
-            return self.my_white
-        return self.my_green
+            return self.display_manager.colors.white
+        return self.display_manager.colors.green
 
     def clear_game(self, index: int):
         """
@@ -323,56 +332,62 @@ class Scoreboard:
         """
         row_offset, column_offset = self._calculate_offsets(index)
 
-        if platform.system() == 'Windows':
-            color = self.my_grey
-        else:
-            color = self.my_black
-
-        if self.mode in ('basic', 'gamecast'):
+        if self.mode in ('basic', 'dual', 'gamecast'):
             length = 192
         elif self.mode == 'detailed':
             length = 384
         else:
             raise ValueError(f'Length not specified for mode: {self.mode}')
 
-        for i in range(50):
-            graphics.DrawLine(self.canvas, 0 + column_offset, i + row_offset,
-                length + column_offset, i + row_offset, color)
+        x1 = 0 + column_offset
+        y1 = 0 + row_offset
+        x2 = length + column_offset
+        y2 = 50 + row_offset
+
+        self.display_manager.clear_section(x1, y1, x2, y2)
 
     def _print_scores(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
         color = self._calculate_color(index)
 
         if game['away_score'] > 9:
-            graphics.DrawText(self.canvas, self.ter_u32b, 55 + column_offset,
-                self.away_row_offset + row_offset, color, str(game['away_score']))
+            graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+                55 + column_offset, self.away_row_offset + row_offset, color,
+                str(game['away_score']))
         else:
-            graphics.DrawText(self.canvas, self.ter_u32b, 63 + column_offset,
-                self.away_row_offset + row_offset, color, str(game['away_score']))
+            graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+                63 + column_offset, self.away_row_offset + row_offset, color,
+                str(game['away_score']))
 
         if game['home_score'] > 9:
-            graphics.DrawText(self.canvas, self.ter_u32b, 55 + column_offset,
-                self.home_row_offset + row_offset, color, str(game['home_score']))
+            graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+                55 + column_offset, self.home_row_offset + row_offset, color,
+                str(game['home_score']))
         else:
-            graphics.DrawText(self.canvas, self.ter_u32b, 63 + column_offset,
-                self.home_row_offset + row_offset, color, str(game['home_score']))
+            graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+                63 + column_offset, self.home_row_offset + row_offset, color,
+                str(game['home_score']))
 
     def _print_inning(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
         color = self._calculate_color(index)
 
         if game['inning'] > 9:
-            graphics.DrawText(self.canvas, self.ter_u32b,  self.inning_column_offset - 8 + column_offset,
+            graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+                self.inning_column_offset - 8 + column_offset,
                 self.inning_row_offset + row_offset, color, f'{game["inning"]}')
         else:
-            graphics.DrawText(self.canvas, self.ter_u32b, self.inning_column_offset + column_offset,
+            graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+                self.inning_column_offset + column_offset,
                 self.inning_row_offset + row_offset, color, f'{game["inning"]}')
 
         if game['inning_state'] == 'T':
-            graphics.DrawText(self.canvas, self.symbols, self.inning_column_offset + column_offset,
+            graphics.DrawText(self.display_manager.canvas, self.symbols,
+                self.inning_column_offset + column_offset,
                 11 + row_offset, color, '^')
         elif game['inning_state'] == 'B':
-            graphics.DrawText(self.canvas, self.symbols, self.inning_column_offset + column_offset,
+            graphics.DrawText(self.display_manager.canvas, self.symbols,
+                self.inning_column_offset + column_offset,
                 43 + row_offset, color, 'v')
 
     def _print_text(self, index: int, text: str, column_offset: int = 0):
@@ -381,7 +396,7 @@ class Scoreboard:
 
         x = self.inning_column_offset + column_offset + column_offset2
         y = self.inning_row_offset + row_offset
-        graphics.DrawText(self.canvas, self.ter_u32b, x, y, color, text)
+        graphics.DrawText(self.display_manager.canvas, self.ter_u32b, x, y, color, text)
 
     def _print_outs(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -399,12 +414,12 @@ class Scoreboard:
             if game['count']['outs'] > 2:
                 outs_list[2] = 'O'
 
-        graphics.DrawText(self.canvas, self.symbols, 130 + column_offset,
-            43 + row_offset, color, outs_list[0])
-        graphics.DrawText(self.canvas, self.symbols, 142 + column_offset,
-            43 + row_offset, color, outs_list[1])
-        graphics.DrawText(self.canvas, self.symbols, 154 + column_offset,
-            43 + row_offset, color, outs_list[2])
+        graphics.DrawText(self.display_manager.canvas, self.symbols,
+            130 + column_offset, 43 + row_offset, color, outs_list[0])
+        graphics.DrawText(self.display_manager.canvas, self.symbols,
+            142 + column_offset, 43 + row_offset, color, outs_list[1])
+        graphics.DrawText(self.display_manager.canvas, self.symbols,
+            154 + column_offset, 43 + row_offset, color, outs_list[2])
 
     def _print_runners(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -426,15 +441,18 @@ class Scoreboard:
 
         x0 = second_base_column_offset + base_offset + column_offset
         y0 = second_base_row_offset + base_offset + row_offset
-        graphics.DrawText(self.canvas, self.symbols, x0, y0, color, bases_list[0])
+        graphics.DrawText(self.display_manager.canvas, self.symbols, x0, y0,
+            color, bases_list[0])
 
         x1 = second_base_column_offset + column_offset
         y1 = second_base_row_offset + row_offset
-        graphics.DrawText(self.canvas, self.symbols, x1, y1, color, bases_list[1])
+        graphics.DrawText(self.display_manager.canvas, self.symbols, x1, y1,
+            color, bases_list[1])
 
         x2 = second_base_column_offset - base_offset + column_offset
         y2 = second_base_row_offset + base_offset + row_offset
-        graphics.DrawText(self.canvas, self.symbols, x2, y2, color, bases_list[2])
+        graphics.DrawText(self.display_manager.canvas, self.symbols, x2, y2,
+            color, bases_list[2])
 
     def _print_batter_pitcher(self, index, game):
         row_offset, column_offset = self._calculate_offsets(index)
@@ -525,7 +543,8 @@ class Scoreboard:
             self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
     def _print_page_indicator(self, page_num: int):
-        graphics.DrawLine(self.canvas, 0, 255, 384, 255, self.my_black)
+        graphics.DrawLine(self.display_manager.canvas, 0, 255, 384, 255,
+            self.display_manager.colors.black)
 
         line_length = 5
         gap = 2
@@ -535,7 +554,8 @@ class Scoreboard:
             x0 = 40 + ((i + 1) * total_length)
             x1 = x0 + line_length - 1 # -1 to account for extra character width
 
-            graphics.DrawLine(self.canvas, x0, 255, x1, 255, self.my_white)
+            graphics.DrawLine(self.display_manager.canvas, x0, 255, x1, 255,
+                self.display_manager.colors.white)
 
     def print_game(self, game_index: int, game: dict):
         self.clear_game(game_index)
@@ -549,11 +569,13 @@ class Scoreboard:
 
         # Team Abbreviations
 
-        graphics.DrawText(self.canvas, self.ter_u32b, 0 + column_offset,
-            self.away_row_offset + row_offset, color, game['away']['abv'])
+        graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+            0 + column_offset, self.away_row_offset + row_offset, color,
+            game['away']['abv'])
 
-        graphics.DrawText(self.canvas, self.ter_u32b, 0 + column_offset,
-            self.home_row_offset + row_offset, color, game['home']['abv'])
+        graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
+            0 + column_offset, self.home_row_offset + row_offset, color,
+            game['home']['abv'])
 
         # Live
         if game['game_state'] == 'L':
@@ -625,14 +647,69 @@ class Scoreboard:
             self._print_runners(game_index, game)
             self._print_outs(game_index, game)
 
-    def _clear_gamecast(self):
-        if platform.system() == 'Windows':
-            color = self.my_grey
-        else:
-            color = self.my_black
+    def print_page(self, page_num: int):
+        max_games = 5 * self.num_pages
+        shift_offset = page_num * 5
 
-        for i in range(256):
-            graphics.DrawLine(self.canvas, 192, i, 384, i, color)
+        shifted_games = [None] * max_games
+
+        for i, game in enumerate(self.games[:max_games]):
+            shifted_games[i] = game
+
+        shifted_games = shifted_games[shift_offset:] + shifted_games[:shift_offset]
+
+        if self.mode == 'dual':
+            shifted_games = shifted_games[:10]
+        else:
+            shifted_games = shifted_games[:5]
+
+        for i, game in enumerate(shifted_games):
+            self.print_game(i, game)
+
+        self._print_page_indicator(page_num)
+
+        self.display_manager.swap_frame()
+        time.sleep(10)
+
+    def _count_games(self) -> int:
+        count = 0
+
+        for game in self.games:
+            if game['display_game'] is True:
+                count += 1
+
+        return count
+
+    def loop(self, mode: str):
+        self.mode = mode
+        self.num_pages = math.ceil(self._count_games() / 5)
+
+        a = (self.num_pages <= 2) and (mode == 'dual')
+        b = (self.num_pages <= 1) and (mode == 'basic')
+        cycle_pages = not (a or b)
+
+        if not cycle_pages:
+            # No need to loop, all games fit. would just alternate
+            # the one or two columns
+            return
+
+        for self.page in range(self.num_pages):
+            self.print_page(self.page)
+
+class Gamecast:
+    def __init__(self, display_manager: DisplayManager, games: List[dict], game_id: int = -1):
+        self.display_manager = display_manager
+        self.games = games
+        self.game_id = game_id
+        self.gamecast_game = copy.deepcopy(games[game_id])
+
+        self._gamecast_color = self.display_manager.colors.white
+
+        self.ter_u18b = self.display_manager.fonts.ter_u18b
+        self.symbols = self.display_manager.fonts.symbols
+
+    def _clear_gamecast(self):
+        self.display_manager.clear_section(192, 0, 384, 256)
 
     def _print_gamecast_line(self, line_num: int, text: Union[str, None]) -> bool:
         if text is None:
@@ -640,14 +717,14 @@ class Scoreboard:
 
         row = 16 * (line_num + 1)
 
-        graphics.DrawText(self.canvas, self.ter_u18b, 192, row, self.my_white, text)
+        self.display_manager.draw_text(self.ter_u18b, 192, row, self._gamecast_color, text)
         return True
 
-    def _print_gamecast_innig_arrows(self):
+    def _print_gamecast_inning_arrows(self):
         if self.gamecast_game['inning_state'] == 'T':
-            graphics.DrawText(self.canvas, self.symbols, 320, 8, self.my_white, '_')
+            self.display_manager.draw_text(self.symbols, 320, 8, self._gamecast_color, '_')
         elif self.gamecast_game['inning_state'] == 'B':
-            graphics.DrawText(self.canvas, self.symbols, 320, 29, self.my_white, 'w')
+            self.display_manager.draw_text(self.symbols, 320, 29, self._gamecast_color, 'w')
 
     def _print_gamecast_bases(self):
         second_base_column_offset = 347
@@ -666,15 +743,15 @@ class Scoreboard:
 
         x0 = second_base_column_offset + base_offset
         y0 = second_base_row_offset + base_offset
-        graphics.DrawText(self.canvas, self.symbols, x0, y0, self.my_white, bases_list[0])
+        self.display_manager.draw_text(self.symbols, x0, y0, self._gamecast_color, bases_list[0])
 
         x1 = second_base_column_offset
         y1 = second_base_row_offset
-        graphics.DrawText(self.canvas, self.symbols, x1, y1, self.my_white, bases_list[1])
+        self.display_manager.draw_text(self.symbols, x1, y1, self._gamecast_color, bases_list[1])
 
         x2 = second_base_column_offset - base_offset
         y2 = second_base_row_offset + base_offset
-        graphics.DrawText(self.canvas, self.symbols, x2, y2, self.my_white, bases_list[2])
+        self.display_manager.draw_text(self.symbols, x2, y2, self._gamecast_color, bases_list[2])
 
     def _print_gamecast_outs(self):
         outs_list = ['p', 'p', 'p']
@@ -689,9 +766,9 @@ class Scoreboard:
             if self.gamecast_game['count']['outs'] > 2:
                 outs_list[2] = 'P'
 
-        graphics.DrawText(self.canvas, self.symbols, 344, 28, self.my_white, outs_list[0])
-        graphics.DrawText(self.canvas, self.symbols, 350, 28, self.my_white, outs_list[1])
-        graphics.DrawText(self.canvas, self.symbols, 356, 28, self.my_white, outs_list[2])
+        self.display_manager.draw_text(self.symbols, 344, 28, self._gamecast_color, outs_list[0])
+        self.display_manager.draw_text(self.symbols, 350, 28, self._gamecast_color, outs_list[1])
+        self.display_manager.draw_text(self.symbols, 356, 28, self._gamecast_color, outs_list[2])
 
     def _print_gamecast_count(self):
         count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
@@ -700,7 +777,7 @@ class Scoreboard:
             count += 's'
         self._print_gamecast_line(2, count)
 
-    def _print_gamecast_umpire_details(self):
+    def _print_gamecast_umpire_details(self) -> bool:
         game = self.gamecast_game
 
         if game['umpire']['num_missed'] is None:
@@ -716,13 +793,16 @@ class Scoreboard:
         s = f'Ump: +{favor:.2f} {abv} ({game["umpire"]["num_missed"]})'
         self._print_gamecast_line(4, s)
 
-    def _print_gamecast_run_expectancy_details(self):
+        return True
+
+    def _print_gamecast_run_expectancy_details(self) -> bool:
         game = self.gamecast_game
 
         if game['run_expectancy']['average_runs'] is None:
             return False
 
         self._print_gamecast_line(5, f'Avg Runs: {game["run_expectancy"]["average_runs"]:.2f}')
+        return True
 
     def _print_gamecast_win_probability_details(self):
         game = self.gamecast_game
@@ -743,6 +823,8 @@ class Scoreboard:
         s = f'Win Prob: {win:.1f}% {abv}'
         self._print_gamecast_line(6, s)
 
+        return True
+
     def _print_gamecast_pitch_details(self):
         self._print_gamecast_line(8, self.gamecast_game['pitch_details']['description'])
 
@@ -756,7 +838,7 @@ class Scoreboard:
 
         self._print_gamecast_line(10, self.gamecast_game['pitch_details']['type'])
 
-    def _print_gamecast_hit_details(self):
+    def _print_gamecast_hit_details(self) -> bool:
         game = self.gamecast_game
 
         if game['hit_details']['distance'] is None:
@@ -771,16 +853,16 @@ class Scoreboard:
         if self.gamecast_game['count']['outs'] != 1:
             count += 's'
 
-    def print_gamecast(self):
+        return True
+
+    def print_gamecast(self) -> bool:
         """
         Description: This function is used to print the gamecast on the scoreboard.
         """
         self._clear_gamecast()
 
         if self.gamecast_game['display_game'] is False:
-            return None
-
-        color = self.my_white
+            return False
 
         away_row_offset = 14
         home_row_offset = 30
@@ -790,15 +872,17 @@ class Scoreboard:
         self._print_gamecast_line(1, self.gamecast_game['home']['name'])
 
         # Scores
-        graphics.DrawText(self.canvas, self.ter_u18b, 300, away_row_offset,
-                          color, str(self.gamecast_game['away_score']))
-        graphics.DrawText(self.canvas, self.ter_u18b, 300, home_row_offset,
-                          color, str(self.gamecast_game['home_score']))
-        # Inning
-        graphics.DrawText(self.canvas, self.ter_u18b, 320, inning_row_offset,
-                          color, str(self.gamecast_game['inning']))
+        self.display_manager.draw_text(self.ter_u18b, 300, away_row_offset,
+            self._gamecast_color, str(self.gamecast_game['away_score']))
 
-        self._print_gamecast_innig_arrows()
+        self.display_manager.draw_text(self.ter_u18b, 300, home_row_offset,
+            self._gamecast_color, str(self.gamecast_game['home_score']))
+
+        # Inning
+        self.display_manager.draw_text(self.ter_u18b, 320, inning_row_offset,
+            self._gamecast_color, str(self.gamecast_game['inning']))
+
+        self._print_gamecast_inning_arrows()
         self._print_gamecast_bases()
         self._print_gamecast_outs()
         self._print_gamecast_count()
@@ -811,70 +895,44 @@ class Scoreboard:
         # To be added next:
         # when pitch is not in play: win probability, matchup
 
-        self.matrix.SwapOnVSync(self.canvas)
+        self.display_manager.swap_frame()
+        return True
 
-    def print_page(self, page_num: int):
-        max_games = 5 * self.num_pages
-        shift_offset = page_num * 5
+class Scoreboard:
+    _acceptable_modes = ('basic', 'dual', 'detailed', 'gamecast')
+    def __init__(self, games: List[dict], mode: str = 'dual'):
+        self.games: List[dict] = games
+        self.mode: str = mode
+        self._new_mode: str = mode
 
-        shifted_games = [None] * max_games
+        self.display_manager = DisplayManager()
 
-        for i, game in enumerate(self.games[:max_games]):
-            shifted_games[i] = game
+        self.all_games = AllGames(self.display_manager, games, mode)
+        self.gamecast = Gamecast(self.display_manager, games)
 
-        shifted_games = shifted_games[shift_offset:] + shifted_games[:shift_offset]
+    @property
+    def new_mode(self):
+        return self._new_mode
 
-        if self.mode == 'basic':
-            shifted_games = shifted_games[:10]
-        else:
-            shifted_games = shifted_games[:5]
-
-        for i, game in enumerate(shifted_games):
-            self.print_game(i, game)
-
-        self._print_page_indicator(page_num)
-
-        if self.mode == 'gamecast':
-            self.print_gamecast()
-
-        self.matrix.SwapOnVSync(self.canvas)
-        time.sleep(10)
-
-    def _count_games(self) -> int:
-        count = 0
-
-        for game in self.games:
-            if game['display_game'] is True:
-                count += 1
-
-        return count
-
-    def _loop(self):
-        self.num_pages = math.ceil(self._count_games() / 5)
-
-        if (self.num_pages <= 2) and (self.mode == 'basic'):
-            # No need to loop, all games fit. would just alternate
-            # the two columns
-
-            # check for new mode or else you get soft locked
-            if self._new_mode != self.mode:
-                self.mode = self._new_mode
-            return
-
-        for self.page in range(self.num_pages):
-            self.print_page(self.page)
-
-        if self._new_mode != self.mode:
-            # wait until after all pages are displayed to avoid
-            # potential errors
-
-            # but is a barrier that blocks changes directly to
-            # self.mode. Not intentional but a good byproduct.
-            self.mode = self._new_mode
+    @new_mode.setter
+    def new_mode(self, value: Union[str, None]) -> Union[str, None]:
+        if value is None:
+            return None
+        if value not in Scoreboard._acceptable_modes:
+            raise ValueError(f'Invalid mode: {value}')
+        self._new_mode = value
+        return value
 
     def start(self):
         while True:
-            self._loop()
+            if self.mode == 'gamecast':
+                self.gamecast.print_gamecast()
+
+            self.all_games.loop(self.mode)
+
+            if self.mode != self.new_mode:
+                self.mode = self.new_mode
+                self.display_manager.clear_section(0, 0, 384, 256)
 
 def start_server(server):
     """Starts the server"""
