@@ -423,7 +423,7 @@ class AllGames:
             self._print_scores(game_index, game)
             self._print_inning(game_index, game)
 
-            if self.mode in ('basic', 'gamecast'):
+            if self.mode in ('basic', 'dual', 'gamecast'):
                 self._print_text(game_index, 'Susp', 25)
 
         # Delay
@@ -431,7 +431,7 @@ class AllGames:
             self._print_scores(game_index, game)
             self._print_inning(game_index, game)
 
-            if self.mode in ('basic', 'gamecast'):
+            if self.mode in ('basic', 'dual', 'gamecast'):
                 self._print_text(game_index, 'Dly', 32)
 
         # Detailed (2 Columns)
