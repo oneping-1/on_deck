@@ -65,24 +65,18 @@ def main():
     }
 
     game4a = {
-        'game_state': 'P',
-        'away_abv': 'SEA',
-        'home_abv': 'PIT',
-        'inning': 1,
-        'inning_state': 'T',
-        'outs': 0,
-        'balls': 0,
-        'strikes': 0,
-        'runners': 0,
-        'start_time': '10:05'
+        'flags' : {
+            'no_hitter': True,
+            'perfect_game': False,
+        }
     }
 
-    send_data(1, game0a)
+    # send_data(1, game0a)
     # send_data(0, game0b)
     # send_data(1, game1a)
     # send_data(2, game2a)
     # send_data(3, game3a)
-    # send_data(4, game4a)
+    send_data(0, game4a)
     # send_data(5, game4a)
 
 def main2():
@@ -90,7 +84,7 @@ def main2():
         'inning_state': 'B'
     }
 
-    send_data(0, data)
+    send_data(0, game4a)
 
 if __name__ == '__main__':
     main()

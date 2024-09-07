@@ -47,6 +47,8 @@ class Colors:
         self.blue = graphics.Color(0, 0, 255)
         self.grey = graphics.Color(20, 20, 20)
         self.black = graphics.Color(0, 0, 0)
+        self.yellow = graphics.Color(255, 255, 0)
+        self.orange = graphics.Color(255, 165, 0)
 
 class Fonts:
     """

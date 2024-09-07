@@ -76,7 +76,9 @@ class AllGames:
 
         return (row_offset, column_offset)
 
-    def _calculate_color(self, index: int):
+    def _calculate_color(self, index: int, game: dict = None):
+        if game['flags']['no_hitter'] is True:
+            return self.display_manager.colors.red
         if index % 2 == 0:
             return self.display_manager.colors.white
         return self.display_manager.colors.green
@@ -104,9 +106,8 @@ class AllGames:
 
         self.display_manager.clear_section(x1, y1, x2, y2)
 
-    def _print_scores(self, index, game):
+    def _print_scores(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         if game['away_score'] > 9:
             # graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
@@ -138,9 +139,8 @@ class AllGames:
             self.display_manager.draw_text(self.ter_u32b, 63 + column_offset,
                 self.home_row_offset + row_offset, color, str(game['home_score']))
 
-    def _print_inning(self, index, game):
+    def _print_inning(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         if game['inning'] > 9:
             # graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
@@ -176,18 +176,16 @@ class AllGames:
                 self.inning_column_offset + column_offset,
                 43 + row_offset, color, 'v')
 
-    def _print_text(self, index: int, text: str, column_offset: int = 0):
+    def _print_text(self, index: int, color, text: str, column_offset: int = 0):
         row_offset, column_offset2 = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         x = self.inning_column_offset + column_offset + column_offset2
         y = self.inning_row_offset + row_offset
         # graphics.DrawText(self.display_manager.canvas, self.ter_u32b, x, y, color, text)
         self.display_manager.draw_text(self.ter_u32b, x, y, color, text)
 
-    def _print_outs(self, index, game):
+    def _print_outs(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         outs_list = ['o', 'o', 'o']
 
@@ -215,9 +213,8 @@ class AllGames:
         self.display_manager.draw_text(self.symbols, 154 + column_offset,
             43 + row_offset, color, outs_list[2])
 
-    def _print_runners(self, index, game):
+    def _print_runners(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         second_base_column_offset = 137
         second_base_row_offset = 22
@@ -254,9 +251,8 @@ class AllGames:
 
         self.display_manager.draw_text(self.symbols, x2, y2, color, bases_list[2])
 
-    def _print_batter_pitcher(self, index, game):
+    def _print_batter_pitcher(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         line_a = None
         line_c = None
@@ -282,9 +278,8 @@ class AllGames:
         if line_c is not None:
             self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
-    def _print_pitcher_decisions(self, index, game):
+    def _print_pitcher_decisions(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         away_score = game['away_score']
         home_score = game['home_score']
@@ -329,9 +324,8 @@ class AllGames:
         if line_c is not None:
             self._print_line_c(color, column_offset, row_offset - delta_y, line_c)
 
-    def _print_probable_pitchers(self, index, game):
+    def _print_probable_pitchers(self, index, color, game):
         row_offset, column_offset = self._calculate_offsets(index)
-        color = self._calculate_color(index)
 
         line_a = f'SP:{game["probables"]["away"]} ({game["probables"]["away_era"]})'
         line_c = f'SP:{game["probables"]["home"]} ({game["probables"]["home_era"]})'
@@ -374,7 +368,7 @@ class AllGames:
 
         row_offset, column_offset = self._calculate_offsets(game_index)
 
-        color = self._calculate_color(game_index)
+        color = self._calculate_color(game_index, game)
 
         # Team Abbreviations
 
@@ -396,40 +390,40 @@ class AllGames:
 
         # Live
         if game['game_state'] == 'L':
-            self._print_scores(game_index, game)
-            self._print_inning(game_index, game)
-            self._print_outs(game_index, game)
-            self._print_runners(game_index, game)
+            self._print_scores(game_index, color, game)
+            self._print_inning(game_index, color, game)
+            self._print_outs(game_index, color, game)
+            self._print_runners(game_index, color, game)
 
         # Final
         elif game['game_state'] == 'F':
-            self._print_scores(game_index, game)
+            self._print_scores(game_index, color, game)
 
             if game['inning'] != 9:
-                self._print_text(game_index, f'F/{game["inning"]}')
+                self._print_text(game_index, color, f'F/{game["inning"]}')
             else:
-                self._print_text(game_index, 'F')
+                self._print_text(game_index, color, 'F')
 
         # Pre-Game
         elif game['game_state'] == 'P':
             if len(game['start_time']) > 4:
                 # -16 to account for extra character width
-                self._print_text(game_index, game['start_time'], self.time_offset - 6)
+                self._print_text(game_index, color, game['start_time'], self.time_offset - 6)
             else:
-                self._print_text(game_index, game['start_time'], self.time_offset + 10)
+                self._print_text(game_index, color, game['start_time'], self.time_offset + 10)
 
         # Suspendend / Postponed
         elif game['game_state'] == 'S':
-            self._print_scores(game_index, game)
-            self._print_inning(game_index, game)
+            self._print_scores(game_index, color, game)
+            self._print_inning(game_index, color, game)
 
             if self.mode in ('basic', 'dual', 'gamecast'):
                 self._print_text(game_index, 'Susp', 25)
 
         # Delay
         elif game['game_state'] == 'D':
-            self._print_scores(game_index, game)
-            self._print_inning(game_index, game)
+            self._print_scores(game_index, color, game)
+            self._print_inning(game_index, color, game)
 
             if self.mode in ('basic', 'dual', 'gamecast'):
                 self._print_text(game_index, 'Dly', 32)
@@ -440,29 +434,29 @@ class AllGames:
 
         # Live
         if game['game_state'] == 'L':
-            self._print_batter_pitcher(game_index, game)
+            self._print_batter_pitcher(game_index, color, game)
 
         # Final
         elif game['game_state'] == 'F':
-            self._print_pitcher_decisions(game_index, game)
+            self._print_pitcher_decisions(game_index, color, game)
 
         # Pre-Game
         elif game['game_state'] == 'P':
-            self._print_probable_pitchers(game_index, game)
+            self._print_probable_pitchers(game_index, color, game)
 
         # Suspendend / Postponed
         elif game['game_state'] == 'S':
-            self._print_text(game_index, 'Suspended', 75)
-            self._print_inning(game_index, game)
-            self._print_runners(game_index, game)
-            self._print_outs(game_index, game)
+            self._print_text(game_index, color, 'Suspended', 75)
+            self._print_inning(game_index, color, game)
+            self._print_runners(game_index, color, game)
+            self._print_outs(game_index, color, game)
 
         # Delay
         elif game['game_state'] == 'D':
-            self._print_text(game_index, 'Delayed', 75)
-            self._print_inning(game_index, game)
-            self._print_runners(game_index, game)
-            self._print_outs(game_index, game)
+            self._print_text(game_index, color, 'Delayed', 75)
+            self._print_inning(game_index, color, game)
+            self._print_runners(game_index, color, game)
+            self._print_outs(game_index, color, game)
 
     def print_page(self, page_num: int):
         """

@@ -89,6 +89,10 @@ def main():
             'home': None,
             'extras': None
         },
+        'flags': {
+            'no_hitter': None,
+            'perfect_game': None
+        },
         'display_game': False
     }
 
