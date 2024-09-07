@@ -426,7 +426,7 @@ class AllGames:
             self._print_inning(game_index, color, game)
 
             if self.mode in ('basic', 'dual', 'gamecast'):
-                self._print_text(game_index, 'Dly', 32)
+                self._print_text(game_index, color, 'Dly', 32)
 
         # Detailed (2 Columns)
         if self.mode != 'detailed':
