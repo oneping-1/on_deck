@@ -77,6 +77,9 @@ class AllGames:
         return (row_offset, column_offset)
 
     def _calculate_color(self, index: int, game: dict = None):
+        if game['flags']['perfect_game'] is True:
+            # Perfect Game isnt considered a no-hitter for some reason
+            return self.display_manager.colors.orange
         if game['flags']['no_hitter'] is True:
             return self.display_manager.colors.red
         if index % 2 == 0:
