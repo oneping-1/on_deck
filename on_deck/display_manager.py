@@ -30,8 +30,8 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-        options.pwm_bits = 1
-        options.gpio_slowdown = 5
+        options.pwm_bits = 2
+        options.gpio_slowdown = 4
 
     return options
 
@@ -41,12 +41,14 @@ class Colors:
     This class is used to store the colors used in the scoreboard.
     """
     def __init__(self):
+
+        self.black = graphics.Color(0, 0, 0)
         self.white = graphics.Color(255, 255, 255)
+
         self.red = graphics.Color(255, 0, 0)
         self.green = graphics.Color(0, 255, 0)
         self.blue = graphics.Color(0, 0, 255)
-        self.grey = graphics.Color(20, 20, 20)
-        self.black = graphics.Color(0, 0, 0)
+
         self.yellow = graphics.Color(255, 255, 0)
         self.orange = graphics.Color(255, 165, 0)
 
