@@ -6,8 +6,16 @@ object and starts it.
 
 import copy
 import threading
+import requests
 from on_deck.main_server import MainServer
 from on_deck.scoreboard import Scoreboard
+
+def restart_master():
+    """
+    Description: This function is used to restart the master server
+    Will get no response from the server because it will be restarting
+    """
+    requests.get('http://192.168.1.83/restart') # pylint: disable=W3101
 
 def start_server(server):
     """Starts the server"""
@@ -21,6 +29,8 @@ def main():
     """
     Description: This function is used to start the scoreboard
     """
+    restart_master()
+
     game_template = {
         'game_state': None,
         'away_score': None,
