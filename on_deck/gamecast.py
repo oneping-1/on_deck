@@ -26,7 +26,7 @@ class Gamecast:
         self.symbols = self.display_manager.fonts.symbols
 
     def _clear_gamecast(self):
-        self.display_manager.clear_section(192, 0, 384, 256)
+        self.display_manager.clear_section(193, 0, 384, 256)
 
     def _print_gamecast_line(self, line_num: int, text: Union[str, None]) -> bool:
         if text is None:
@@ -34,7 +34,7 @@ class Gamecast:
 
         row = 16 * (line_num + 1)
 
-        self.display_manager.draw_text(self.ter_u18b, 192, row, self._gamecast_color, text)
+        self.display_manager.draw_text(self.ter_u18b, 193, row, self._gamecast_color, text)
         return True
 
     def _print_gamecast_inning_arrows(self):
