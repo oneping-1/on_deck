@@ -491,7 +491,13 @@ class AllGames:
         self.display_manager.swap_frame()
         time.sleep(10)
 
-    def _count_games(self) -> int:
+    def count_games(self) -> int:
+        """
+        This method is used to count the number of games to display.
+
+        Returns:
+            int: The number of games to display
+        """
         count = 0
 
         for game in self.games:
@@ -508,7 +514,7 @@ class AllGames:
             mode (str): The mode of the scoreboard
         """
         self.mode = mode
-        self.num_pages = math.ceil(self._count_games() / 5)
+        self.num_pages = math.ceil(self.count_games() / 5)
 
         a = (self.num_pages <= 2) and (mode == 'dual')
         b = (self.num_pages <= 1) and (mode == 'basic')
