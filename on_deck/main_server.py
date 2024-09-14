@@ -151,7 +151,12 @@ class MainServer:
             game_index (int): The index of the game to print.
         """
         games_per_page = 5
+        num_pages = self.scoreboard.all_games.num_pages
+
         shifted_game_index = game_index - (self.scoreboard.all_games.page * games_per_page)
+
+        if shifted_game_index < 0:
+            shifted_game_index += num_pages * games_per_page
 
         if self.scoreboard.mode in ('basic', 'detailed', 'gamecast'):
             if shifted_game_index > 4:
