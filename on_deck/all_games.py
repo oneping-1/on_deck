@@ -79,9 +79,9 @@ class AllGames:
     def _calculate_color(self, index: int, game: dict = None):
         if game['flags']['perfect_game'] is True:
             # Perfect Game isnt considered a no-hitter for some reason
-            return self.display_manager.colors.orange
+            return self.display_manager.colors.light_blue
         if game['flags']['no_hitter'] is True:
-            return self.display_manager.colors.red
+            return self.display_manager.colors.magenta
         if index % 2 == 0:
             return self.display_manager.colors.white
         return self.display_manager.colors.green

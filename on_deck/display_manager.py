@@ -30,7 +30,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-        options.pwm_bits = 2
+        options.pwm_bits = 1
         options.gpio_slowdown = 4
 
     return options
@@ -50,7 +50,11 @@ class Colors:
         self.blue = graphics.Color(0, 0, 255)
 
         self.yellow = graphics.Color(255, 255, 0)
-        self.orange = graphics.Color(255, 165, 0)
+        self.magenta = graphics.Color(255, 0, 255)
+        self.light_blue = graphics.Color(0, 255, 255)
+
+        # These colors require pwm_bits >= 2
+        self.orange = graphics.Color(255, 170, 0)
 
         # wont show on display due to pwm bits
         self.grey = graphics.Color(20, 20, 20)
