@@ -120,7 +120,7 @@ class Gamecast:
 
         prt_str = ''
         prt_str += f'Avg:{game["run_expectancy"]["average_runs"]:.2f}'
-        prt_str += f'  1+:{game["run_expectancy"]["to_score"]*100:.1f}%'
+        prt_str += f'  1+:{game["run_expectancy"]["to_score"]*100:4.1f}%'
 
         self._print_gamecast_line(5, prt_str)
 
