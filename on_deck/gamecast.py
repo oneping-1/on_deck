@@ -107,7 +107,7 @@ class Gamecast:
             abv = game['home']['abv']
             favor = game['umpire']['home_favor']
 
-        s = f'Ump: +{favor:.2f} {abv} ({game["umpire"]["num_missed"]})'
+        s = f'Ump:+{favor:.2f} {abv} ({game["umpire"]["num_missed"]})'
         self._print_gamecast_line(4, s)
 
         return True
@@ -118,7 +118,12 @@ class Gamecast:
         if game['run_expectancy']['average_runs'] is None:
             return False
 
-        self._print_gamecast_line(5, f'Avg Runs: {game["run_expectancy"]["average_runs"]:.2f}')
+        prt_str = ''
+        prt_str += f'Avg:{game["run_expectancy"]["average_runs"]:.2f}'
+        prt_str += f'  1+:{game["run_expectancy"]["to_score"]*100:.1f}%'
+
+        self._print_gamecast_line(5, prt_str)
+
         return True
 
     def _print_gamecast_win_probability_details(self):
@@ -137,7 +142,7 @@ class Gamecast:
             win = home_win
             abv = game['home']['abv']
 
-        s = f'Win Prob: {win:.1f}% {abv}'
+        s = f'Win Prob:{win:.1f}% {abv}'
         self._print_gamecast_line(6, s)
 
         return True

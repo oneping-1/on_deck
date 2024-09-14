@@ -92,7 +92,8 @@ def main():
             'home_wpa': None
         },
         'run_expectancy': {
-            'average_runs': None
+            'average_runs': None,
+            'to_score': None
         },
         'win_probability':{
             'away': None,
