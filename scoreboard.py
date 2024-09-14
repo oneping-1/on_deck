@@ -4,6 +4,7 @@ scoreboard object and starts it. It also creates a new main server
 object and starts it.
 """
 
+import time
 import copy
 import threading
 import requests
@@ -29,6 +30,7 @@ def main():
     """
     Description: This function is used to start the scoreboard
     """
+    time.sleep(5) # connect to internet
     restart_master()
 
     game_template = {
