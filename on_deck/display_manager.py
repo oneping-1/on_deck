@@ -52,6 +52,9 @@ class Colors:
         self.yellow = graphics.Color(255, 255, 0)
         self.orange = graphics.Color(255, 165, 0)
 
+        # wont show on display due to pwm bits
+        self.grey = graphics.Color(20, 20, 20)
+
 class Fonts:
     """
     This class is used to store the fonts used in the scoreboard.
