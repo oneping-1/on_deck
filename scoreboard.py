@@ -31,7 +31,7 @@ def main():
     Description: This function is used to start the scoreboard
     """
     time.sleep(10) # connect to internet
-    restart_master()
+    # restart_master()
 
     game_template = {
         'game_state': None,
