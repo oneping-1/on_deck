@@ -35,7 +35,6 @@ def get_options() -> RGBMatrixOptions:
 
     return options
 
-
 class Colors:
     """
     This class is used to store the colors used in the scoreboard.
@@ -88,6 +87,7 @@ class DisplayManager:
         self.options = get_options()
         self.matrix = RGBMatrix(options=self.options)
         self.canvas = self.matrix.CreateFrameCanvas()
+        self.brightness = 255
 
         self.colors = Colors()
         self.fonts = Fonts()
@@ -96,6 +96,13 @@ class DisplayManager:
             # Fill the screen with grey so that the pixels can be seen
             # on the emulated display
             self.matrix.Fill(20, 20, 20)
+
+    def set_brightness(self, brightness: int):
+        """This method is used to change the brightness of the display."""
+        if (brightness < 0) or (brightness > 255):
+            raise ValueError(f'Brightness {brightness} not recognized')
+        self.brightness = brightness
+        self.matrix.brightness = brightness
 
     def swap_frame(self):
         """This method is used to swap the frame on the display."""

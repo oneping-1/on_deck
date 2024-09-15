@@ -79,14 +79,15 @@ class MainServer:
         Description: This function is used to set the mode of the scoreboard.
         """
         mode = request.args.get('mode')
-        gameid = request.args.get('id')
+        brightness = request.args.get('brightness')
 
         return_dict = {
             'mode': self.scoreboard.mode,
-            'new_mode': self.scoreboard.new_mode
+            'new_mode': self.scoreboard.new_mode,
+            'brightness': self.scoreboard.display_manager.brightness
         }
 
-        if mode is None and gameid is None:
+        if mode is None and brightness is None:
             return jsonify({'message': return_dict}), 200
 
         try:
@@ -94,15 +95,16 @@ class MainServer:
         except ValueError:
             return jsonify({'message': f'Mode {mode} not recognized'}), 200
 
-        if gameid is not None:
-            try:
-                self.scoreboard.gamecast.game_id = int(gameid)
-            except ValueError:
-                return jsonify({'message': 'Game ID not recognized'}), 200
+        try:
+            b = int(brightness)
+            self.scoreboard.display_manager.set_brightness(b)
+        except ValueError:
+            return jsonify({'message': f'Brightness {brightness} not recognized'}), 200
 
         return_dict = {
             'mode': self.scoreboard.mode,
-            'new_mode': self.scoreboard.new_mode
+            'new_mode': self.scoreboard.new_mode,
+            'brightness': self.scoreboard.display_manager.brightness
         }
 
         return jsonify({'message': return_dict}), 200
