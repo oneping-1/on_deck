@@ -64,13 +64,12 @@ class MainServer:
         for game in self.games:
             game['display_game'] = False
 
-        # self.scoreboard.gamecast_game['display_game'] = False
         self.scoreboard.gamecast.gamecast_game['display_game'] = False
+        self.scoreboard.all_games.page = 0
+        self.scoreboard.all_games.break_loop = True
 
-        for i in range(10):
-            self.scoreboard.all_games.clear_game(i)
-
-        # self.scoreboard.matrix.SwapOnVSync(self.scoreboard.canvas)
+        self.scoreboard.display_manager.clear_section(0, 0, 384, 256)
+        self.scoreboard.print_welcome_message()
         self.scoreboard.display_manager.swap_frame()
 
         return jsonify({'message': 'Games reset'}), 200

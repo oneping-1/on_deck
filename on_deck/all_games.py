@@ -45,6 +45,8 @@ class AllGames:
 
         self._gamecast_color = self.display_manager.colors.white
 
+        self.break_loop: bool = False
+
     def _print_line_a(self, color, column_offset, row_offset, line_a):
         # graphics.DrawText(self.display_manager.canvas, self.ter_u18b,
         #     175 + column_offset, 14 + row_offset, color, line_a)
@@ -527,3 +529,7 @@ class AllGames:
 
         for self.page in range(self.num_pages):
             self.print_page(self.page)
+
+            if self.break_loop is True:
+                self.break_loop = False
+                return
