@@ -89,13 +89,13 @@ class Scoreboard:
                 self.display_manager.clear_section(0, 0, 384, 256)
 
     def print_welcome_message(self):
-        font = self.display_manager.fonts.ter_u32b
+        font = self.display_manager.fonts.ter_u18b
         white = self.display_manager.colors.white
         green = self.display_manager.colors.green
 
-        self.display_manager.draw_text(font, 0, 22, white, 'onDeck')
+        self.display_manager.draw_text(font, 0, 15, white, 'onDeck')
 
         # print ip address
         ip_address = get_ip_address()
-        self.display_manager.draw_text(font, 0, 44, green, ip_address)
+        self.display_manager.draw_text(font, 0, 30, green, ip_address)
         self.display_manager.swap_frame()
