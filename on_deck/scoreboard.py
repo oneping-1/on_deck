@@ -49,6 +49,8 @@ class Scoreboard:
         self.mode: str = mode
         self._new_mode: str = mode
 
+        self._welcome_message_given: bool = False
+
         self.display_manager = DisplayManager()
 
         self.all_games = AllGames(self.display_manager, games, mode)
@@ -77,7 +79,10 @@ class Scoreboard:
         """This method is used to start the scoreboard"""
         while True:
             if self.all_games.count_games() == 0:
-                self.print_welcome_message()
+                if self._welcome_message_given is False:
+                    self.print_welcome_message()
+            else:
+                self._welcome_message_given = False
 
             if self.mode == 'gamecast':
                 self.gamecast.print_gamecast()
@@ -89,6 +94,11 @@ class Scoreboard:
                 self.display_manager.clear_section(0, 0, 384, 256)
 
     def print_welcome_message(self):
+        """
+        This method is used to print the welcome message on the scoreboard
+        Includes the IP address of the scoreboard
+        """
+        self._welcome_message_given = True
         font = self.display_manager.fonts.ter_u18b
         white = self.display_manager.colors.white
         green = self.display_manager.colors.green
