@@ -423,7 +423,7 @@ class AllGames:
             self._print_inning(game_index, color, game)
 
             if self.mode in ('basic', 'dual', 'gamecast'):
-                self._print_text(game_index, 'Susp', 25)
+                self._print_text(game_index, color, 'Susp', 25)
 
         # Delay
         elif game['game_state'] == 'D':
