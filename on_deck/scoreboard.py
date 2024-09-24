@@ -19,6 +19,8 @@ raised. The acceptable modes are basic, dual, detailed, and gamecast.
 
 import socket
 from typing import List, Union
+from on_deck.colors import Colors
+from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 from on_deck.all_games import AllGames
 from on_deck.gamecast import Gamecast
@@ -99,9 +101,9 @@ class Scoreboard:
         Includes the IP address of the scoreboard
         """
         self._welcome_message_given = True
-        font = self.display_manager.fonts.ter_u18b
-        white = self.display_manager.colors.white
-        green = self.display_manager.colors.green
+        font = Fonts.ter_u18b
+        white = Colors.white
+        green = Colors.green
 
         self.display_manager.draw_text(font, 0, 15, white, 'onDeck')
 

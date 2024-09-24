@@ -12,6 +12,8 @@ Raises:
 from typing import List
 import time
 import math
+from on_deck.colors import Colors
+from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 
 class AllGames:
@@ -24,9 +26,9 @@ class AllGames:
 
         self.mode: str = None
 
-        self.ter_u32b = self.display_manager.fonts.ter_u32b
-        self.ter_u18b = self.display_manager.fonts.ter_u18b
-        self.symbols = self.display_manager.fonts.symbols
+        self.ter_u32b = Fonts.ter_u32b
+        self.ter_u18b = Fonts.ter_u18b
+        self.symbols = Fonts.symbols
 
         self._new_mode: str = mode
         self.num_pages: int = None
@@ -43,7 +45,7 @@ class AllGames:
         # Detail Mode Offsets
         self.two_line_offset = 7
 
-        self._gamecast_color = self.display_manager.colors.white
+        self._gamecast_color = Colors.white
 
         self.break_loop: bool = False
 
@@ -81,12 +83,12 @@ class AllGames:
     def _calculate_color(self, index: int, game: dict = None):
         if game['flags']['perfect_game'] is True:
             # Perfect Game isnt considered a no-hitter for some reason
-            return self.display_manager.colors.light_blue
+            return Colors.light_blue
         if game['flags']['no_hitter'] is True:
-            return self.display_manager.colors.magenta
+            return Colors.magenta
         if index % 2 == 0:
-            return self.display_manager.colors.white
-        return self.display_manager.colors.green
+            return Colors.white
+        return Colors.green
 
     def clear_game(self, index: int):
         """

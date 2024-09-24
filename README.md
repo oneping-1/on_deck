@@ -47,7 +47,7 @@ This project is a MLB scoreboard built using Hub75 matrix displays, controlled b
 ## JSON Game Template Example
 
 ``` json
-    game_template = {
+    {
         'game_state': 'L', // 'P', 'L', 'F', 'D', 'P'
         'away_score': 5,
         'home_score': 3,
