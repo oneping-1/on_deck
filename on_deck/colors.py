@@ -1,9 +1,9 @@
 import platform
 
 if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
+    from RGBMatrixEmulator import graphics # pylint: disable=E0401
 else:
-    from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
+    from rgbmatrix import graphics # pylint: disable=E0401
 
 class Colors:
     """
@@ -19,6 +19,8 @@ class Colors:
     yellow = graphics.Color(255, 255, 0)
     magenta = graphics.Color(255, 0, 255)
     light_blue = graphics.Color(0, 255, 255)
+
+    x = graphics.Color(0, 64, 255)
 
     # These colors require pwm_bits >= 2
     orange = graphics.Color(255, 170, 0)

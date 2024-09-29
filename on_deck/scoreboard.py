@@ -18,12 +18,18 @@ raised. The acceptable modes are basic, dual, detailed, and gamecast.
 """
 
 import socket
+import platform
 from typing import List, Union
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 from on_deck.all_games import AllGames
 from on_deck.gamecast import Gamecast
+
+if platform.system() == 'Windows':
+    from RGBMatrixEmulator import RGBMatrixOptions # pylint: disable=E0401
+else:
+    from rgbmatrix import RGBMatrixOptions # pylint: disable=E0401
 
 def get_ip_address() -> str:
     # Create a socket to get the local IP address
@@ -37,6 +43,30 @@ def get_ip_address() -> str:
     finally:
         s.close()
     return ip_address
+
+def get_options() -> RGBMatrixOptions:
+    """
+    Returns the RGBMatrixOptions object based on the platform.
+
+    Returns:
+        RGBMatrixOptions: RGBMatrixOptions object
+    """
+    options = RGBMatrixOptions()
+
+    if platform.system() == 'Windows':
+        options.rows = int(256)
+        options.cols = int(384)
+    else:
+        options.cols = 128
+        options.rows = 64
+        options.pixel_mapper_config = 'V-mapper'
+        options.chain_length = 4
+        options.parallel = 3
+        options.disable_hardware_pulsing = True
+        options.pwm_bits = 1
+        options.gpio_slowdown = 4
+
+    return options
 
 class Scoreboard:
     """
@@ -53,7 +83,7 @@ class Scoreboard:
 
         self._welcome_message_given: bool = False
 
-        self.display_manager = DisplayManager()
+        self.display_manager = DisplayManager(get_options())
 
         self.all_games = AllGames(self.display_manager, games, mode)
         self.gamecast = Gamecast(self.display_manager, games)

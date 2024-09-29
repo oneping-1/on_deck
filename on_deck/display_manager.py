@@ -11,36 +11,12 @@ if platform.system() == 'Windows':
 else:
     from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
 
-def get_options() -> RGBMatrixOptions:
-    """
-    Returns the RGBMatrixOptions object based on the platform.
-
-    Returns:
-        RGBMatrixOptions: RGBMatrixOptions object
-    """
-    options = RGBMatrixOptions()
-
-    if platform.system() == 'Windows':
-        options.rows = int(256)
-        options.cols = int(384)
-    else:
-        options.cols = 128
-        options.rows = 64
-        options.pixel_mapper_config = 'V-mapper'
-        options.chain_length = 4
-        options.parallel = 3
-        options.disable_hardware_pulsing = True
-        options.pwm_bits = 1
-        options.gpio_slowdown = 4
-
-    return options
-
 class DisplayManager:
     """
     This class is used to manage the display of the scoreboard.
     """
-    def __init__(self):
-        self.options = get_options()
+    def __init__(self, options: RGBMatrixOptions = None):
+        self.options = options
         self.matrix = RGBMatrix(options=self.options)
         self.canvas = self.matrix.CreateFrameCanvas()
         self.brightness = 255
