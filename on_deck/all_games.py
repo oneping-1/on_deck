@@ -344,9 +344,7 @@ class AllGames:
             self._print_line_c(color, column_offset, row_offset - self.two_line_offset, line_c)
 
     def _print_page_indicator(self, page_num: int):
-        # graphics.DrawLine(self.display_manager.canvas, 0, 255, 384, 255,
-        #     self.display_manager.colors.black)
-        self.display_manager.draw_line(0, 255, 384, 255, self.display_manager.colors.black)
+        self.display_manager.draw_line(0, 255, 384, 255, Colors.black)
 
         line_length = 5
         gap = 2
@@ -356,9 +354,7 @@ class AllGames:
             x0 = 40 + ((i + 1) * total_length)
             x1 = x0 + line_length - 1 # -1 to account for extra character width
 
-            # graphics.DrawLine(self.display_manager.canvas, x0, 255, x1, 255,
-            #     self.display_manager.colors.white)
-            self.display_manager.draw_line(x0, 255, x1, 255, self.display_manager.colors.white)
+            self.display_manager.draw_line(x0, 255, x1, 255, Colors.white)
 
     def print_game(self, game_index: int, game: dict):
         """
@@ -379,17 +375,9 @@ class AllGames:
 
         # Team Abbreviations
 
-        # graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
-        #     0 + column_offset, self.away_row_offset + row_offset, color,
-        #     game['away']['abv'])
-
         self.display_manager.draw_text(self.ter_u32b,
             0 + column_offset, self.away_row_offset + row_offset, color,
             game['away']['abv'])
-
-        # graphics.DrawText(self.display_manager.canvas, self.ter_u32b,
-        #     0 + column_offset, self.home_row_offset + row_offset, color,
-        #     game['home']['abv'])
 
         self.display_manager.draw_text(self.ter_u32b,
             0 + column_offset, self.home_row_offset + row_offset, color,
