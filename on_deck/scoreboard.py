@@ -76,7 +76,7 @@ class Scoreboard:
         ValueError: If an invalid mode is passed
     """
     _acceptable_modes = ('basic', 'dual', 'detailed', 'gamecast')
-    def __init__(self, games: List[dict], mode: str = 'dual'):
+    def __init__(self, games: List[dict], mode: str = 'detailed'):
         self.games: List[dict] = games
         self.mode: str = mode
         self._new_mode: str = mode

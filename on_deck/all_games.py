@@ -20,7 +20,7 @@ class AllGames:
     """
     This class is used to manage all the games on the scoreboard
     """
-    def __init__(self, display_manager: DisplayManager, games: List[dict], mode: str = 'basic'):
+    def __init__(self, display_manager: DisplayManager, games: List[dict], mode: str):
         self.display_manager = display_manager
         self.games = games
 
