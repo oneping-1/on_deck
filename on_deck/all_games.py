@@ -420,8 +420,13 @@ class AllGames:
             self._print_scores(game_index, color, game)
             self._print_inning(game_index, color, game)
 
-            if self.mode in ('basic', 'dual', 'gamecast'):
+            if self.mode != 'detailed':
                 self._print_text(game_index, color, 'Dly', 32)
+
+        # Cancelled
+        elif game['game_state'] == 'C':
+            if self.mode != 'detailed':
+                self._print_text(game_index, color, 'CANCL', -30)
 
         # Detailed (2 Columns)
         if self.mode != 'detailed':
@@ -442,6 +447,7 @@ class AllGames:
         # Suspendend / Postponed
         elif game['game_state'] == 'S':
             self._print_text(game_index, color, 'Suspended', 75)
+            self._print_scores(game_index, color, game)
             self._print_inning(game_index, color, game)
             self._print_runners(game_index, color, game)
             self._print_outs(game_index, color, game)
@@ -449,6 +455,15 @@ class AllGames:
         # Delay
         elif game['game_state'] == 'D':
             self._print_text(game_index, color, 'Delayed', 75)
+            self._print_scores(game_index, color, game)
+            self._print_inning(game_index, color, game)
+            self._print_runners(game_index, color, game)
+            self._print_outs(game_index, color, game)
+
+        # Cancelled
+        elif game['game_state'] == 'C':
+            self._print_text(game_index, color, 'Cancelled', 75)
+            self._print_scores(game_index, color, game)
             self._print_inning(game_index, color, game)
             self._print_runners(game_index, color, game)
             self._print_outs(game_index, color, game)
