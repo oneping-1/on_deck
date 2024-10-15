@@ -198,7 +198,6 @@ class Gamecast:
 
         away_runs = str(self.gamecast_game['away']['runs'])
         home_runs = str(self.gamecast_game['home']['runs'])
-        home_runs = '11'
 
         # Scores
         if len(away_runs) > 1:
@@ -217,7 +216,6 @@ class Gamecast:
 
         away_hits = str(self.gamecast_game['away']['hits'])
         home_hits = str(self.gamecast_game['home']['hits'])
-        home_hits = '11'
 
         if len(away_hits) > 1:
             self.display_manager.draw_text(self.ter_u18b, 320, away_row_offset,
@@ -244,7 +242,6 @@ class Gamecast:
 
         away_lob = str(self.gamecast_game['away']['left_on_base'])
         home_lob = str(self.gamecast_game['home']['left_on_base'])
-        home_lob = '11'
 
         if len(away_lob) > 1:
             self.display_manager.draw_text(self.ter_u18b, 360, away_row_offset,
