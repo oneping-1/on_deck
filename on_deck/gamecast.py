@@ -41,13 +41,13 @@ class Gamecast:
 
     def _print_gamecast_inning_arrows(self):
         if self.gamecast_game['inning_state'] == 'T':
-            self.display_manager.draw_text(self.symbols, 320, 8, self._color, '_')
+            self.display_manager.draw_text(self.symbols, 320, 40, self._color, '_')
         elif self.gamecast_game['inning_state'] == 'B':
-            self.display_manager.draw_text(self.symbols, 320, 29, self._color, 'w')
+            self.display_manager.draw_text(self.symbols, 320, 61, self._color, 'w')
 
     def _print_gamecast_bases(self):
         second_base_column_offset = 347
-        second_base_row_offset = 15
+        second_base_row_offset = 47
         base_length = 5
         base_gap = 2
         base_offset = base_length + base_gap
@@ -85,9 +85,9 @@ class Gamecast:
             if self.gamecast_game['count']['outs'] > 2:
                 outs_list[2] = 'P'
 
-        self.display_manager.draw_text(self.symbols, 344, 28, self._color, outs_list[0])
-        self.display_manager.draw_text(self.symbols, 350, 28, self._color, outs_list[1])
-        self.display_manager.draw_text(self.symbols, 356, 28, self._color, outs_list[2])
+        self.display_manager.draw_text(self.symbols, 344, 60, self._color, outs_list[0])
+        self.display_manager.draw_text(self.symbols, 350, 60, self._color, outs_list[1])
+        self.display_manager.draw_text(self.symbols, 356, 60, self._color, outs_list[2])
 
     def _print_gamecast_count(self):
         count = f'{self.gamecast_game["count"]["balls"]}-{self.gamecast_game["count"]["strikes"]}'
@@ -195,15 +195,73 @@ class Gamecast:
         self._print_gamecast_line(0, self.gamecast_game['away']['name'])
         self._print_gamecast_line(1, self.gamecast_game['home']['name'])
 
-        # Scores
-        self.display_manager.draw_text(self.ter_u18b, 300, away_row_offset,
-            self._color, str(self.gamecast_game['away_score']))
 
-        self.display_manager.draw_text(self.ter_u18b, 300, home_row_offset,
-            self._color, str(self.gamecast_game['home_score']))
+        away_runs = str(self.gamecast_game['away']['runs'])
+        home_runs = str(self.gamecast_game['home']['runs'])
+        home_runs = '11'
+
+        # Scores
+        if len(away_runs) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 295, away_row_offset,
+                self._color, away_runs)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 300, away_row_offset,
+            self._color, away_runs)
+        if len(home_runs) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 295, home_row_offset,
+                self._color, home_runs)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 300, home_row_offset,
+                self._color, home_runs)
+
+
+        away_hits = str(self.gamecast_game['away']['hits'])
+        home_hits = str(self.gamecast_game['home']['hits'])
+        home_hits = '11'
+
+        if len(away_hits) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 320, away_row_offset,
+                self._color, away_hits)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 325, away_row_offset,
+                self._color, away_hits)
+        if len(home_hits) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 320, home_row_offset,
+                self._color, home_hits)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 325, home_row_offset,
+                self._color, home_hits)
+
+
+        away_errors = str(self.gamecast_game['away']['errors'])
+        home_errors = str(self.gamecast_game['home']['errors'])
+
+        self.display_manager.draw_text(self.ter_u18b, 345, away_row_offset,
+            self._color, away_errors)
+        self.display_manager.draw_text(self.ter_u18b, 345, home_row_offset,
+            self._color, home_errors)
+
+
+        away_lob = str(self.gamecast_game['away']['left_on_base'])
+        home_lob = str(self.gamecast_game['home']['left_on_base'])
+        home_lob = '11'
+
+        if len(away_lob) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 360, away_row_offset,
+                self._color, away_lob)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 365, away_row_offset,
+                self._color, away_lob)
+        if len(home_lob) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 360, home_row_offset,
+                self._color, home_lob)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 365, home_row_offset,
+                self._color, home_lob)
+
 
         # Inning
-        self.display_manager.draw_text(self.ter_u18b, 320, inning_row_offset,
+        self.display_manager.draw_text(self.ter_u18b, 320, inning_row_offset+32,
             self._color, str(self.gamecast_game['inning']))
 
         self._print_gamecast_inning_arrows()

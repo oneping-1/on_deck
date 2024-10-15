@@ -33,24 +33,30 @@ def main():
     """
 
     if platform.system() != 'Windows':
-        time.sleep(30) # connect to internet
+        time.sleep(10) # connect to internet
         restart_master()
 
     game_template = {
         'game_state': None,
-        'away_score': None,
-        'home_score': None,
         'inning': None,
         'inning_state': None,
         'away': {
             'abv': None,
             'name': None,
             'location': None,
+            'runs': None,
+            'hits': None,
+            'errors': None,
+            'left_on_base': None,
         },
         'home': {
             'abv': None,
             'name': None,
-            'location': None
+            'location': None,
+            'runs': None,
+            'hits': None,
+            'errors': None,
+            'left_on_base': None,
         },
         'count': {
             'balls': None,
