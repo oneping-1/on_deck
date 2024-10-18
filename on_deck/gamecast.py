@@ -202,16 +202,16 @@ class Gamecast:
         # Scores
         if len(away_runs) > 1:
             self.display_manager.draw_text(self.ter_u18b, 295, away_row_offset,
-                self._color, away_runs)
+                Colors.yellow, away_runs)
         else:
             self.display_manager.draw_text(self.ter_u18b, 300, away_row_offset,
-            self._color, away_runs)
+                Colors.yellow, away_runs)
         if len(home_runs) > 1:
             self.display_manager.draw_text(self.ter_u18b, 295, home_row_offset,
-                self._color, home_runs)
+                Colors.yellow, home_runs)
         else:
             self.display_manager.draw_text(self.ter_u18b, 300, home_row_offset,
-                self._color, home_runs)
+                Colors.yellow, home_runs)
 
 
         away_hits = str(self.gamecast_game['away']['hits'])
@@ -258,8 +258,14 @@ class Gamecast:
 
 
         # Inning
-        self.display_manager.draw_text(self.ter_u18b, 320, inning_row_offset+32,
-            self._color, str(self.gamecast_game['inning']))
+        inning = str(self.gamecast_game['inning'])
+
+        if len(inning) > 1:
+            self.display_manager.draw_text(self.ter_u18b, 315, inning_row_offset+32,
+                self._color, inning)
+        else:
+            self.display_manager.draw_text(self.ter_u18b, 320, inning_row_offset+32,
+                self._color, inning)
 
         self._print_gamecast_inning_arrows()
         self._print_gamecast_bases()
