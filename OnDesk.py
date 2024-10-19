@@ -3,8 +3,8 @@ import threading
 import time
 import platform
 
-from src.statsapi_plus import get_daily_gamepks
-from src.scoreboard_data import ScoreboardData
+from at_bat.statsapi_plus import get_daily_gamepks
+from at_bat.scoreboard_data import ScoreboardData
 
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
