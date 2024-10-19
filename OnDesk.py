@@ -1,9 +1,48 @@
+"""
+Install instructions:
+
+get newest debian file from: https://davesteele.github.io/comitup/ppa.html
+wget davesteele-comitup-apt-source*.deb
+sudo dpkg -i davesteele-comitup-apt-source*.deb
+sudo apt-get update
+sudo apt-get install comitup
+sudo apt-get upgrade -y
+
+sudo nano /boot/firmware/cmdline.txt
+add isolcpus=3 to the end of the line
+
+python3 -m venv venv
+. venv/bin/activate
+
+sudo apt-get install git python3-dev cython3 -y
+git clone https://github.com/hzeller/rpi-rgb-led-matrix
+git clone https://github.com/oneping-1/OnDeck-RaspberryPi
+git clone https://github.com/oneping-1/at_bat
+
+cd at_bat
+pip install -e .
+pip install -r requirements.txt
+
+cd ..
+cd rpi-rgb-led-matrix
+make build-python PYTHON=$(which python3)
+sudo make install-python PYTHON=$(which python3)
+
+sudo reboot
+
+cd OnDeck-RaspberryPi
+python OnDesk.py
+
+"""
+
 from typing import List
 import threading
 import time
+import datetime
 import platform
+import socket
 
-from at_bat.statsapi_plus import get_daily_gamepks
+from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
 from on_deck.colors import Colors
@@ -20,6 +59,9 @@ ABV_B = 'TEX'
 
 TEAM_A = 'Cleveland Guardians'
 TEAM_B = 'Texas Rangers'
+
+start_time = datetime.time(7, 0)
+end_time = datetime.time(18, 0)
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -42,6 +84,22 @@ def get_options() -> RGBMatrixOptions:
 
     return options
 
+def get_daily_gamepks():
+    gamepks = ssp.get_daily_gamepks()
+    return gamepks
+
+def get_ip_address() -> str:
+    # Create a socket to get the local IP address
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Doesn't actually need to send data; we're just looking for the local IP
+        s.connect(('8.8.8.8', 80))  # Using Google's DNS server
+        ip_address = s.getsockname()[0]
+    except Exception:
+        ip_address = 'Unable to get IP address'
+    finally:
+        s.close()
+    return ip_address
 
 class GameHandler:
     """
@@ -83,10 +141,29 @@ class Scoreboard:
         self.games = games
 
     def start(self):
+        self._print_welcome()
         while True:
-            for i, game in enumerate(self.games):
-                self.print_game(i, game)
-                self.display_manager.swap_frame()
+            self._loop()
+
+    def _print_welcome(self):
+        self.display_manager.draw_text(Fonts.ter_u18b, 0, 14, Colors.white, 'OnDesk')
+        self.display_manager.draw_text(Fonts.ter_u18b, 0, 28, Colors.green, get_ip_address())
+        self.display_manager.swap_frame()
+
+    def _loop(self):
+        current_time = datetime.datetime.now().time()
+        if (current_time < start_time) or (current_time > end_time):
+            self.display_manager.clear_section(0, 0, 128, 64)
+            self.display_manager.draw_line(127, 63, 127, 0, Colors.white)
+            self.display_manager.swap_frame()
+            time.sleep(60)
+            return
+
+        for i, game in enumerate(self.games):
+            # self.display_manager.clear_section(0, 0, 128, 64)
+            self.print_game(i, game)
+            self.display_manager.swap_frame()
+            time.sleep(10)
 
     def print_game(self, i, game):
         """
@@ -95,7 +172,7 @@ class Scoreboard:
         if game is None:
             return
 
-        self.display_manager.clear_section(0, i*32, 64, 32+32*i)
+        self.display_manager.clear_section(0, i*32, 128, 32+32*i)
 
         if game.game_state == 'P':
             self._print_teams(i, game)
