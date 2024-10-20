@@ -30,6 +30,7 @@ sudo make install-python PYTHON=$(which python3)
 
 sudo reboot
 
+. venv/bin/activate
 cd OnDeck-RaspberryPi
 python OnDesk.py
 
@@ -60,8 +61,8 @@ ABV_B = 'TEX'
 TEAM_A = 'Cleveland Guardians'
 TEAM_B = 'Texas Rangers'
 
-start_time = datetime.time(7, 0)
-end_time = datetime.time(18, 0)
+on_time = datetime.time(7, 0)
+off_time = datetime.time(18, 0)
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -81,6 +82,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 2
         options.disable_hardware_pulsing = True
         options.gpio_slowdown = 4
+        options.pwm_bits = 4
 
     return options
 
@@ -121,6 +123,8 @@ class GameHandler:
             if ABV_B in (game.away.abv, game.home.abv):
                 self.games[1] = game
 
+        self.loop()
+
     def loop(self):
         while True:
             self.update()
@@ -131,7 +135,8 @@ class GameHandler:
         This method is used to update the games
         """
         for game in self.games:
-            game.update()
+            if game is not None:
+                game.update()
 
 class Scoreboard:
     def __init__(self, games: List[ScoreboardData]):
@@ -152,12 +157,12 @@ class Scoreboard:
 
     def _loop(self):
         current_time = datetime.datetime.now().time()
-        if (current_time < start_time) or (current_time > end_time):
-            self.display_manager.clear_section(0, 0, 128, 64)
-            self.display_manager.draw_line(127, 63, 127, 0, Colors.white)
-            self.display_manager.swap_frame()
-            time.sleep(60)
-            return
+        # if (current_time < on_time) or (current_time > off_time):
+        #     self.display_manager.clear_section(0, 0, 128, 64)
+        #     self.display_manager.draw_line(127, 63, 127, 0, Colors.white)
+        #     self.display_manager.swap_frame()
+        #     time.sleep(60)
+        #     return
 
         for i, game in enumerate(self.games):
             # self.display_manager.clear_section(0, 0, 128, 64)
@@ -182,7 +187,9 @@ class Scoreboard:
             self._print_teams(i, game)
             self._print_score(i, game)
             self._print_inning(i, game)
-            self._print_standings(i, game)
+            self._print_runners(i, game)
+            self._print_outs(i, game)
+            self._print_inning_arrows(i, game)
         if game.game_state == 'F':
             self._print_teams(i, game)
             self._print_score(i, game)
@@ -226,6 +233,71 @@ class Scoreboard:
         self.display_manager.draw_text(Fonts.ter_u18b, 35, 22 + offset, color, hour)
         self.display_manager.draw_text(Fonts.ter_u18b, 53, 22 + offset, color, ':')
         self.display_manager.draw_text(Fonts.ter_u18b, 60, 22 + offset, color, minute)
+
+    def _print_runners(self, i, game):
+        color = self._get_color(i)
+        offset = self._get_offset(i)
+
+        runners = game.runners
+
+        second_base_column_offset = 95
+        second_base_row_offset = 15 + offset
+        base_length = 5
+        base_gap = 2
+        base_offset = base_length + base_gap
+
+        bases_list = ['c', 'c', 'c']
+        if runners & 1:
+            bases_list[0] = 'C'
+        if runners & 2:
+            bases_list[1] = 'C'
+        if runners & 4:
+            bases_list[2] = 'C'
+
+        x0 = second_base_column_offset + base_offset
+        y0 = second_base_row_offset + base_offset
+        self.display_manager.draw_text(Fonts.symbols, x0, y0, color, bases_list[0])
+
+        x1 = second_base_column_offset
+        y1 = second_base_row_offset
+        self.display_manager.draw_text(Fonts.symbols, x1, y1, color, bases_list[1])
+
+        x2 = second_base_column_offset - base_offset
+        y2 = second_base_row_offset + base_offset
+        self.display_manager.draw_text(Fonts.symbols, x2, y2, color, bases_list[2])
+
+    def _print_outs(self, i, game):
+        color = self._get_color(i)
+        offset = self._get_offset(i)
+
+        outs = game.count.outs
+
+        outs_list = ['p', 'p', 'p']
+
+        if outs is None:
+            pass
+        else:
+            if outs > 0:
+                outs_list[0] = 'P'
+            if outs > 1:
+                outs_list[1] = 'P'
+            if outs > 2:
+                outs_list[2] = 'P'
+
+        self.display_manager.draw_text(Fonts.symbols,  91, 28 + offset, color, outs_list[0])
+        self.display_manager.draw_text(Fonts.symbols,  98, 28 + offset, color, outs_list[1])
+        self.display_manager.draw_text(Fonts.symbols, 105, 28 + offset, color, outs_list[2])
+
+    def _print_inning_arrows(self, i, game):
+        color = self._get_color(i)
+        offset = self._get_offset(i)
+
+        inning_state = game.inning_state
+
+        if inning_state == 'T':
+            self.display_manager.draw_text(Fonts.symbols, 62,  8 + offset, color, '_')
+        elif inning_state == 'B':
+            self.display_manager.draw_text(Fonts.symbols, 62, 29 + offset, color, 'w')
 
     def _print_standings(self, i, game):
         wins = game.away.wins
