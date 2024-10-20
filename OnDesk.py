@@ -82,7 +82,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 2
         options.disable_hardware_pulsing = True
         options.gpio_slowdown = 4
-        options.pwm_bits = 4
+        options.pwm_bits = 3
 
     return options
 
@@ -284,9 +284,9 @@ class Scoreboard:
             if outs > 2:
                 outs_list[2] = 'P'
 
-        self.display_manager.draw_text(Fonts.symbols,  91, 28 + offset, color, outs_list[0])
-        self.display_manager.draw_text(Fonts.symbols,  98, 28 + offset, color, outs_list[1])
-        self.display_manager.draw_text(Fonts.symbols, 105, 28 + offset, color, outs_list[2])
+        self.display_manager.draw_text(Fonts.symbols,  91, 29 + offset, color, outs_list[0])
+        self.display_manager.draw_text(Fonts.symbols,  98, 29 + offset, color, outs_list[1])
+        self.display_manager.draw_text(Fonts.symbols, 105, 29 + offset, color, outs_list[2])
 
     def _print_inning_arrows(self, i, game):
         color = self._get_color(i)
@@ -295,9 +295,9 @@ class Scoreboard:
         inning_state = game.inning_state
 
         if inning_state == 'T':
-            self.display_manager.draw_text(Fonts.symbols, 62,  8 + offset, color, '_')
+            self.display_manager.draw_text(Fonts.symbols, 63,  8 + offset, color, '_')
         elif inning_state == 'B':
-            self.display_manager.draw_text(Fonts.symbols, 62, 29 + offset, color, 'w')
+            self.display_manager.draw_text(Fonts.symbols, 63, 29 + offset, color, 'w')
 
     def _print_standings(self, i, game):
         wins = game.away.wins
