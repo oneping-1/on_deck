@@ -82,7 +82,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 2
         options.disable_hardware_pulsing = True
         options.gpio_slowdown = 4
-        options.pwm_bits = 3
+        options.pwm_bits = 2
 
     return options
 
@@ -157,12 +157,12 @@ class Scoreboard:
 
     def _loop(self):
         current_time = datetime.datetime.now().time()
-        # if (current_time < on_time) or (current_time > off_time):
-        #     self.display_manager.clear_section(0, 0, 128, 64)
-        #     self.display_manager.draw_line(127, 63, 127, 0, Colors.white)
-        #     self.display_manager.swap_frame()
-        #     time.sleep(60)
-        #     return
+        if (current_time < on_time) or (current_time > off_time):
+            self.display_manager.clear_section(0, 0, 128, 64)
+            self.display_manager.draw_line(127, 63, 127, 63, Colors.white)
+            self.display_manager.swap_frame()
+            time.sleep(60)
+            return
 
         for i, game in enumerate(self.games):
             # self.display_manager.clear_section(0, 0, 128, 64)
