@@ -42,6 +42,7 @@ import time
 import datetime
 import platform
 import socket
+import argparse
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
@@ -61,8 +62,8 @@ ABV_B = 'TEX'
 TEAM_A = 'Cleveland Guardians'
 TEAM_B = 'Texas Rangers'
 
-on_time = datetime.time(7, 0)
-off_time = datetime.time(18, 0)
+on_time = datetime.time(0, 0)
+off_time = datetime.time(23,59)
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -87,7 +88,7 @@ def get_options() -> RGBMatrixOptions:
     return options
 
 def get_daily_gamepks():
-    gamepks = ssp.get_daily_gamepks()
+    gamepks = ssp.get_daily_gamepks('2024-09-03')
     return gamepks
 
 def get_ip_address() -> str:
@@ -393,4 +394,23 @@ def main():
     scoreboard_thread.start()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        prog='OnDesk',
+        description='OnDesk is a scoreboard for the Raspberry Pi',
+        epilog='Enjoy the game!'
+    )
+
+    parser.add_argument('--on', type=str, default='00:00', help='The time to turn the display on')
+    parser.add_argument('--off', type=str, default='23:59', help='The time to turn the display off')
+    args = parser.parse_args()
+
+    if args.on is not None:
+        hour = int(args.on.split(':')[0])
+        minute = int(args.on.split(':')[1])
+        on_time = datetime.time(hour, minute)
+    if args.off is not None:
+        hour = int(args.off.split(':')[0])
+        minute = int(args.off.split(':')[1])
+        off_time = datetime.time(hour, minute)
+
     main()
