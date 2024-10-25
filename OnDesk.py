@@ -59,9 +59,6 @@ else:
 ABV_A = 'CLE'
 ABV_B = 'TEX'
 
-TEAM_A = 'Cleveland Guardians'
-TEAM_B = 'Texas Rangers'
-
 on_time = datetime.time(0, 0)
 off_time = datetime.time(23,59)
 
@@ -337,7 +334,11 @@ class Scoreboard:
         else:
             games_back = f'-{games_back:.1f}'
 
-        streak = 'W18'
+        if wins >= 100:
+            wins = str(wins)[1:3]
+        if losses >= 100:
+            losses = str(losses)[1:3]
+
         streak = _convert_streak(streak)
 
         record = f'{wins}-{losses} {streak}'
