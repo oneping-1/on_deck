@@ -104,6 +104,14 @@ def get_ip_address() -> str:
         s.close()
     return ip_address
 
+def _convert_streak(streak):
+    if len(streak) > 1 and streak[1:].isdigit():  # Check if streak has a number
+        streak_num = int(streak[1:])
+        if streak_num > 9:  # If streak is greater than 9, convert to letter
+            streak_letter = chr(ord('A') + (streak_num - 10))  # 'a' for 10, 'b' for 11, etc.
+            return f'{streak[0]}{streak_letter}'
+    return streak
+
 class GameHandler:
     """
     This class is used to handle the games
@@ -328,6 +336,9 @@ class Scoreboard:
             games_back = f' -{games_back:.1f}'
         else:
             games_back = f'-{games_back:.1f}'
+
+        streak = 'W18'
+        streak = _convert_streak(streak)
 
         record = f'{wins}-{losses} {streak}'
         gb = f'P{division_rank} {games_back}'
