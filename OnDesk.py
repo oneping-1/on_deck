@@ -14,7 +14,7 @@ add isolcpus=3 to the end of the line
 python3 -m venv venv
 . venv/bin/activate
 
-sudo apt-get install git python3-dev cython3 -y
+sudo apt-get install comitup git python3-dev cython3 -y
 git clone https://github.com/hzeller/rpi-rgb-led-matrix
 git clone https://github.com/oneping-1/OnDeck-RaspberryPi
 git clone https://github.com/oneping-1/at_bat
