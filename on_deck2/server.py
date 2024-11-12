@@ -2,28 +2,21 @@ from typing import List
 import os
 import sys
 import json
-import platform
 import redis
 from flask import Flask, request, Response
 
 from at_bat.scoreboard_data import ScoreboardData
 
-if platform.system() == 'Windows':
-    import fakeredis
-
 class Server:
     def __init__(self):
-        if platform.system() == 'Windows':
-            self.redis = fakeredis.FakeStrictRedis()
-        else:
-            self.redis = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis = redis.Redis(host='localhost', port=6379, db=0)
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
         self.app.add_url_rule('/reset', 'reset', self.reset, methods=['GET'])
         self.app.add_url_rule('/settings', 'settings', self.settings, methods=['GET'])
         self.app.add_url_rule('/<int:gamepk>', 'gamepk', self.gamepk, methods=['GET'])
-        # self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['POST'])
+        # self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['GET'])
 
     def home(self):
         """
@@ -36,6 +29,9 @@ class Server:
         """
         num_games = self.redis.get('num_games')
         games: List[dict] = []
+
+        if (num_games == 0) or (num_games is None):
+            return Response(json.dumps({}, indent=4), status=200, mimetype='application/json')
 
         for i in range(int(num_games)):
             game = self.redis.get(str(i))

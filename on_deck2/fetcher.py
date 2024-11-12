@@ -1,15 +1,11 @@
 from typing import List, Union
 import threading
 import time
-import platform
 import json
 import redis
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
-
-if platform.system() == 'Windows':
-    import fakeredis
 
 def get_daily_gamepks(date: str) -> List[int]:
     """
@@ -34,11 +30,7 @@ class Fetcher:
         self.games: List[ScoreboardData] = []
         self.delay = 60
 
-        if platform.system() == 'Windows':
-            self.redis = fakeredis.FakeStrictRedis()
-        else:
-            self.redis = redis.Redis(host='localhost', port=6379, db=0)
-
+        self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
 
@@ -84,7 +76,7 @@ class Fetcher:
 
         self.redis.set(key, value)
 
-    def redis_publish(self, key: Union[str, int], Union[int, dict]):
+    def redis_publish(self, key: Union[str, int], value: Union[int, dict]):
         """
         Publish a message to the redis database
 
