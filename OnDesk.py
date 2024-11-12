@@ -105,7 +105,7 @@ def _convert_streak(streak):
     if len(streak) > 1 and streak[1:].isdigit():  # Check if streak has a number
         streak_num = int(streak[1:])
         if streak_num > 9:  # If streak is greater than 9, convert to letter
-            streak_letter = chr(ord('A') + (streak_num - 10))  # 'a' for 10, 'b' for 11, etc.
+            streak_letter = chr(ord('A') + (streak_num - 10))  # 'A' for 10, 'B' for 11, etc.
             return f'{streak[0]}{streak_letter}'
     return streak
 
