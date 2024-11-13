@@ -33,7 +33,7 @@ class Server:
         if (num_games == 0) or (num_games is None):
             return Response(json.dumps({}, indent=4), status=200, mimetype='application/json')
 
-        for i in range(int(num_games)):
+        for i in range(int(num_games)-1):
             game = self.redis.get(str(i))
             game = json.loads(game)
             games.append(game)

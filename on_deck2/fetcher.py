@@ -7,7 +7,7 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
-def get_daily_gamepks(date: str) -> List[int]:
+def get_daily_gamepks() -> List[int]:
     """
     Returns a list of gamepks for a given date.
 
@@ -17,7 +17,7 @@ def get_daily_gamepks(date: str) -> List[int]:
     Returns:
         List[int]: List of gamepks
     """
-    gamepks = ssp.get_daily_gamepks(date)
+    gamepks = ssp.get_daily_gamepks('2024-05-29')
     return gamepks
 
 class Fetcher:
@@ -41,15 +41,19 @@ class Fetcher:
         Initializes the games list with the game data from the at_bat
         module. It stores the game data in the redis database.
         """
-        self.gamepks = get_daily_gamepks('2024-05-29')
+        self.gamepks = get_daily_gamepks()
 
-        for gamepk in self.gamepks:
+        for i, gamepk in enumerate(self.gamepks):
             game = ScoreboardData(gamepk, self.delay)
             self.games.append(game)
-            self.redis_set(str(gamepk), game.to_dict())
+            self.redis_set(str(i), game.to_dict())
+            time.sleep(.1) # Multithreading Help
 
         num_games = len(self.games)
         self.redis_set('num_games', num_games)
+        print()
+        print(f'Number of games: {num_games}')
+        print()
 
     def update_games(self):
         """
@@ -107,6 +111,7 @@ class Fetcher:
         while True:
             for message in self.pubsub.listen():
                 self._read_pubsub_message(message)
+            time.sleep(1) # Multithreading Help
 
     def _read_pubsub_message(self, message):
         """
