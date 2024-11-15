@@ -93,7 +93,7 @@ class DisplayManager:
             stop = 0
             self.draw_pixel(x, y, color) # Not included in the loops
 
-        for degrees in range(0, 91, 10):
+        for degrees in range(0, 91, 1):
             # Used to get rotational symmetry
             for r in range(start, stop, -1):
                 # Used to prevent .5 (sin30 or cos60)

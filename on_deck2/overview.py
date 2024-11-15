@@ -22,7 +22,10 @@ class Overview:
         return (column_offset, row_offset)
 
     def _calculate_color(self, i):
-        if i % 2 == 0:
+        column = math.floor(i / self._games_per_column)
+        middle_column = column & 1
+
+        if i % 2 == middle_column:
             return Colors.white
         return Colors.green
 
@@ -117,7 +120,7 @@ class Overview:
         row_offset += 12
 
         radius = 3
-        thickness = 2
+        thickness = 1
         delta = radius + 5
 
         outs_int = game['count']['outs']

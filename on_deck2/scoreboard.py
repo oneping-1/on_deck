@@ -76,8 +76,8 @@ class Scoreboard:
 
         self.overview = Overview(self.display_manager)
 
-        self.display_manager.draw_line(128, 0, 128, 384, graphics.Color(255, 255, 255))
-        self.display_manager.draw_line(256, 0, 256, 384, graphics.Color(255, 255, 255))
+        # self.display_manager.draw_line(128, 0, 128, 384, graphics.Color(255, 255, 255))
+        # self.display_manager.draw_line(256, 0, 256, 384, graphics.Color(255, 255, 255))
 
     def print_games(self):
         num_games = int(self.redis.get('num_games'))
