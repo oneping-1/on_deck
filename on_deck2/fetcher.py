@@ -34,9 +34,9 @@ class Fetcher:
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
 
-        self.start_games()
+        self.initialize_games()
 
-    def start_games(self):
+    def initialize_games(self):
         """
         Initializes the games list with the game data from the at_bat
         module. It stores the game data in the redis database.
@@ -51,9 +51,6 @@ class Fetcher:
 
         num_games = len(self.games)
         self.redis_set('num_games', num_games)
-        print()
-        print(f'Number of games: {num_games}')
-        print()
 
     def update_games(self):
         """
@@ -62,8 +59,6 @@ class Fetcher:
         for i, game in enumerate(self.games):
             diff = game.update_return_difference(self.delay)
             if diff:
-                # Update the game in the redis database
-                # Not sure its necessary to update the game in the games list
                 self.redis_set(str(i), game.to_dict())
                 self.redis_publish(str(i), diff)
 
@@ -97,14 +92,14 @@ class Fetcher:
         """
         Starts the fetcher and periodically updates the game data.
         """
-        threading.Thread(target=self.listen_for_input, daemon=True).start()
+        threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
         while True:
             self.delay = self.redis.get('delay')
             self.update_games()
             # Check for user input from server
             time.sleep(30)
 
-    def listen_for_input(self):
+    def listen_for_pubsub(self):
         """
         Listens for user input from the server.
         """
@@ -127,6 +122,8 @@ class Fetcher:
 
         if channel == 'delay':
             self.delay = int(message['data'])
+
+        return
 
 if __name__ == '__main__':
     fetcher = Fetcher()

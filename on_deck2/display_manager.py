@@ -205,7 +205,7 @@ class DisplayManager:
 
 if __name__ == '__main__':
     display = DisplayManager(get_options())
-    R = 5
+    R = 6
     display.draw_circle(10, 10, R, 1, False, Colors.red)
     display.draw_circle(30, 10, R, 2, False, Colors.green)
     display.draw_circle(50, 10, R, 3, False, Colors.light_blue)

@@ -9,35 +9,7 @@ import platform
 
 from on_deck2.fetcher import Fetcher
 from on_deck2.server import Server
-
-if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
-else:
-    from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
-
-def get_options() -> RGBMatrixOptions:
-    """
-    Returns the RGBMatrixOptions object based on the platform.
-
-    Returns:
-        RGBMatrixOptions: RGBMatrixOptions object
-    """
-    options = RGBMatrixOptions()
-
-    if platform.system() == 'Windows':
-        options.cols = int(384)
-        options.rows = int(256)
-    else:
-        options.cols = 128
-        options.rows = 64
-        options.pixel_mapper_config = 'V-mapper'
-        options.chain_length = 4
-        options.parallel = 3
-        options.disable_hardware_pulsing = True
-        options.pwm_bits = 1
-        options.gpio_slowdown = 4
-
-    return options
+from on_deck2.scoreboard import Scoreboard
 
 def start_fetcher():
     """
@@ -53,6 +25,13 @@ def start_server():
     server = Server()
     server.start()
 
+def start_scoreboard():
+    """
+    Starts the scoreboard
+    """
+    scoreboard = Scoreboard()
+    scoreboard.start()
+
 def main():
     """
     Main function
@@ -60,21 +39,22 @@ def main():
     try:
         fetcher_process = Process(target=start_fetcher)
         server_process = Process(target=start_server)
+        scoreboard_process = Process(target=start_scoreboard)
 
-        print('fetcher start')
         fetcher_process.start()
-
-        print('server start')
         server_process.start()
+        scoreboard_process.start()
 
         # time.sleep?
 
     except KeyboardInterrupt:
         fetcher_process.terminate()
         server_process.terminate()
+        scoreboard_process.terminate()
 
         fetcher_process.join()
         server_process.join()
+        scoreboard_process.join()
 
 if __name__ == '__main__':
     main()
