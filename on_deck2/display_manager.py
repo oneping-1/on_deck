@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # will fix at some point :)
     from colors import Colors
 else:
-    from on_deck.colors import Colors
+    from on_deck2.colors import Colors
 
 if platform.system() == 'Windows':
     from RGBMatrixEmulator import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
@@ -181,9 +181,9 @@ class DisplayManager:
             up (bool): Whether or not the arrow is pointing up (is_top_inning)
             color (graphics.Color): Color of the arrow
         """
-        dy = -1
+        dy = 1
         if up:
-            dy = 1
+            dy = -1
 
         for i in range(height):
             x1 = x - i
