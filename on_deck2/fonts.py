@@ -13,6 +13,8 @@ class Fonts:
     f6x10 = None
     ter_u18b = None
     ter_u22b = None
+    ter_u24b = None
+    ter_u28b = None
     ter_u32b = None
     symbols = None
 
@@ -34,6 +36,12 @@ class Fonts:
 
             cls.ter_u22b = graphics.Font()
             cls.ter_u22b.LoadFont(os.path.join(terminus_path, 'ter-u22b.bdf'))
+
+            cls.ter_u24b = graphics.Font()
+            cls.ter_u24b.LoadFont(os.path.join(terminus_path, 'ter-u24b.bdf'))
+
+            cls.ter_u28b = graphics.Font()
+            cls.ter_u28b.LoadFont(os.path.join(terminus_path, 'ter-u28b.bdf'))
 
             cls.ter_u32b = graphics.Font()
             cls.ter_u32b.LoadFont(os.path.join(terminus_path, 'ter-u32b.bdf'))
