@@ -38,22 +38,18 @@ def main():
     try:
         fetcher_process = Process(target=start_fetcher)
         server_process = Process(target=start_server)
-        scoreboard_process = Process(target=start_scoreboard)
 
         fetcher_process.start()
         server_process.start()
-        scoreboard_process.start()
 
-        # time.sleep?
+        print('Make sure to start the scoreboard manually as sudo')
 
     except KeyboardInterrupt:
         fetcher_process.terminate()
         server_process.terminate()
-        scoreboard_process.terminate()
 
         fetcher_process.join()
         server_process.join()
-        scoreboard_process.join()
 
 if __name__ == '__main__':
     main()

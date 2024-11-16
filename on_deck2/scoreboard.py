@@ -1,5 +1,14 @@
+"""
+Should run this module seperately as sudo for optimal performance
+
+Brightness levels (pwm_bits = 2)
+0: Off  ( 0 -  55)
+1: Low  (60 -  75)
+2: Mid  (80 -  85)
+3: High (90 - 100)
+"""
+
 from typing import List
-import threading
 import time
 import json
 import platform
@@ -32,7 +41,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-        options.pwm_bits = 1
+        options.pwm_bits = 2 # Can run at 2 with sudo, 1 without
         options.gpio_slowdown = 4
 
     return options
