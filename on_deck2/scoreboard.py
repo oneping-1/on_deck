@@ -9,9 +9,9 @@ from on_deck2.display_manager import DisplayManager
 from on_deck2.overview import Overview
 
 if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrixOptions, graphics # pylint: disable=E0401
+    from RGBMatrixEmulator import RGBMatrixOptions # pylint: disable=E0401
 else:
-    from rgbmatrix import RGBMatrixOptions, graphics # pylint: disable=E0401
+    from rgbmatrix import RGBMatrixOptions # pylint: disable=E0401
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -75,9 +75,6 @@ class Scoreboard:
         self.display_manager.swap_frame()
 
         self.overview = Overview(self.display_manager)
-
-        # self.display_manager.draw_line(128, 0, 128, 384, graphics.Color(255, 255, 255))
-        # self.display_manager.draw_line(256, 0, 256, 384, graphics.Color(255, 255, 255))
 
     def print_games(self):
         num_games = int(self.redis.get('num_games'))

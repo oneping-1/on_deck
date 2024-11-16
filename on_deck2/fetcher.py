@@ -2,10 +2,40 @@ from typing import List, Union
 import threading
 import time
 import json
+from datetime import datetime
+import pytz
 import redis
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
+
+def seconds_since_iso8601(iso_timestamp: str) -> int:
+    """
+    Calculate the number of seconds since a given ISO 8601 timestamp.
+
+    Args:
+        iso_timestamp (str): The ISO 8601 formatted timestamp (e.g., "2024-05-29T15:00:00+04:00").
+
+    Returns:
+        int: The number of seconds since the given timestamp.
+    """
+    # Parse the ISO 8601 string into a datetime object
+    target_time = datetime.fromisoformat(iso_timestamp)
+
+    # Check if the timestamp includes a timezone; if not, assume it's UTC
+    if target_time.tzinfo is None:
+        target_time = target_time.replace(tzinfo=pytz.UTC)
+
+    # Get the current time in the same timezone as the target time
+    current_time = datetime.now(pytz.utc).astimezone(target_time.tzinfo)
+
+    # Adjust for DST if applicable
+    if target_time.dst() != current_time.dst():
+        target_time = target_time + target_time.dst() - current_time.dst()
+
+    # Calculate the difference in seconds
+    difference = current_time - target_time
+    return int(difference.total_seconds())
 
 def get_daily_gamepks() -> List[int]:
     """
@@ -17,7 +47,7 @@ def get_daily_gamepks() -> List[int]:
     Returns:
         List[int]: List of gamepks
     """
-    gamepks = ssp.get_daily_gamepks('2024-05-29')
+    gamepks = ssp.get_daily_gamepks(date[0:10])
     return gamepks
 
 class Fetcher:
@@ -25,7 +55,7 @@ class Fetcher:
     Class that fetches game data from the at_bat module. It stores the
     game data in a redis database and updates the data periodically.
     """
-    def __init__(self):
+    def __init__(self, delay: int = None):
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
         self.delay = 60
@@ -33,6 +63,11 @@ class Fetcher:
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
+
+        if delay is not None:
+            print(f'Delay: {delay}')
+            self.redis.set('delay', delay)
+            self.delay = delay
 
         self.initialize_games()
 
@@ -47,7 +82,6 @@ class Fetcher:
             game = ScoreboardData(gamepk, self.delay)
             self.games.append(game)
             self.redis_set(str(i), game.to_dict())
-            time.sleep(.1) # Multithreading Help
 
         num_games = len(self.games)
         self.redis_set('num_games', num_games)
@@ -94,7 +128,7 @@ class Fetcher:
         """
         threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
         while True:
-            self.delay = self.redis.get('delay')
+            self.delay = int(self.redis.get('delay'))
             self.update_games()
             # Check for user input from server
             time.sleep(30)
@@ -126,5 +160,8 @@ class Fetcher:
         return
 
 if __name__ == '__main__':
-    fetcher = Fetcher()
+    date = '2024-05-29T15:00:00-04:00'
+    delay = seconds_since_iso8601(date)
+    fetcher = Fetcher(delay)
+    print('done initializing')
     fetcher.start()

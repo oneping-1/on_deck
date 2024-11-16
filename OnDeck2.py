@@ -5,7 +5,6 @@ because blocking processes can mess with the hub75 display timings.
 """
 
 from multiprocessing import Process
-import platform
 
 from on_deck2.fetcher import Fetcher
 from on_deck2.server import Server

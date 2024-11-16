@@ -52,17 +52,22 @@ class Overview:
             self.display_manager.draw_text(self.ter_u28b, column_offset,
                 row_offset+20, color, home_score)
 
-    def _print_inning(self, game: dict, i: int, text: str = None):
+    def _print_text(self, text: str, column_offset: int, row_offset: int, font, i: int):
+        c, r = self._calculate_offset(i)
+        color = self._calculate_color(i)
+
+        column_offset += c
+        row_offset += r + 10
+
+        self.display_manager.draw_text(font, column_offset,
+            row_offset, color, text)
+
+    def _print_inning(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i)
 
         column_offset += 74
         row_offset += 10
-
-        if text is not None:
-            self.display_manager.draw_text(self.ter_u28b, column_offset,
-                row_offset, color, text)
-            return
 
         inning = game['inning']
         inning = str(inning)
@@ -73,7 +78,6 @@ class Overview:
         else:
             self.display_manager.draw_text(self.ter_u28b, column_offset,
                 row_offset, color, inning)
-        return
 
     def _print_inning_arrows(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
@@ -141,6 +145,20 @@ class Overview:
             thickness, outs[2], color)
         return
 
+    def _print_start_time(self, game: dict, i: int):
+        column_offset, row_offset = self._calculate_offset(i)
+        color = self._calculate_color(i)
+
+        column_offset += 50
+        row_offset += 10
+
+        start_time = game['start_time']
+        if len(start_time) < 5:
+            start_time = ' ' + start_time
+
+        self.display_manager.draw_text(self.ter_u28b, column_offset,
+            row_offset, color, start_time)
+
     def print_game(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i)
@@ -155,12 +173,40 @@ class Overview:
 
         game_state = game['game_state']
 
-        self._print_scores(game, i)
-        # self._print_inning(game, i, 'F') if game['inning'] == 9 else self._print_inning(game, i, f'F/{game["inning"]}')
-        self._print_inning(game, i)
-        self._print_inning_arrows(game, i)
-        self._print_bases(game, i)
-        self._print_outs(game, i)
+        # Live
+        if game_state == 'L':
+            self._print_scores(game, i)
+            self._print_inning(game, i)
+            self._print_inning_arrows(game, i)
+            self._print_bases(game, i)
+            self._print_outs(game, i)
+
+        # Final
+        elif game_state == 'F':
+            self._print_scores(game, i)
+            inning = game['inning']
+            if inning == 9:
+                self._print_text('F', 74, 0, self.ter_u28b, i)
+            else:
+                self._print_text('F', 74, 0, self.ter_u28b, i)
+                self._print_text('/', 84, 0, self.ter_u28b, i)
+                self._print_text(f'{inning}', 94, 0, self.ter_u28b, i)
+
+        # Pregame
+        elif game_state == 'P':
+            self._print_start_time(game, i)
+
+        # Suspended / Postposed
+        elif game_state == 'S':
+            self._print_scores(game, i)
+            self._print_inning(game, i)
+            self._print_text('SUSP', 92, -4, Fonts.ter_u16b, i)
+
+        # Delay
+        elif game_state == 'D':
+            self._print_scores(game, i)
+            self._print_inning(game, i)
+            self._print_text('DLY', 92, -4, Fonts.ter_u16b, i)
 
 if __name__ == '__main__':
     print('wrong module dummy')
