@@ -47,7 +47,7 @@ def get_daily_gamepks() -> List[int]:
     Returns:
         List[int]: List of gamepks
     """
-    gamepks = ssp.get_daily_gamepks(date[0:10])
+    gamepks = ssp.get_daily_gamepks('2024-05-29')
     return gamepks
 
 class Fetcher:
@@ -56,6 +56,10 @@ class Fetcher:
     game data in a redis database and updates the data periodically.
     """
     def __init__(self, delay: int = None):
+        # Used of offseason testing
+        date = '2024-05-29T15:00:00-04:00'
+        delay = seconds_since_iso8601(date)
+
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
         self.delay = 60
@@ -160,8 +164,6 @@ class Fetcher:
         return
 
 if __name__ == '__main__':
-    date = '2024-05-29T15:00:00-04:00'
-    delay = seconds_since_iso8601(date)
-    fetcher = Fetcher(delay)
+    fetcher = Fetcher()
     print('done initializing')
     fetcher.start()
