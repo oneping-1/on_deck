@@ -13,6 +13,14 @@ class Overview:
         self._ddo = 7 # double digit offset
         self._games_per_column = 6
 
+    def clear_game(self, i: int):
+        column_offset, row_offset = self._calculate_offset(i)
+
+        row_offset -= 20
+
+        self.display_manager.clear_section(column_offset, row_offset,
+            column_offset + 128, row_offset + 42)
+
     def _calculate_offset(self, i):
         column = math.floor(i / self._games_per_column) # column number
         column_offset = column * 128
@@ -162,6 +170,8 @@ class Overview:
     def print_game(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i)
+
+        self.clear_game(i)
 
         away_team = game['away']['abv']
         home_team = game['home']['abv']

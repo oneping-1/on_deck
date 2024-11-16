@@ -97,20 +97,20 @@ class Scoreboard:
             # doesn't exist yet because the fetcher hasn't finished
             self.games.append(json.loads(self.redis.get(str(i))))
             self.pubsub.subscribe(str(i))
+            self.overview.print_game(self.games[i], i)
+        self.display_manager.swap_frame()
 
-        threading.Thread(target=self.listen_to_pubsub).start()
         while True:
-            self.print_games()
-            time.sleep(100)
+            self.listen_to_pubsub()
+            time.sleep(1)
 
     def listen_to_pubsub(self):
         """
         Listens to the pubsub channel for updates to the game
         """
-        while True:
-            for message in self.pubsub.listen():
-                self._read_pubsub_message(message)
-            time.sleep(1)
+        for message in self.pubsub.listen():
+            self._read_pubsub_message(message)
+        time.sleep(1)
 
     def _read_pubsub_message(self, message):
         if message['type'] != 'message':
@@ -120,6 +120,9 @@ class Scoreboard:
         new_data = json.loads(message['data'])
 
         self.games[game_id] = recursive_update(self.games[game_id], new_data)
+
+        self.overview.print_game(self.games[game_id], game_id)
+        self.display_manager.swap_frame()
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()
