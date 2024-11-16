@@ -87,10 +87,13 @@ class Scoreboard:
         self.overview = Overview(self.display_manager)
 
     def print_games(self):
+        """
+        Prints all the games on the display
+        """
         num_games = int(self.redis.get('num_games'))
         for i in range(num_games):
             self.overview.print_game(self.games[i], i)
-            self.display_manager.swap_frame()
+        self.display_manager.swap_frame()
 
     def start(self):
         """
