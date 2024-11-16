@@ -114,7 +114,8 @@ class Overview:
         runners_int = game['runners']
         runners = [False, False, False]
         for j in range(3):
-            if runners_int & (1 << i):
+            x = 1 << j
+            if runners_int & x:
                 runners[j] = True
 
         self.display_manager.draw_diamond(column_offset+delta, row_offset+delta, radius,

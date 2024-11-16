@@ -5,6 +5,7 @@ because blocking processes can mess with the hub75 display timings.
 """
 
 from multiprocessing import Process
+import time
 
 from on_deck2.fetcher import Fetcher
 from on_deck2.server import Server
@@ -43,6 +44,9 @@ def main():
         server_process.start()
 
         print('Make sure to start the scoreboard manually as sudo')
+
+        while True:
+            time.sleep(1)
 
     except KeyboardInterrupt:
         fetcher_process.terminate()
