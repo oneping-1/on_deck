@@ -79,6 +79,7 @@ class Scoreboard:
 
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
+        self.pubsub.subscribe('brightness')
 
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
@@ -125,6 +126,10 @@ class Scoreboard:
         if message['type'] != 'message':
             return
 
+        if message['channel'] == b'brightness':
+            self._change_brightness(message['data'])
+            return
+
         game_id = int(message['channel'])
         new_data = json.loads(message['data'])
 
@@ -132,6 +137,22 @@ class Scoreboard:
 
         self.overview.print_game(self.games[game_id], game_id)
         self.display_manager.swap_frame()
+
+    def _change_brightness(self, brightness):
+        # brightness = brightness.decode('utf-8')
+        brightness = int(brightness)
+        print(f'Brightness: {brightness}')
+
+        if brightness == 0:
+            self.display_manager.set_brightness(0)
+        elif brightness == 1:
+            self.display_manager.set_brightness(60)
+        elif brightness == 2:
+            self.display_manager.set_brightness(80)
+        elif brightness == 3:
+            self.display_manager.set_brightness(90)
+
+        self.print_games()
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()

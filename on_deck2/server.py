@@ -57,21 +57,35 @@ class Server:
         """
         mode = request.args.get('mode', default=None)
         delay = request.args.get('delay', default=None)
+        brightness = request.args.get('brightness', default=None)
 
         if mode is not None:
             self.redis.set('mode', mode)
         if delay is not None:
             self.redis.set('delay', delay)
+        if brightness is not None:
+            self.redis.set('brightness', brightness)
+            self.redis.publish('brightness', brightness)
 
         mode = self.redis.get('mode')
+        if mode is not None:
+            mode = mode.decode('utf-8')
+
         delay = self.redis.get('delay')
+        if delay is not None:
+            delay = int(delay)
+
+        brightness = self.redis.get('brightness')
+        if brightness is not None:
+            brightness = int(brightness)
 
         return_dict = {
             'mode': mode,
-            'delay': delay
+            'delay': delay,
+            'brightness': brightness
         }
 
-        return Response(json.dumps(return_dict, indent=4), status=200, mimetype='application/json')
+        return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')
 
     def gamepk(self, gamepk: int):
         """
