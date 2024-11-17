@@ -84,6 +84,10 @@ class Scoreboard:
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
 
+        brightness = self.redis.get('brightness')
+        if brightness is not None:
+            self._change_brightness(brightness)
+
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
 

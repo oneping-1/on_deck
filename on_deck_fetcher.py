@@ -57,12 +57,11 @@ class Fetcher:
     """
     def __init__(self, delay: int = None):
         # Used of offseason testing
-        date = '2024-05-29T15:00:00-04:00'
+        date = '2024-05-29T14:35:00-04:00'
         delay = seconds_since_iso8601(date)
 
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
-        self.delay = 60
 
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
@@ -72,6 +71,8 @@ class Fetcher:
             print(f'Delay: {delay}')
             self.redis.set('delay', delay)
             self.delay = delay
+        else:
+            self.delay = int(self.redis.get('delay'))
 
         self.initialize_games()
 

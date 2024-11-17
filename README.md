@@ -11,7 +11,7 @@ In the console of the Pi:
 wget # paste link here and enter
 sudo dpkg -i davesteele-comitup-apt-source*.deb
 sudo apt-get update
-sudo apt-get install comitup git pip python3-dev python3-redis cython3 redis-server -y
+sudo apt-get install comitup git pip nginx python3-dev python3-redis cython3 redis-server -y
 sudo apt-get upgrade -y
 rm davesteele-comitup-apt-source*.deb
 
@@ -46,9 +46,8 @@ crontab -e
 Select nano option
 Add the following to the end of the file
 ```
-@reboot sleep 10; redis-server
 @reboot sleep 10; /home/ondeck/venv/bin/python /home/ondeck/OnDeck-RaspberryPi/on_deck_fetcher.py >> /home/ondeck/fetcher.log 2>&1
-@reboot sleep 10; /home/ondeck/venv/bin/python /home/ondeck/OnDeck-RaspberryPi/on_deck_server.py >> /home/ondeck/server.log 2>&1
+@reboot sleep 10; cd /home/ondeck/OnDeck-RaspberryPi; sudo /home/ondeck/venv/bin/gunicorn -w 1 -b 0.0.0.0:80 on_deck_server:app >> /home/ondeck/server.log 2>&1
 @reboot sleep 40; sudo python /home/ondeck/OnDeck-RaspberryPi/on_deck_display.py >> /home/ondeck/display.log 2>&1
 ```
 
