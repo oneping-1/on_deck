@@ -1,8 +1,8 @@
 import math
 
-from on_deck2.display_manager import DisplayManager
-from on_deck2.colors import Colors
-from on_deck2.fonts import Fonts
+from on_deck.display_manager import DisplayManager
+from on_deck.colors import Colors
+from on_deck.fonts import Fonts
 
 class Overview:
     def __init__(self, display_manager: DisplayManager):
@@ -145,11 +145,11 @@ class Overview:
             if outs_int > j:
                 outs[j] = True
 
-        self.display_manager.draw_circle(column_offset+delta, row_offset, radius,
+        self.display_manager.draw_circle(column_offset-delta, row_offset, radius,
             thickness, outs[0], color)
         self.display_manager.draw_circle(column_offset, row_offset, radius,
             thickness, outs[1], color)
-        self.display_manager.draw_circle(column_offset-delta, row_offset, radius,
+        self.display_manager.draw_circle(column_offset+delta, row_offset, radius,
             thickness, outs[2], color)
         return
 
@@ -198,6 +198,8 @@ class Overview:
             if inning == 9:
                 self._print_text('F', 74, 0, self.ter_u28b, i)
             else:
+                # Multiple print statements to squeeze the text into
+                # tight space
                 self._print_text('F', 74, 0, self.ter_u28b, i)
                 self._print_text('/', 84, 0, self.ter_u28b, i)
                 self._print_text(f'{inning}', 94, 0, self.ter_u28b, i)
@@ -216,6 +218,7 @@ class Overview:
         elif game_state == 'D':
             self._print_scores(game, i)
             self._print_inning(game, i)
+            self._print_inning_arrows(game, i)
             self._print_text('DLY', 92, -4, Fonts.ter_u16b, i)
 
 if __name__ == '__main__':

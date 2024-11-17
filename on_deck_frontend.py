@@ -1,11 +1,15 @@
 """
-Should run this module seperately as sudo for optimal performance
 
-Brightness levels (pwm_bits = 2)
-0: Off  ( 0 -  55)
-1: Low  (60 -  75)
-2: Mid  (80 -  85)
-3: High (90 - 100)
+This module handles all the logic for the display. It listens to the
+pubsub channel for updates to the games and updates the display
+accordingly.
+
+Should run this module seperately as sudo for optimal performance.
+
+This is the second version of this project. The first version was
+similar to this one, but had many issues, mainly around the server
+and nginx. This version is a complete rewrite of the project and
+should fix those issues.
 """
 
 from typing import List
@@ -14,13 +18,13 @@ import json
 import platform
 import redis
 
-from on_deck2.display_manager import DisplayManager
-from on_deck2.overview import Overview
+from on_deck.display_manager import DisplayManager
+from on_deck.overview import Overview
 
 if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrixOptions # pylint: disable=E0401
+    from RGBMatrixEmulator import RGBMatrixOptions
 else:
-    from rgbmatrix import RGBMatrixOptions # pylint: disable=E0401
+    from rgbmatrix import RGBMatrixOptions
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -142,6 +146,13 @@ class Scoreboard:
         self.display_manager.swap_frame()
 
     def _change_brightness(self, brightness):
+        """
+        Brightness levels (pwm_bits = 2)
+        0: Off  ( 0 -  55)
+        1: Low  (60 -  75)
+        2: Mid  (80 -  85)
+        3: High (90 - 100)
+        """
         # brightness = brightness.decode('utf-8')
         brightness = int(brightness)
         print(f'Brightness: {brightness}')

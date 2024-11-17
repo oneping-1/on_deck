@@ -1,15 +1,19 @@
 """
-Main file for the OnDeck project. This file starts all the necessary
-processes for the project to run. It uses processes instead of threading
-because blocking processes can mess with the hub75 display timings.
+This module starts the fetcher and server processes of the scoreboard.
+The fetcher is responsible for fetching the data from the MLB API and
+the server is responsible for obtaining user input. All the processes
+communicate with each other through a Redis server.
+
+The scoreboard should be started seperately as sudo for optimal
+performance (ie reduce flickering)
 """
 
 from multiprocessing import Process
 import time
 
-from on_deck2.fetcher import Fetcher
-from on_deck2.server import Server
-from on_deck2.scoreboard import Scoreboard
+from on_deck.fetcher import Fetcher
+from on_deck.server import Server
+from on_deck_frontend import Scoreboard
 
 def start_fetcher():
     """
