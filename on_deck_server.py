@@ -104,9 +104,8 @@ class Server:
 
         return Response(json.dumps(game, indent=4), status=200, mimetype='text/plain')
 
-    def start(self):
-        self.app.run(host='0.0.0.0', port=5123)
+server = Server()
+app = server.app
 
 if __name__ == '__main__':
-    server = Server()
-    server.start()
+    app.run(host='0.0.0.0', port=80)

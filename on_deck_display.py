@@ -1,5 +1,4 @@
 """
-
 This module handles all the logic for the display. It listens to the
 pubsub channel for updates to the games and updates the display
 accordingly.

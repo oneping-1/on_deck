@@ -52,9 +52,9 @@ from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 
 if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrixOptions # pylint: disable=E0401
+    from RGBMatrixEmulator import RGBMatrixOptions
 else:
-    from rgbmatrix import RGBMatrixOptions # pylint: disable=E0401
+    from rgbmatrix import RGBMatrixOptions
 
 ABV_A = 'CLE'
 ABV_B = 'TEX'
