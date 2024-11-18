@@ -85,14 +85,14 @@ class Scoreboard:
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
 
-        brightness = self.redis.get('brightness')
-        if brightness is not None:
-            self._change_brightness(brightness)
-
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
 
         self.overview = Overview(self.display_manager)
+
+        brightness = self.redis.get('brightness')
+        if brightness is not None:
+            self._change_brightness(brightness)
 
         self.time_thread = threading.Thread(target=self._print_time)
 
@@ -101,8 +101,8 @@ class Scoreboard:
         Prints all the games on the display
         """
         num_games = int(self.redis.get('num_games'))
-        for i in range(num_games):
-            self.overview.print_game(self.games[i], i)
+        for i, game in zip(range(num_games), self.games):
+            self.overview.print_game(game, i)
         self.display_manager.swap_frame()
 
     def start(self):
