@@ -1,4 +1,5 @@
 import math
+import datetime
 
 from on_deck.display_manager import DisplayManager
 from on_deck.colors import Colors
@@ -220,6 +221,27 @@ class Overview:
             self._print_inning(game, i)
             self._print_inning_arrows(game, i)
             self._print_text('DLY', 92, -4, Fonts.ter_u16b, i)
+
+    def print_time(self, delay: int, i: int):
+        # Texts need to move to better looking location
+        # But all the logic is here
+        self.clear_game(i)
+
+        column_offset, row_offset = self._calculate_offset(i)
+        color = self._calculate_color(i)
+
+        current_time = datetime.datetime.now()
+        delay_datetime = datetime.timedelta(seconds=delay)
+        time = current_time - delay_datetime
+
+        delay = str(delay)
+        time = time.strftime('%I:%M:%S')
+
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
+            row_offset, color, time)
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
+            row_offset+20, color, delay)
+        self.display_manager.swap_frame()
 
 if __name__ == '__main__':
     print('wrong module dummy')

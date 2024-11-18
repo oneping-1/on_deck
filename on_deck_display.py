@@ -16,6 +16,7 @@ import time
 import json
 import platform
 import redis
+import threading
 
 from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
@@ -93,6 +94,8 @@ class Scoreboard:
 
         self.overview = Overview(self.display_manager)
 
+        self.time_thread = threading.Thread(target=self._print_time)
+
     def print_games(self):
         """
         Prints all the games on the display
@@ -119,6 +122,8 @@ class Scoreboard:
             self.pubsub.subscribe(str(i))
             self.overview.print_game(self.games[i], i)
         self.display_manager.swap_frame()
+
+        self.time_thread.start()
 
         while True:
             self.listen_to_pubsub()
@@ -170,6 +175,12 @@ class Scoreboard:
             self.display_manager.set_brightness(90)
 
         self.print_games()
+
+    def _print_time(self):
+        while True:
+            delay = int(self.redis.get('delay'))
+            self.overview.print_time(delay, 17)
+            time.sleep(.1)
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()
