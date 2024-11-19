@@ -222,6 +222,27 @@ class Overview:
             self._print_inning_arrows(game, i)
             self._print_text('DLY', 92, -4, Fonts.ter_u16b, i)
 
+    def _time_delta_strftime(self, delay: int) -> str:
+        """
+        Prints delay seconds in a format to the strftime("%I:%M:%S")
+        to match current time and delay time
+
+        Args:
+            delay (int): Delay in seconds
+
+        Returns:
+            str: Formatted time string
+        """
+        hours = math.floor(delay / 3600)
+        minutes = math.floor((delay - hours * 3600) / 60)
+        seconds = delay - hours * 3600 - minutes * 60
+
+        if hours == 0 and minutes == 0:
+            return f'      {seconds:2}'
+        if hours == 0:
+            return f'   {minutes:2}:{seconds:02}'
+        return f'{hours:2}:{minutes:02}:{seconds:02}'
+
     def print_time(self, delay: int, i: int):
         # Texts need to move to better looking location
         # But all the logic is here
@@ -230,17 +251,36 @@ class Overview:
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i)
 
+        column_offset += 33
+
         current_time = datetime.datetime.now()
-        delay_datetime = datetime.timedelta(seconds=delay)
-        time = current_time - delay_datetime
+        delay_delta = datetime.timedelta(seconds=delay)
+        delay_time = current_time - delay_delta
 
-        delay = str(delay)
-        time = time.strftime('%I:%M:%S')
+        current_time = current_time.strftime('%I:%M:%S')
+        delay_time = delay_time.strftime('%I:%M:%S')
+        delay = self._time_delta_strftime(delay)
+
+        # gets rid of leading 0
+        # but centers it like the 0 is still there
+        if current_time[0] == '0':
+            current_time = ' ' + current_time[1:]
+        if delay_time[0] == '0':
+            delay_time = ' ' + delay_time[1:]
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
-            row_offset, color, time)
+            row_offset-6, color, current_time)
+
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
-            row_offset+20, color, delay)
+            row_offset+6, color, delay_time)
+
+        if len(delay) > 8:
+            # incase delay is super large
+            # like it is in offseason testing
+            column_offset -= (8 * (len(delay) - 8))
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
+            row_offset+18, color, delay)
+
         self.display_manager.swap_frame()
 
 if __name__ == '__main__':
