@@ -94,7 +94,7 @@ class Scoreboard:
         if brightness is not None:
             self._change_brightness(brightness)
 
-        self.time_thread = threading.Thread(target=self._print_time)
+        self.time_thread = threading.Thread(target=self._print_time_loop)
 
     def print_games(self):
         """
@@ -175,11 +175,19 @@ class Scoreboard:
             self.display_manager.set_brightness(90)
 
         self.print_games()
+        self.print_time()
 
-    def _print_time(self):
+    def print_time(self):
+        """
+        Print the current time, time from delay number of seconds ago,
+        and the current delay
+        """
+        delay = int(self.redis.get('delay'))
+        self.overview.print_time(delay, 17)
+
+    def _print_time_loop(self):
         while True:
-            delay = int(self.redis.get('delay'))
-            self.overview.print_time(delay, 17)
+            self.print_time()
             time.sleep(.1)
 
 if __name__ == '__main__':
