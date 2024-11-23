@@ -13,7 +13,7 @@ class Server:
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
-        self.app.add_url_rule('/reset', 'reset', self.reset, methods=['GET'])
+        self.app.add_url_rule('/reboot', 'reboot', self.reboot, methods=['GET'])
         self.app.add_url_rule('/settings', 'settings', self.settings, methods=['GET'])
         self.app.add_url_rule('/<int:gamepk>', 'gamepk', self.gamepk, methods=['GET'])
         # self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['GET'])
@@ -40,9 +40,9 @@ class Server:
 
         return Response(json.dumps(games, indent=4), status=200, mimetype='application/json')
 
-    def reset(self):
+    def reboot(self):
         """
-        Hard resets the Raspberry Pi
+        Hard reboots the Raspberry Pi
         """
         sys.stdout.flush()
         os.system('sudo reboot')
