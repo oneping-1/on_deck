@@ -11,6 +11,7 @@ and nginx. This version is a complete rewrite of the project and
 should fix those issues.
 """
 
+import socket
 from typing import List
 import time
 import json
@@ -20,6 +21,8 @@ import threading
 
 from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
+from on_deck.colors import Colors
+from on_deck.fonts import Fonts
 
 if platform.system() == 'Windows':
     from RGBMatrixEmulator import RGBMatrixOptions
@@ -68,6 +71,19 @@ def recursive_update(d: dict, u: dict) -> dict:
             d[k] = v
     return d
 
+def get_ip_address() -> str:
+    # Create a socket to get the local IP address
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        # Doesn't actually need to send data; we're just looking for the local IP
+        s.connect(('8.8.8.8', 80))  # Using Google's DNS server
+        ip_address = s.getsockname()[0]
+    except Exception:
+        ip_address = 'Unable to get IP address'
+    finally:
+        s.close()
+    return ip_address
+
 class Scoreboard:
     """
     This class is used to manage the scoreboard
@@ -94,7 +110,15 @@ class Scoreboard:
         if brightness is not None:
             self._change_brightness(brightness)
 
+        self._print_welcome_message()
+        time.sleep(20) # Allow time for fetcher to get games
         self.time_thread = threading.Thread(target=self._print_time_loop)
+
+    def _print_welcome_message(self):
+        ip = get_ip_address()
+        self.display_manager.draw_text(Fonts.ter_u18b, 0, 15, Colors.white, 'OnDeck')
+        self.display_manager.draw_text(Fonts.ter_u18b, 0, 30, Colors.green, f'{ip}')
+        self.display_manager.swap_frame()
 
     def print_games(self):
         """
