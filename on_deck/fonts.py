@@ -9,6 +9,9 @@ else:
 class Fonts:
     """
     This class is used to store the fonts used in the scoreboard.
+    B = Bold
+    N = Normal
+    V = Not sure
     """
     f6x10 = None
     ter_u12b = None
@@ -41,6 +44,21 @@ class Fonts:
             cls.f6x10 = graphics.Font()
             cls.f6x10.LoadFont(os.path.join(rpi_rgb_path, '6x10.bdf'))
             # cls.test.LoadFont(os.path.join(terminus_path, 'ter-u12b.bdf'))
+
+            cls.ter_u12b = graphics.Font()
+            cls.ter_u12b.LoadFont(os.path.join(terminus_path, 'ter-u12b.bdf'))
+
+            cls.ter_u12n = graphics.Font()
+            cls.ter_u12n.LoadFont(os.path.join(terminus_path, 'ter-u12n.bdf'))
+
+            cls.ter_u14b = graphics.Font()
+            cls.ter_u14b.LoadFont(os.path.join(terminus_path, 'ter-u14b.bdf'))
+
+            cls.ter_u14n = graphics.Font()
+            cls.ter_u14n.LoadFont(os.path.join(terminus_path, 'ter-u14n.bdf'))
+
+            cls.ter_u14v = graphics.Font()
+            cls.ter_u14v.LoadFont(os.path.join(terminus_path, 'ter-u14v.bdf'))
 
             cls.ter_u16b = graphics.Font()
             cls.ter_u16b.LoadFont(os.path.join(terminus_path, 'ter-u16b.bdf'))
