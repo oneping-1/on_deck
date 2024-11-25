@@ -100,24 +100,24 @@ class Scoreboard:
         self.games: List[dict] = []
         self._page: int = None
 
+        self.display_manager = DisplayManager(get_options())
+        self.display_manager.swap_frame()
+
+        self._print_welcome_message()
+        if platform.system() != 'Windows':
+            time.sleep(20) # Allow time for fetcher to get games
+
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
         self.mode = self.redis.get('mode').decode('utf-8')
 
-        self.display_manager = DisplayManager(get_options())
-        self.display_manager.swap_frame()
-
         self.overview = Overview(self.display_manager)
 
         brightness = self.redis.get('brightness')
         if brightness is not None:
             self._change_brightness(brightness)
-
-        self._print_welcome_message()
-        if platform.system() != 'Windows':
-            time.sleep(20) # Allow time for fetcher to get games
 
         self.time_thread = threading.Thread(target=self._print_time_loop, daemon=True)
         self.pubsub_thread = threading.Thread(target=self.listen_to_pubsub, daemon=True)
@@ -148,26 +148,25 @@ class Scoreboard:
         return new_games
 
     def _print_gamecast_page(self):
+        if self.mode != 'gamecast':
+            return
+        shifted_games = self._get_shifted_games(self._page)
+
+        for i in range(6):
+            self.overview.print_game(shifted_games[i], i)
+        self.display_manager.swap_frame()
+
+    def _print_gamecast_pages(self):
         num_games = len(self.games)
         max_page = math.ceil(num_games / 6)
 
-        # Create a list of pages
-        # but ends in 0 so that the last page is the first page
-        # useful when switching to overview mode
-        page = [i for i in range(max_page)]
-        page = page[1:max_page] + [0]
-
-        for self._page in page:
-            shifted_games = self._get_shifted_games(self._page)
-
-            for i in range(6):
-                self.overview.print_game(shifted_games[i], i)
-            self.display_manager.swap_frame()
+        for self._page in range(max_page):
+            self._print_gamecast_page()
             time.sleep(5)
 
     def _loop_gamecast(self):
         while self.mode == 'gamecast':
-            self._print_gamecast_page()
+            self._print_gamecast_pages()
         time.sleep(1)
 
     def _change_brightness(self, brightness):
@@ -178,7 +177,6 @@ class Scoreboard:
         2: Mid  (80 -  85)
         3: High (90 - 100)
         """
-        # brightness = brightness.decode('utf-8')
         brightness = int(brightness)
         print(f'Brightness: {brightness}')
 
@@ -193,6 +191,8 @@ class Scoreboard:
 
         if self.mode == 'overview':
             self._print_overview_page()
+        elif (self.mode == 'gamecast') and (self._page is not None):
+            self._print_gamecast_page()
 
         self.print_time()
 
