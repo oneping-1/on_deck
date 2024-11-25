@@ -104,6 +104,7 @@ class Scoreboard:
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
+        self.mode = self.redis.get('mode').decode('utf-8')
 
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
@@ -113,8 +114,6 @@ class Scoreboard:
         brightness = self.redis.get('brightness')
         if brightness is not None:
             self._change_brightness(brightness)
-
-        self.mode = self.redis.get('mode').decode('utf-8')
 
         self._print_welcome_message()
         if platform.system() != 'Windows':
