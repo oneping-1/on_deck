@@ -11,7 +11,17 @@ class Fonts:
     This class is used to store the fonts used in the scoreboard.
     """
     f6x10 = None
+    ter_u12b = None
+    ter_u12n = None
+
+    ter_u14b = None
+    ter_u14n = None
+    ter_u14v = None
+
     ter_u16b = None
+    ter_u16n = None
+    ter_u16v = None
+
     ter_u18b = None
     ter_u22b = None
     ter_u24b = None
@@ -34,6 +44,12 @@ class Fonts:
 
             cls.ter_u16b = graphics.Font()
             cls.ter_u16b.LoadFont(os.path.join(terminus_path, 'ter-u16b.bdf'))
+
+            cls.ter_u16n = graphics.Font()
+            cls.ter_u16n.LoadFont(os.path.join(terminus_path, 'ter-u16n.bdf'))
+
+            cls.ter_u16v = graphics.Font()
+            cls.ter_u16v.LoadFont(os.path.join(terminus_path, 'ter-u16v.bdf'))
 
             cls.ter_u18b = graphics.Font()
             cls.ter_u18b.LoadFont(os.path.join(terminus_path, 'ter-u18b.bdf'))
