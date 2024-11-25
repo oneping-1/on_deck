@@ -61,8 +61,10 @@ class Server:
 
         if mode is not None:
             self.redis.set('mode', mode)
+            self.redis.publish('mode', mode)
         if delay is not None:
             self.redis.set('delay', delay)
+            self.redis.publish('delay', delay)
         if brightness is not None:
             self.redis.set('brightness', brightness)
             self.redis.publish('brightness', brightness)

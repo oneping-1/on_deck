@@ -174,6 +174,9 @@ class Overview:
 
         self.clear_game(i)
 
+        if game is None:
+            return
+
         away_team = game['away']['abv']
         home_team = game['home']['abv']
 

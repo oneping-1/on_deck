@@ -12,12 +12,14 @@ should fix those issues.
 """
 
 import socket
+import copy
+import math
 from typing import List
 import time
 import json
 import platform
-import redis
 import threading
+import redis
 
 from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
@@ -96,10 +98,12 @@ class Scoreboard:
             options (_type_): _description_
         """
         self.games: List[dict] = []
+        self._page: int = None
 
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
+        self.pubsub.subscribe('mode')
 
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
@@ -110,9 +114,14 @@ class Scoreboard:
         if brightness is not None:
             self._change_brightness(brightness)
 
+        self.mode = self.redis.get('mode').decode('utf-8')
+
         self._print_welcome_message()
-        time.sleep(20) # Allow time for fetcher to get games
-        self.time_thread = threading.Thread(target=self._print_time_loop)
+        if platform.system() != 'Windows':
+            time.sleep(20) # Allow time for fetcher to get games
+
+        self.time_thread = threading.Thread(target=self._print_time_loop, daemon=True)
+        self.pubsub_thread = threading.Thread(target=self.listen_to_pubsub, daemon=True)
 
     def _print_welcome_message(self):
         ip = get_ip_address()
@@ -120,62 +129,47 @@ class Scoreboard:
         self.display_manager.draw_text(Fonts.ter_u18b, 0, 30, Colors.green, f'{ip}')
         self.display_manager.swap_frame()
 
-    def print_games(self):
+    def _print_overview_page(self):
         """
-        Prints all the games on the display
+        Prints the overview page of the scoreboard
+        Only needs to be called once, either at start of module or
+        when the mode changes
         """
-        num_games = int(self.redis.get('num_games'))
-        for i, game in zip(range(num_games), self.games):
+        for i, game in enumerate(self.games):
             self.overview.print_game(game, i)
-        self.display_manager.swap_frame()
 
-    def start(self):
-        """
-        Starts the scoreboard
-        """
-        num_games = int(self.redis.get('num_games'))
+    def _get_shifted_games(self, column: int) -> List[dict]:
+        offset = column * 6
+        games = copy.deepcopy(self.games)
 
-        while (num_games is None) or (num_games == 0):
-            time.sleep(1)
-            num_games = int(self.redis.get('num_games'))
+        while (len(games) % 6) != 0:
+            games.append(None)
 
-        for i in range(num_games):
-            # I'm a little conerned this will try to access a key that
-            # doesn't exist yet because the fetcher hasn't finished
-            self.games.append(json.loads(self.redis.get(str(i))))
-            self.pubsub.subscribe(str(i))
-            self.overview.print_game(self.games[i], i)
-        self.display_manager.swap_frame()
+        new_games = copy.deepcopy(games[offset:]) + copy.deepcopy(games[:offset])
+        return new_games
 
-        self.time_thread.start()
+    def _print_gamecast_page(self):
+        num_games = len(self.games)
+        max_page = math.ceil(num_games / 6)
 
-        while True:
-            self.listen_to_pubsub()
-            time.sleep(1)
+        # Create a list of pages
+        # but ends in 0 so that the last page is the first page
+        # useful when switching to overview mode
+        page = [i for i in range(max_page)]
+        page = page[1:max_page] + [0]
 
-    def listen_to_pubsub(self):
-        """
-        Listens to the pubsub channel for updates to the game
-        """
-        for message in self.pubsub.listen():
-            self._read_pubsub_message(message)
+        for self._page in page:
+            shifted_games = self._get_shifted_games(self._page)
+
+            for i in range(6):
+                self.overview.print_game(shifted_games[i], i)
+            self.display_manager.swap_frame()
+            time.sleep(5)
+
+    def _loop_gamecast(self):
+        while self.mode == 'gamecast':
+            self._print_gamecast_page()
         time.sleep(1)
-
-    def _read_pubsub_message(self, message):
-        if message['type'] != 'message':
-            return
-
-        if message['channel'] == b'brightness':
-            self._change_brightness(message['data'])
-            return
-
-        game_id = int(message['channel'])
-        new_data = json.loads(message['data'])
-
-        self.games[game_id] = recursive_update(self.games[game_id], new_data)
-
-        self.overview.print_game(self.games[game_id], game_id)
-        self.display_manager.swap_frame()
 
     def _change_brightness(self, brightness):
         """
@@ -198,8 +192,55 @@ class Scoreboard:
         elif brightness == 3:
             self.display_manager.set_brightness(90)
 
-        self.print_games()
+        if self.mode == 'overview':
+            self._print_overview_page()
+
         self.print_time()
+
+    def _change_mode(self, mode):
+        mode = mode.decode('utf-8')
+        self.mode = mode
+        self.display_manager.clear_section(0, 0, 384, 256)
+
+        if mode == 'overview':
+            # dont need to do anything for gamecast
+            # while True: in start should handle it
+            self._print_overview_page()
+
+    def _read_pubsub_message(self, message):
+        if message['type'] != 'message':
+            return
+
+        if message['channel'] == b'brightness':
+            self._change_brightness(message['data'])
+            return
+
+        if message['channel'] == b'mode':
+            self._change_mode(message['data'])
+            return
+
+        game_id = int(message['channel'])
+        new_data = json.loads(message['data'])
+
+        self.games[game_id] = recursive_update(self.games[game_id], new_data)
+
+        if self.mode == 'gamecast':
+            page = math.floor(game_id / 6)
+            if page == self._page:
+                self.overview.print_game(self.games[game_id], game_id % 6)
+        else:
+            self.overview.print_game(self.games[game_id], game_id)
+        self.display_manager.swap_frame()
+
+    def listen_to_pubsub(self):
+        """
+        Listens to the pubsub channel for updates to the game
+        """
+        while True:
+            message = self.pubsub.get_message(timeout=5)
+            if message:
+                self._read_pubsub_message(message)
+            time.sleep(.1)
 
     def print_time(self):
         """
@@ -213,6 +254,31 @@ class Scoreboard:
         while True:
             self.print_time()
             time.sleep(.1)
+
+    def start(self):
+        """
+        Starts the scoreboard
+        """
+        num_games = int(self.redis.get('num_games'))
+
+        while (num_games is None) or (num_games == 0):
+            time.sleep(1)
+            num_games = int(self.redis.get('num_games'))
+
+        # Initializes game data
+        for i in range(num_games):
+            self.games.append(json.loads(self.redis.get(str(i))))
+            self.pubsub.subscribe(str(i))
+
+        self.time_thread.start()
+        self.pubsub_thread.start()
+
+        if self.mode == 'overview':
+            self._print_overview_page()
+        self.display_manager.swap_frame()
+
+        while True:
+            self._loop_gamecast()
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()
