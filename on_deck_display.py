@@ -9,6 +9,8 @@ This is the second version of this project. The first version was
 similar to this one, but had many issues, mainly around the server
 and nginx. This version is a complete rewrite of the project and
 should fix those issues.
+
+I should probably put gamecast logic into its own thread
 """
 
 import socket
@@ -22,9 +24,10 @@ import threading
 import redis
 
 from on_deck.display_manager import DisplayManager
-from on_deck.overview import Overview
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
+from on_deck.overview import Overview
+from on_deck.gamecast import Gamecast
 
 if platform.system() == 'Windows':
     from RGBMatrixEmulator import RGBMatrixOptions
@@ -114,6 +117,7 @@ class Scoreboard:
         self.mode = self.redis.get('mode').decode('utf-8')
 
         self.overview = Overview(self.display_manager)
+        self.gamecast = Gamecast(self.display_manager)
 
         brightness = self.redis.get('brightness')
         if brightness is not None:
@@ -154,7 +158,6 @@ class Scoreboard:
 
         for i in range(6):
             self.overview.print_game(shifted_games[i], i)
-        self.display_manager.swap_frame()
 
     def _print_gamecast_pages(self):
         num_games = len(self.games)
@@ -162,6 +165,8 @@ class Scoreboard:
 
         for self._page in range(max_page):
             self._print_gamecast_page()
+            self.gamecast.print_game(self.games[3])
+            self.display_manager.swap_frame()
             time.sleep(5)
 
     def _loop_gamecast(self):
