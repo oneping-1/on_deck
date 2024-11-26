@@ -114,6 +114,7 @@ class Scoreboard:
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
+        self.pubsub.subscribe('gamecast_id')
         self.mode = self.redis.get('mode').decode('utf-8')
         gamecast_id = self.redis.get('gamecast_id')
         if gamecast_id is not None:
@@ -215,11 +216,14 @@ class Scoreboard:
             self._print_overview_page()
 
     def _change_gamecast_game(self, game_id):
+        if game_id is None:
+            return
+
         game_id = int(game_id)
-        self.gamecast_id = self.games[game_id]
+        self.gamecast_id = game_id
 
         if self.mode == 'gamecast':
-            self.gamecast.print_game(self.gamecast_id)
+            self.gamecast.print_game(self.games[self.gamecast_id])
 
     def _read_pubsub_message(self, message):
         if message['type'] != 'message':
@@ -233,7 +237,7 @@ class Scoreboard:
             self._change_mode(message['data'])
             return
 
-        if message['channel'] == b'gamecast_game':
+        if message['channel'] == b'gamecast_id':
             self._change_gamecast_game(message['data'])
             return
 
