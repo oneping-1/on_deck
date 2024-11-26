@@ -63,6 +63,8 @@ class Fetcher:
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
+        self.gamecast_id: int = None
+
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
@@ -73,33 +75,6 @@ class Fetcher:
             self.delay = delay
         else:
             self.delay = int(self.redis.get('delay'))
-
-        self.initialize_games()
-
-    def initialize_games(self):
-        """
-        Initializes the games list with the game data from the at_bat
-        module. It stores the game data in the redis database.
-        """
-        self.gamepks = get_daily_gamepks()
-
-        for i, gamepk in enumerate(self.gamepks):
-            game = ScoreboardData(gamepk, self.delay)
-            self.games.append(game)
-            self.redis_set(str(i), game.to_dict())
-
-        num_games = len(self.games)
-        self.redis_set('num_games', num_games)
-
-    def update_games(self):
-        """
-        Updates the game data in the games list and redis database.
-        """
-        for i, game in enumerate(self.games):
-            diff = game.update_return_difference(self.delay)
-            if diff:
-                self.redis_set(str(i), game.to_dict())
-                self.redis_publish(str(i), diff)
 
     def redis_set(self, key: Union[str, int], value: Union[int, dict]):
         """
@@ -127,25 +102,46 @@ class Fetcher:
 
         self.redis.publish(key, value)
 
-    def start(self):
+    def initialize_games(self):
         """
-        Starts the fetcher and periodically updates the game data.
+        Initializes the games list with the game data from the at_bat
+        module. It stores the game data in the redis database.
         """
-        threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
-        while True:
-            self.delay = int(self.redis.get('delay'))
-            self.update_games()
-            # Check for user input from server
-            time.sleep(30)
+        self.gamepks = get_daily_gamepks()
 
-    def listen_for_pubsub(self):
+        for i, gamepk in enumerate(self.gamepks):
+            game = ScoreboardData(gamepk, self.delay)
+            self.games.append(game)
+            self.redis_set(str(i), game.to_dict())
+
+        num_games = len(self.games)
+        self.redis_set('num_games', num_games)
+
+    def update_games(self):
         """
-        Listens for user input from the server.
+        Updates the game data in the games list and redis database.
+        """
+        for i, game in enumerate(self.games):
+            diff = game.update_return_difference(self.delay)
+            if diff:
+                self.redis_set(str(i), game.to_dict())
+                self.redis_publish(str(i), diff)
+
+    def gamecast(self):
+        """
+        Specifically updates the gamecast game more frequently than the
+        other games.
         """
         while True:
-            for message in self.pubsub.listen():
-                self._read_pubsub_message(message)
-            time.sleep(1) # Multithreading Help
+            gamecast_id = self.redis.get('gamecast_game')
+            if gamecast_id is None:
+                return
+            self.gamecast_id = int(gamecast_id)
+            game = self.games[self.gamecast_id]
+            diff = game.update_return_difference(self.delay)
+            self.redis_set(self.gamecast_id, game.to_dict())
+            self.redis_publish(self.gamecast_id, diff)
+            time.sleep(1)
 
     def _read_pubsub_message(self, message):
         """
@@ -164,7 +160,29 @@ class Fetcher:
 
         return
 
+    def listen_for_pubsub(self):
+        """
+        Listens for user input from the server.
+        """
+        while True:
+            for message in self.pubsub.listen():
+                self._read_pubsub_message(message)
+            time.sleep(1) # Multithreading Help
+
+    def start(self):
+        """
+        Starts the fetcher and periodically updates the game data.
+        """
+        self.initialize_games()
+        print('done initializing')
+        threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
+        threading.Thread(target=self.gamecast, daemon=True).start()
+        while True:
+            self.delay = int(self.redis.get('delay'))
+            self.update_games()
+            # Check for user input from server
+            time.sleep(10)
+
 if __name__ == '__main__':
     fetcher = Fetcher()
-    print('done initializing')
     fetcher.start()

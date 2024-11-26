@@ -189,6 +189,7 @@ class Gamecast:
         self._print_bases(game)
         self._print_count(game)
         self.display_manager.swap_frame()
+        print('gamecast printed')
 
 if __name__ == '__main__':
     print('wrong module dummy')

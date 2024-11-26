@@ -108,14 +108,16 @@ class Scoreboard:
 
         self._print_welcome_message()
         if platform.system() != 'Windows':
-            time.sleep(20) # Allow time for fetcher to get games
+            time.sleep(60) # Allow time for fetcher to get games
 
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
         self.mode = self.redis.get('mode').decode('utf-8')
-        self.gamecast_id = int(self.redis.get('gamecast_id').decode('utf-8'))
+        gamecast_id = self.redis.get('gamecast_id')
+        if gamecast_id is not None:
+            self.gamecast_id = int(self.redis.get('gamecast_id').decode('utf-8'))
 
         self.overview = Overview(self.display_manager)
         self.gamecast = Gamecast(self.display_manager)
@@ -166,7 +168,6 @@ class Scoreboard:
 
         for self._page in range(max_page):
             self._print_gamecast_page()
-            # self.gamecast.print_game(self.games[3])
             self.display_manager.swap_frame()
             time.sleep(5)
 
@@ -199,6 +200,7 @@ class Scoreboard:
             self._print_overview_page()
         elif (self.mode == 'gamecast') and (self._page is not None):
             self._print_gamecast_page()
+            self.gamecast.print_game(self.games[self.gamecast_id])
 
         self.print_time()
 
@@ -293,7 +295,7 @@ class Scoreboard:
 
         if self.mode == 'overview':
             self._print_overview_page()
-        if self.mode == 'gamecast':
+        if (self.mode == 'gamecast') and (self.gamecast_id is not None):
             self.gamecast.print_game(self.games[self.gamecast_id])
         self.display_manager.swap_frame()
 
