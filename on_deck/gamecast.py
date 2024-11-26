@@ -110,11 +110,11 @@ class Gamecast:
             bases[2] = True
 
         self.display_manager.draw_diamond(second_base_column_offset - base_offset,
-            second_base_row_offset + base_offset, base_length, thickness, bases[0], Colors.white)
+            second_base_row_offset + base_offset, base_length, thickness, bases[2], Colors.white)
         self.display_manager.draw_diamond(second_base_column_offset,
             second_base_row_offset, base_length, thickness, bases[1], Colors.white)
         self.display_manager.draw_diamond(second_base_column_offset + base_offset,
-            second_base_row_offset + base_offset, base_length, thickness, bases[2], Colors.white)
+            second_base_row_offset + base_offset, base_length, thickness, bases[0], Colors.white)
 
     def _print_count(self, game: dict):
         circle_column_offset = 128 + 206
@@ -189,7 +189,6 @@ class Gamecast:
         self._print_bases(game)
         self._print_count(game)
         self.display_manager.swap_frame()
-        print('gamecast printed')
 
 if __name__ == '__main__':
     print('wrong module dummy')
