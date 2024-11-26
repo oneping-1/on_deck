@@ -9,8 +9,7 @@ class Overview:
     def __init__(self, display_manager: DisplayManager):
         self.display_manager = display_manager
 
-        self.ter_u28b = Fonts.ter_u28b
-
+        # Double digit offset for ter_u28b font
         self._ddo = 7 # double digit offset
         self._games_per_column = 6
 
@@ -48,17 +47,17 @@ class Overview:
         home_score = str(game['home']['runs'])
 
         if len(away_score) > 1:
-            self.display_manager.draw_text(self.ter_u28b, column_offset-self._ddo,
+            self.display_manager.draw_text(Fonts.ter_u28b, column_offset-self._ddo,
                 row_offset, color, away_score)
         else:
-            self.display_manager.draw_text(self.ter_u28b, column_offset,
+            self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
                 row_offset, color, away_score)
 
         if len(home_score) > 1:
-            self.display_manager.draw_text(self.ter_u28b, column_offset-self._ddo,
+            self.display_manager.draw_text(Fonts.ter_u28b, column_offset-self._ddo,
                 row_offset+20, color, home_score)
         else:
-            self.display_manager.draw_text(self.ter_u28b, column_offset,
+            self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
                 row_offset+20, color, home_score)
 
     def _print_text(self, text: str, column_offset: int, row_offset: int, font, i: int):
@@ -82,10 +81,10 @@ class Overview:
         inning = str(inning)
 
         if len(inning) > 1:
-            self.display_manager.draw_text(self.ter_u28b, column_offset-self._ddo,
+            self.display_manager.draw_text(Fonts.ter_u28b, column_offset-self._ddo,
                 row_offset, color, inning)
         else:
-            self.display_manager.draw_text(self.ter_u28b, column_offset,
+            self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
                 row_offset, color, inning)
 
     def _print_inning_arrows(self, game: dict, i: int):
@@ -165,7 +164,7 @@ class Overview:
         if len(start_time) < 5:
             start_time = ' ' + start_time
 
-        self.display_manager.draw_text(self.ter_u28b, column_offset,
+        self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
             row_offset, color, start_time)
 
     def print_game(self, game: dict, i: int):
@@ -180,9 +179,9 @@ class Overview:
         away_team = game['away']['abv']
         home_team = game['home']['abv']
 
-        self.display_manager.draw_text(self.ter_u28b, column_offset,
+        self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
             row_offset, color, away_team)
-        self.display_manager.draw_text(self.ter_u28b, column_offset,
+        self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
             row_offset+20, color, home_team)
 
         game_state = game['game_state']
@@ -200,13 +199,13 @@ class Overview:
             self._print_scores(game, i)
             inning = game['inning']
             if inning == 9:
-                self._print_text('F', 74, 0, self.ter_u28b, i)
+                self._print_text('F', 74, 0, Fonts.ter_u28b, i)
             else:
                 # Multiple print statements to squeeze the text into
                 # tight space
-                self._print_text('F', 74, 0, self.ter_u28b, i)
-                self._print_text('/', 84, 0, self.ter_u28b, i)
-                self._print_text(f'{inning}', 94, 0, self.ter_u28b, i)
+                self._print_text('F', 74, 0, Fonts.ter_u28b, i)
+                self._print_text('/', 84, 0, Fonts.ter_u28b, i)
+                self._print_text(f'{inning}', 94, 0, Fonts.ter_u28b, i)
 
         # Pregame
         elif game_state == 'P':
