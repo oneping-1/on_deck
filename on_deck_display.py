@@ -115,6 +115,7 @@ class Scoreboard:
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
         self.mode = self.redis.get('mode').decode('utf-8')
+        self.gamecast_id = int(self.redis.get('gamecast_id').decode('utf-8'))
 
         self.overview = Overview(self.display_manager)
         self.gamecast = Gamecast(self.display_manager)
@@ -165,7 +166,7 @@ class Scoreboard:
 
         for self._page in range(max_page):
             self._print_gamecast_page()
-            self.gamecast.print_game(self.games[3])
+            # self.gamecast.print_game(self.games[3])
             self.display_manager.swap_frame()
             time.sleep(5)
 
@@ -211,6 +212,13 @@ class Scoreboard:
             # while True: in start should handle it
             self._print_overview_page()
 
+    def _change_gamecast_game(self, game_id):
+        game_id = int(game_id)
+        self.gamecast_id = self.games[game_id]
+
+        if self.mode == 'gamecast':
+            self.gamecast.print_game(self.gamecast_id)
+
     def _read_pubsub_message(self, message):
         if message['type'] != 'message':
             return
@@ -223,6 +231,10 @@ class Scoreboard:
             self._change_mode(message['data'])
             return
 
+        if message['channel'] == b'gamecast_game':
+            self._change_gamecast_game(message['data'])
+            return
+
         game_id = int(message['channel'])
         new_data = json.loads(message['data'])
 
@@ -232,6 +244,8 @@ class Scoreboard:
             page = math.floor(game_id / 6)
             if page == self._page:
                 self.overview.print_game(self.games[game_id], game_id % 6)
+            if game_id == self.gamecast_id:
+                self.gamecast.print_game(self.games[game_id])
         else:
             self.overview.print_game(self.games[game_id], game_id)
         self.display_manager.swap_frame()
@@ -279,6 +293,8 @@ class Scoreboard:
 
         if self.mode == 'overview':
             self._print_overview_page()
+        if self.mode == 'gamecast':
+            self.gamecast.print_game(self.games[self.gamecast_id])
         self.display_manager.swap_frame()
 
         while True:

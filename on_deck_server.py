@@ -58,6 +58,7 @@ class Server:
         mode = request.args.get('mode', default=None)
         delay = request.args.get('delay', default=None)
         brightness = request.args.get('brightness', default=None)
+        gamecast_id = request.args.get('gamecast_id', default=None)
 
         if mode is not None:
             self.redis.set('mode', mode)
@@ -68,6 +69,9 @@ class Server:
         if brightness is not None:
             self.redis.set('brightness', brightness)
             self.redis.publish('brightness', brightness)
+        if gamecast_id is not None:
+            self.redis.set('gamecast_id', gamecast_id)
+            self.redis.publish('gamecast_id', gamecast_id)
 
         mode = self.redis.get('mode')
         if mode is not None:
@@ -81,10 +85,15 @@ class Server:
         if brightness is not None:
             brightness = int(brightness)
 
+        gamecast_id = self.redis.get('gamecast_id')
+        if gamecast_id is not None:
+            gamecast_id = int(gamecast_id)
+
         return_dict = {
             'mode': mode,
             'delay': delay,
-            'brightness': brightness
+            'brightness': brightness,
+            'gamecast_game': gamecast_id
         }
 
         return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')

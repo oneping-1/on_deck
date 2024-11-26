@@ -13,8 +13,8 @@ class Gamecast:
     def _print_team_names(self, game: dict):
         color = Colors.white
 
-        self.display_manager.draw_text(Fonts.ter_u16b, 128, 12, color, game['away']['name'])
-        self.display_manager.draw_text(Fonts.ter_u16b, 128, 24, color, game['home']['name'])
+        self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, game['away']['name'])
+        self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, game['home']['name'])
 
     def _print_linescore(self, home: bool, runs: int, hits: int, errors: int, lob: int):
         color = Colors.white
@@ -64,7 +64,6 @@ class Gamecast:
         hits = game['home']['hits']
         errors = game['home']['errors']
         lob = game['home']['left_on_base']
-        lob = 11
         self._print_linescore(True, runs, hits, errors, lob)
 
     def _print_inning(self, game: dict):
