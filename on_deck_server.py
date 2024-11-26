@@ -93,7 +93,7 @@ class Server:
             'mode': mode,
             'delay': delay,
             'brightness': brightness,
-            'gamecast_game': gamecast_id
+            'gamecast_id': gamecast_id
         }
 
         return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')

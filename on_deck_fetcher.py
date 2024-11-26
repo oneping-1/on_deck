@@ -63,11 +63,11 @@ class Fetcher:
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
-        self.gamecast_id: int = None
 
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
+        self.pubsub.subscribe('gamecast_id')
 
         if delay is not None:
             print(f'Delay: {delay}')
@@ -75,6 +75,10 @@ class Fetcher:
             self.delay = delay
         else:
             self.delay = int(self.redis.get('delay'))
+
+        self.gamecast_id = self.redis.get('gamecast_id')
+        if self.gamecast_id is not None:
+            self.gamecast_id = int(self.gamecast_id)
 
     def redis_set(self, key: Union[str, int], value: Union[int, dict]):
         """
@@ -127,6 +131,12 @@ class Fetcher:
                 self.redis_set(str(i), game.to_dict())
                 self.redis_publish(str(i), diff)
 
+    def _update_gamecast(self):
+        game = self.games[self.gamecast_id]
+        diff = game.update_return_difference(self.delay)
+        self.redis_set(self.gamecast_id, game.to_dict())
+        self.redis_publish(self.gamecast_id, diff)
+
     def gamecast(self):
         """
         Specifically updates the gamecast game more frequently than the
@@ -137,10 +147,7 @@ class Fetcher:
             if gamecast_id is None:
                 return
             self.gamecast_id = int(gamecast_id)
-            game = self.games[self.gamecast_id]
-            diff = game.update_return_difference(self.delay)
-            self.redis_set(self.gamecast_id, game.to_dict())
-            self.redis_publish(self.gamecast_id, diff)
+            self._update_gamecast()
             time.sleep(1)
 
     def _read_pubsub_message(self, message):
@@ -157,6 +164,13 @@ class Fetcher:
 
         if channel == 'delay':
             self.delay = int(message['data'])
+            self._update_gamecast()
+            self.update_games()
+            print('done updating')
+
+        if channel == 'gamecast_id':
+            self.gamecast_id = int(message['data'])
+            self._update_gamecast()
 
         return
 
