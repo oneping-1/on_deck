@@ -64,10 +64,35 @@ class Gamecast:
         hits = game['home']['hits']
         errors = game['home']['errors']
         lob = game['home']['left_on_base']
+        lob = 11
         self._print_linescore(True, runs, hits, errors, lob)
 
+    def _print_inning(self, game: dict):
+        column_offset = 128 + 152
+        row_offset = 18
+        arrow_size = 5
+
+        inning = game['inning']
+        inning_state = game['inning_state']
+
+        color = Colors.white
+
+        if inning >= 10:
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset - self._ddo,
+                row_offset, color, f'{inning}')
+        else:
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
+                row_offset, color, f'{inning}')
+
+        if inning_state == 'T':
+            self.display_manager.draw_inning_arrow(column_offset+3, row_offset-12,
+                arrow_size, True, color)
+        elif inning_state == 'B':
+            self.display_manager.draw_inning_arrow(column_offset+3, row_offset+1,
+                arrow_size, False, color)
+
     def _print_bases(self, game: dict):
-        second_base_column_offset = 128 + 160
+        second_base_column_offset = 128 + 182
         second_base_row_offset = 8
 
         base_length = 6
@@ -93,7 +118,7 @@ class Gamecast:
             second_base_row_offset + base_offset, base_length, thickness, bases[2], Colors.white)
 
     def _print_count(self, game: dict):
-        circle_column_offset = 128 + 182
+        circle_column_offset = 128 + 206
         ball_row_offset = 4
         strike_row_offset = 12
         out_row_offset = 20
@@ -158,8 +183,10 @@ class Gamecast:
             out_row_offset, radius, thickness, outs[2], Colors.white)
 
     def print_game(self, game: dict):
+        self.display_manager.clear_section(128, 0, 384, 256)
         self._print_team_names(game)
         self._print_linescores(game)
+        self._print_inning(game)
         self._print_bases(game)
         self._print_count(game)
         self.display_manager.swap_frame()
