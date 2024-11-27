@@ -57,17 +57,17 @@ class Fetcher:
     """
     def __init__(self, delay: int = None):
         # Used of offseason testing
-        date = '2024-05-29T14:35:00-04:00'
+        date = '2024-05-29T14:45:00-04:00'
         delay = seconds_since_iso8601(date)
 
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
-
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
         self.pubsub.subscribe('gamecast_id')
+        self.pubsub.subscribe('gamecast')
 
         if delay is not None:
             print(f'Delay: {delay}')
@@ -132,10 +132,15 @@ class Fetcher:
                 self.redis_publish(str(i), diff)
 
     def _update_gamecast(self):
+        if self.gamecast_id is None:
+            return
         game = self.games[self.gamecast_id]
         diff = game.update_return_difference(self.delay)
-        self.redis_set(self.gamecast_id, game.to_dict())
-        self.redis_publish(self.gamecast_id, diff)
+        if diff:
+            self.redis_set('gamecast', game.to_dict())
+            self.redis_set('gamecast_id', self.gamecast_id)
+            self.redis_publish('gamecast', diff)
+            self.redis_publish('gamecast_id', self.gamecast_id)
 
     def gamecast(self):
         """
@@ -143,9 +148,7 @@ class Fetcher:
         other games.
         """
         while True:
-            gamecast_id = self.redis.get('gamecast_game')
-            if gamecast_id is None:
-                return
+            gamecast_id = self.redis.get('gamecast_id')
             self.gamecast_id = int(gamecast_id)
             self._update_gamecast()
             time.sleep(1)
@@ -164,13 +167,12 @@ class Fetcher:
 
         if channel == 'delay':
             self.delay = int(message['data'])
-            self._update_gamecast()
-            self.update_games()
-            print('done updating')
+            threading.Thread(target=self._update_gamecast).start()
+            threading.Thread(target=self.update_games).start()
 
         if channel == 'gamecast_id':
             self.gamecast_id = int(message['data'])
-            self._update_gamecast()
+            threading.Thread(target=self._update_gamecast).start()
 
         return
 

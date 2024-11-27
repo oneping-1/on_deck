@@ -16,7 +16,7 @@ class Server:
         self.app.add_url_rule('/reboot', 'reboot', self.reboot, methods=['GET'])
         self.app.add_url_rule('/settings', 'settings', self.settings, methods=['GET'])
         self.app.add_url_rule('/<int:gamepk>', 'gamepk', self.gamepk, methods=['GET'])
-        # self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['GET'])
+        self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['GET'])
 
     def home(self):
         """
@@ -114,6 +114,12 @@ class Server:
         game = game.to_dict()
 
         return Response(json.dumps(game, indent=4), status=200, mimetype='text/plain')
+
+    def gamecast(self):
+        gamecast_game = self.redis.get('gamecast')
+        gamecast_game = json.loads(gamecast_game)
+
+        return Response(json.dumps(gamecast_game, indent=4), status=200, mimetype='text/plain')
 
 server = Server()
 app = server.app

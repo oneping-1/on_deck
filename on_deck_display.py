@@ -101,6 +101,7 @@ class Scoreboard:
             options (_type_): _description_
         """
         self.games: List[dict] = []
+        self.gamecast_game: dict = None
         self._page: int = None
 
         self.display_manager = DisplayManager(get_options())
@@ -112,13 +113,10 @@ class Scoreboard:
 
         self.redis = redis.Redis(host='localhost', port=6379, db=0)
         self.pubsub = self.redis.pubsub()
+        self.pubsub2 = None # dedicated to gamecast thread
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
-        self.pubsub.subscribe('gamecast_id')
         self.mode = self.redis.get('mode').decode('utf-8')
-        gamecast_id = self.redis.get('gamecast_id')
-        if gamecast_id is not None:
-            self.gamecast_id = int(self.redis.get('gamecast_id').decode('utf-8'))
 
         self.overview = Overview(self.display_manager)
         self.gamecast = Gamecast(self.display_manager)
@@ -129,6 +127,7 @@ class Scoreboard:
 
         self.time_thread = threading.Thread(target=self._print_time_loop, daemon=True)
         self.pubsub_thread = threading.Thread(target=self.listen_to_pubsub, daemon=True)
+        self.gamecast_thread = threading.Thread(target=self.loop_gamecast, daemon=True)
 
     def _print_welcome_message(self):
         ip = get_ip_address()
@@ -172,7 +171,7 @@ class Scoreboard:
             self.display_manager.swap_frame()
             time.sleep(5)
 
-    def _loop_gamecast(self):
+    def _loop_gamecast_pages(self):
         while self.mode == 'gamecast':
             self._print_gamecast_pages()
         time.sleep(1)
@@ -199,9 +198,6 @@ class Scoreboard:
 
         if self.mode == 'overview':
             self._print_overview_page()
-        elif (self.mode == 'gamecast') and (self._page is not None):
-            self._print_gamecast_page()
-            self.gamecast.print_game(self.games[self.gamecast_id])
 
         self.print_time()
 
@@ -215,15 +211,44 @@ class Scoreboard:
             # while True: in start should handle it
             self._print_overview_page()
 
-    def _change_gamecast_game(self, game_id):
-        if game_id is None:
-            return
+    def _update_gamecast(self, message):
+        if not message:
+            return False
 
-        game_id = int(game_id)
-        self.gamecast_id = game_id
+        if message['type'] != 'message':
+            return False
 
-        if self.mode == 'gamecast':
-            self.gamecast.print_game(self.games[self.gamecast_id])
+        new_data = json.loads(message['data'])
+
+        if new_data == {}:
+            return False
+
+        self.gamecast_game = recursive_update(self.gamecast_game, new_data)
+        return True
+
+    def loop_gamecast(self):
+        """
+        Continuously updates the gamecast game and prints it to the display
+        """
+        self.pubsub2 = self.redis.pubsub()
+        self.pubsub2.subscribe('gamecast')
+
+        while self.gamecast_game is None:
+            gamecast = self.redis.get('gamecast')
+            if gamecast is not None:
+                self.gamecast_game = json.loads(gamecast)
+            time.sleep(1)
+
+        self.gamecast.print_game(self.gamecast_game)
+        self.display_manager.swap_frame()
+
+        while True:
+            message = self.pubsub2.get_message(timeout=5)
+            new_data = self._update_gamecast(message)
+            if new_data:
+                self.gamecast.print_game(self.gamecast_game)
+                self.display_manager.swap_frame()
+            time.sleep(.1)
 
     def _read_pubsub_message(self, message):
         if message['type'] != 'message':
@@ -237,10 +262,6 @@ class Scoreboard:
             self._change_mode(message['data'])
             return
 
-        if message['channel'] == b'gamecast_id':
-            self._change_gamecast_game(message['data'])
-            return
-
         game_id = int(message['channel'])
         new_data = json.loads(message['data'])
 
@@ -250,8 +271,6 @@ class Scoreboard:
             page = math.floor(game_id / 6)
             if page == self._page:
                 self.overview.print_game(self.games[game_id], game_id % 6)
-            if game_id == self.gamecast_id:
-                self.gamecast.print_game(self.games[game_id])
         else:
             self.overview.print_game(self.games[game_id], game_id)
         self.display_manager.swap_frame()
@@ -264,7 +283,7 @@ class Scoreboard:
             message = self.pubsub.get_message(timeout=5)
             if message:
                 self._read_pubsub_message(message)
-            time.sleep(.1)
+            time.sleep(1)
 
     def print_time(self):
         """
@@ -296,15 +315,14 @@ class Scoreboard:
 
         self.time_thread.start()
         self.pubsub_thread.start()
+        self.gamecast_thread.start()
 
         if self.mode == 'overview':
             self._print_overview_page()
-        if (self.mode == 'gamecast') and (self.gamecast_id is not None):
-            self.gamecast.print_game(self.games[self.gamecast_id])
         self.display_manager.swap_frame()
 
         while True:
-            self._loop_gamecast()
+            self._loop_gamecast_pages()
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()
