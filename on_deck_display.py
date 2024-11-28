@@ -125,9 +125,9 @@ class Scoreboard:
         if brightness is not None:
             self._change_brightness(brightness)
 
-        self.time_thread = threading.Thread(target=self._print_time_loop, daemon=True)
-        self.pubsub_thread = threading.Thread(target=self.listen_to_pubsub, daemon=True)
-        self.gamecast_thread = threading.Thread(target=self.loop_gamecast, daemon=True)
+        self.time_thread = threading.Thread(target=self.thread_time, daemon=True)
+        self.pubsub_thread = threading.Thread(target=self.thread_pubsub, daemon=True)
+        self.gamecast_thread = threading.Thread(target=self.thread_gamecast, daemon=True)
 
     def _print_welcome_message(self):
         ip = get_ip_address()
@@ -154,7 +154,7 @@ class Scoreboard:
         new_games = copy.deepcopy(games[offset:]) + copy.deepcopy(games[:offset])
         return new_games
 
-    def _print_gamecast_page(self):
+    def _print_single_column_page(self):
         if self.mode != 'gamecast':
             return
         shifted_games = self._get_shifted_games(self._page)
@@ -162,18 +162,21 @@ class Scoreboard:
         for i in range(6):
             self.overview.print_game(shifted_games[i], i)
 
-    def _print_gamecast_pages(self):
+    def _loop_single_column_pages(self):
         num_games = len(self.games)
         max_page = math.ceil(num_games / 6)
 
         for self._page in range(max_page):
-            self._print_gamecast_page()
+            self._print_single_column_page()
             self.display_manager.swap_frame()
             time.sleep(5)
 
-    def _loop_gamecast_pages(self):
+    def thread_single_column(self):
+        """
+        Continuously prints the single column pages for gamecast mode
+        """
         while self.mode == 'gamecast':
-            self._print_gamecast_pages()
+            self._loop_single_column_pages()
         time.sleep(1)
 
     def _change_brightness(self, brightness):
@@ -199,7 +202,7 @@ class Scoreboard:
         if self.mode == 'overview':
             self._print_overview_page()
 
-        self.print_time()
+        self._print_time()
 
     def _change_mode(self, mode):
         mode = mode.decode('utf-8')
@@ -210,45 +213,6 @@ class Scoreboard:
             # dont need to do anything for gamecast
             # while True: in start should handle it
             self._print_overview_page()
-
-    def _update_gamecast(self, message):
-        if not message:
-            return False
-
-        if message['type'] != 'message':
-            return False
-
-        new_data = json.loads(message['data'])
-
-        if new_data == {}:
-            return False
-
-        self.gamecast_game = recursive_update(self.gamecast_game, new_data)
-        return True
-
-    def loop_gamecast(self):
-        """
-        Continuously updates the gamecast game and prints it to the display
-        """
-        self.pubsub2 = self.redis.pubsub()
-        self.pubsub2.subscribe('gamecast')
-
-        while self.gamecast_game is None:
-            gamecast = self.redis.get('gamecast')
-            if gamecast is not None:
-                self.gamecast_game = json.loads(gamecast)
-            time.sleep(1)
-
-        self.gamecast.print_game(self.gamecast_game)
-        self.display_manager.swap_frame()
-
-        while True:
-            message = self.pubsub2.get_message(timeout=5)
-            new_data = self._update_gamecast(message)
-            if new_data:
-                self.gamecast.print_game(self.gamecast_game)
-                self.display_manager.swap_frame()
-            time.sleep(.1)
 
     def _read_pubsub_message(self, message):
         if message['type'] != 'message':
@@ -275,7 +239,7 @@ class Scoreboard:
             self.overview.print_game(self.games[game_id], game_id)
         self.display_manager.swap_frame()
 
-    def listen_to_pubsub(self):
+    def thread_pubsub(self):
         """
         Listens to the pubsub channel for updates to the game
         """
@@ -285,7 +249,7 @@ class Scoreboard:
                 self._read_pubsub_message(message)
             time.sleep(1)
 
-    def print_time(self):
+    def _print_time(self):
         """
         Print the current time, time from delay number of seconds ago,
         and the current delay
@@ -293,9 +257,52 @@ class Scoreboard:
         delay = int(self.redis.get('delay'))
         self.overview.print_time(delay, 17)
 
-    def _print_time_loop(self):
+    def thread_time(self):
+        """
+        Continuously prints the time to the display
+        """
         while True:
-            self.print_time()
+            self._print_time()
+            time.sleep(.1)
+
+    def _update_gamecast(self, message):
+        if not message:
+            return False
+
+        if message['type'] != 'message':
+            return False
+
+        new_data = json.loads(message['data'])
+
+        if new_data == {}:
+            return False
+
+        self.gamecast_game = recursive_update(self.gamecast_game, new_data)
+        return True
+
+    def thread_gamecast(self):
+        """
+        Continuously updates the gamecast game and prints it to the display
+        """
+        self.pubsub2 = self.redis.pubsub()
+        self.pubsub2.subscribe('gamecast')
+
+        while self.gamecast_game is None:
+            gamecast = self.redis.get('gamecast')
+            if gamecast is not None:
+                self.gamecast_game = json.loads(gamecast)
+            time.sleep(1)
+
+        # Prints gamecast game immediately. No need to wait for update
+        self.gamecast.print_game(self.gamecast_game)
+        self.display_manager.swap_frame()
+
+        while True:
+            message = self.pubsub2.get_message(timeout=5)
+            new_data = self._update_gamecast(message)
+            if new_data:
+                self.gamecast.print_game(self.gamecast_game)
+                self.display_manager.swap_frame()
             time.sleep(.1)
 
     def start(self):
@@ -322,7 +329,7 @@ class Scoreboard:
         self.display_manager.swap_frame()
 
         while True:
-            self._loop_gamecast_pages()
+            self.thread_single_column()
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()

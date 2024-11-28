@@ -1,3 +1,4 @@
+from at_bat.umpire import Umpire
 
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
@@ -181,6 +182,127 @@ class Gamecast:
         self.display_manager.draw_circle(circle_column_offset + 2*delta,
             out_row_offset, radius, thickness, outs[2], Colors.white)
 
+    def _print_umpire(self, game: dict):
+        column_offset = 129
+        row_offset = 48
+
+        color = Colors.white
+
+        gamepk = game['gamepk']
+
+        umpire = Umpire(gamepk=gamepk, delay_seconds=15762921)
+        umpire.calculate_game(method='monte')
+
+        number = umpire.num_missed_calls
+        home_favor = umpire.home_favor
+        home_wpa = umpire.home_wpa
+
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{number} missed')
+
+        row_offset += 12
+        team = game['home']['abv']
+        if home_favor < 0:
+            home_favor *= -1
+            team = game['away']['abv']
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'Runs: {home_favor:4.2f} {team}')
+
+        row_offset += 12
+        team = game['home']['abv']
+        if home_wpa < 0:
+            home_wpa *= -1
+            team = game['away']['abv']
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'WPA: {home_wpa*100:4.1f}% {team}')
+
+    def _print_run_expectancy(self, game: dict):
+        column_offset = 129
+        row_offset = 96
+
+        color = Colors.white
+
+        re_avg = game['run_expectancy']['average_runs']
+        re_ts = game['run_expectancy']['to_score']
+
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'AVG:{re_avg:5.2f}')
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
+            color, f'1+:{re_ts*100:5.1f}%')
+
+    def _print_win_probability(self, game: dict):
+        column_offset = 129
+        row_offset = 120
+
+        color = Colors.white
+
+        wp_away = game['win_probability']['away']
+        wp_home = game['win_probability']['home']
+
+        if wp_away > wp_home:
+            team = game['away']['abv']
+            wp = wp_away
+        else:
+            team = game['home']['abv']
+            wp = wp_home
+
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'WP:{wp*100:5.1f}% {team}')
+
+    def _print_pitch_details(self, game: dict):
+        column_offset = 129
+        row_offset = 144
+
+        color = Colors.white
+
+        pitch_type = game['pitch_details']['type']
+        if pitch_type == 'Four-Seam Fastball':
+            pitch_type = 'Four-Seam'
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{pitch_type}')
+
+        pitch_speed = game['pitch_details']['speed']
+        if pitch_speed is None:
+            return
+        row_offset += 12
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{pitch_speed:.1f} MPH')
+
+        row_offset += 12
+        pitch_zone = game['pitch_details']['zone']
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, 'Zone:')
+        color = Colors.red
+        if pitch_zone > 9:
+            color = Colors.green
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+48, row_offset,
+            color, f'{pitch_zone:2d}')
+
+    def _print_hit_details(self, game: dict):
+        column_offset = 129
+        row_offset = 192
+
+        color = Colors.white
+
+        if game['hit_details']['distance'] is None:
+            self.display_manager.clear_section(column_offset, row_offset,
+                column_offset+128, row_offset+24)
+            return
+
+        distance = game['hit_details']['distance']
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{distance:5.1f} ft')
+
+        exit_velo = game['hit_details']['exit_velo']
+        row_offset += 12
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{exit_velo:5.1f} MPH')
+
+        launch_angle = game['hit_details']['launch_angle']
+        row_offset += 12
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{launch_angle:5.1f}°')
+
     def print_game(self, game: dict):
         self.display_manager.clear_section(128, 0, 384, 256)
         self._print_team_names(game)
@@ -188,6 +310,11 @@ class Gamecast:
         self._print_inning(game)
         self._print_bases(game)
         self._print_count(game)
+        self._print_umpire(game)
+        self._print_run_expectancy(game)
+        self._print_win_probability(game)
+        self._print_pitch_details(game)
+        self._print_hit_details(game)
         self.display_manager.swap_frame()
 
 if __name__ == '__main__':

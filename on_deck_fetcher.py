@@ -57,7 +57,7 @@ class Fetcher:
     """
     def __init__(self, delay: int = None):
         # Used of offseason testing
-        date = '2024-05-29T14:45:00-04:00'
+        date = '2024-05-29T14:37:00-04:00'
         delay = seconds_since_iso8601(date)
 
         self.gamepks: List[int] = []
@@ -138,9 +138,9 @@ class Fetcher:
         diff = game.update_return_difference(self.delay)
         if diff:
             self.redis_set('gamecast', game.to_dict())
-            self.redis_set('gamecast_id', self.gamecast_id)
+            self.redis_set(self.gamecast_id, game.to_dict())
             self.redis_publish('gamecast', diff)
-            self.redis_publish('gamecast_id', self.gamecast_id)
+            self.redis_publish(self.gamecast_id, diff)
 
     def gamecast(self):
         """
@@ -148,10 +148,14 @@ class Fetcher:
         other games.
         """
         while True:
-            gamecast_id = self.redis.get('gamecast_id')
-            self.gamecast_id = int(gamecast_id)
-            self._update_gamecast()
-            time.sleep(1)
+            mode = self.redis.get('mode')
+            if mode == b'gamecast':
+                gamecast_id = self.redis.get('gamecast_id')
+                self.gamecast_id = int(gamecast_id)
+                self._update_gamecast()
+                time.sleep(1)
+            else:
+                time.sleep(60)
 
     def _read_pubsub_message(self, message):
         """
