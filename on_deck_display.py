@@ -277,6 +277,7 @@ class Scoreboard:
         if new_data == {}:
             return False
 
+        print(new_data)
         self.gamecast_game = recursive_update(self.gamecast_game, new_data)
         return True
 
@@ -295,14 +296,12 @@ class Scoreboard:
 
         # Prints gamecast game immediately. No need to wait for update
         self.gamecast.print_game(self.gamecast_game)
-        self.display_manager.swap_frame()
 
         while True:
             message = self.pubsub2.get_message(timeout=5)
             new_data = self._update_gamecast(message)
             if new_data:
                 self.gamecast.print_game(self.gamecast_game)
-                self.display_manager.swap_frame()
             time.sleep(.1)
 
     def start(self):

@@ -1,4 +1,3 @@
-from at_bat.umpire import Umpire
 
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
@@ -182,40 +181,6 @@ class Gamecast:
         self.display_manager.draw_circle(circle_column_offset + 2*delta,
             out_row_offset, radius, thickness, outs[2], Colors.white)
 
-    def _print_umpire(self, game: dict):
-        column_offset = 129
-        row_offset = 48
-
-        color = Colors.white
-
-        gamepk = game['gamepk']
-
-        umpire = Umpire(gamepk=gamepk, delay_seconds=15762921)
-        umpire.calculate_game(method='monte')
-
-        number = umpire.num_missed_calls
-        home_favor = umpire.home_favor
-        home_wpa = umpire.home_wpa
-
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{number} missed')
-
-        row_offset += 12
-        team = game['home']['abv']
-        if home_favor < 0:
-            home_favor *= -1
-            team = game['away']['abv']
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'Runs: {home_favor:4.2f} {team}')
-
-        row_offset += 12
-        team = game['home']['abv']
-        if home_wpa < 0:
-            home_wpa *= -1
-            team = game['away']['abv']
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'WPA: {home_wpa*100:4.1f}% {team}')
-
     def _print_run_expectancy(self, game: dict):
         column_offset = 129
         row_offset = 96
@@ -310,7 +275,6 @@ class Gamecast:
         self._print_inning(game)
         self._print_bases(game)
         self._print_count(game)
-        self._print_umpire(game)
         self._print_run_expectancy(game)
         self._print_win_probability(game)
         self._print_pitch_details(game)
