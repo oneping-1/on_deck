@@ -111,7 +111,7 @@ class Scoreboard:
         if platform.system() != 'Windows':
             time.sleep(60) # Allow time for fetcher to get games
 
-        self.redis = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
         self.pubsub = self.redis.pubsub()
         self.pubsub2 = None # dedicated to gamecast thread
         self.pubsub.subscribe('brightness')

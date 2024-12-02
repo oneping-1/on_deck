@@ -63,7 +63,7 @@ class Fetcher:
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
-        self.redis = redis.Redis(host='localhost', port=6379, db=0)
+        self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
         self.pubsub.subscribe('gamecast_id')

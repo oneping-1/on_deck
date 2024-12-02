@@ -37,7 +37,21 @@ cd ..
 cd rpi-rgb-led-matrix
 make build-python
 sudo make install-python
+
+sudo rm /etc/nginx/sites-enabled/default
+
+sudo nano /etc/redis/redis.conf
 ```
+
+Change the following to and save:
+```
+bind 0.0.0.0
+protected-mode yes
+requirepass your_password
+```
+
+```
+sudo systemctl restart redis
 
 Open crontab by
 ```
