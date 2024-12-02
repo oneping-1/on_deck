@@ -109,7 +109,7 @@ class Scoreboard:
 
         self._print_welcome_message()
         if platform.system() != 'Windows':
-            time.sleep(60) # Allow time for fetcher to get games
+            time.sleep(1) # Allow time for fetcher to get games
 
         self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
         self.pubsub = self.redis.pubsub()
@@ -265,7 +265,7 @@ class Scoreboard:
             self._print_time()
             time.sleep(.1)
 
-    def _update_gamecast(self, message):
+    def _update_gamecast(self, message) -> bool:
         if not message:
             return False
 
@@ -277,9 +277,8 @@ class Scoreboard:
         if new_data == {}:
             return False
 
-        print(new_data)
         self.gamecast_game = recursive_update(self.gamecast_game, new_data)
-        return True
+        return new_data
 
     def thread_gamecast(self):
         """
@@ -295,13 +294,13 @@ class Scoreboard:
             time.sleep(1)
 
         # Prints gamecast game immediately. No need to wait for update
-        self.gamecast.print_game(self.gamecast_game)
+        self.gamecast.print_game(self.gamecast_game, self.gamecast_game)
 
         while True:
             message = self.pubsub2.get_message(timeout=5)
             new_data = self._update_gamecast(message)
-            if new_data:
-                self.gamecast.print_game(self.gamecast_game)
+            if new_data is not False:
+                self.gamecast.print_game(new_data, self.gamecast_game)
             time.sleep(.1)
 
     def start(self):

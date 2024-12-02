@@ -1,3 +1,4 @@
+from typing import Union
 
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
@@ -13,6 +14,7 @@ class Gamecast:
     def _print_team_names(self, game: dict):
         color = Colors.white
 
+        self.display_manager.clear_section(129, 0, 200, 28)
         self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, game['away']['name'])
         self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, game['home']['name'])
 
@@ -54,6 +56,8 @@ class Gamecast:
                 row_offset, color, f'{lob}')
 
     def _print_linescores(self, game: dict):
+        self.display_manager.clear_section(200, 0, 275, 24)
+
         runs = game['away']['runs']
         hits = game['away']['hits']
         errors = game['away']['errors']
@@ -67,6 +71,8 @@ class Gamecast:
         self._print_linescore(True, runs, hits, errors, lob)
 
     def _print_inning(self, game: dict):
+        self.display_manager.clear_section(275, 0, 293, 24)
+
         column_offset = 128 + 152
         row_offset = 18
         arrow_size = 5
@@ -91,6 +97,8 @@ class Gamecast:
                 arrow_size, False, color)
 
     def _print_bases(self, game: dict):
+        self.display_manager.clear_section(293, 0, 328, 24)
+
         second_base_column_offset = 128 + 182
         second_base_row_offset = 8
 
@@ -117,6 +125,8 @@ class Gamecast:
             second_base_row_offset + base_offset, base_length, thickness, bases[0], Colors.white)
 
     def _print_count(self, game: dict):
+        self.display_manager.clear_section(328, 0, 370, 24)
+
         circle_column_offset = 128 + 206
         ball_row_offset = 4
         strike_row_offset = 12
@@ -182,6 +192,8 @@ class Gamecast:
             out_row_offset, radius, thickness, outs[2], Colors.white)
 
     def _print_umpire(self, game: dict):
+        self.display_manager.clear_section(129, 36, 240, 72)
+
         column_offset = 129
         row_offset = 48
 
@@ -210,6 +222,8 @@ class Gamecast:
             color, f'WP: {wpa*100:.1f}% {abv}')
 
     def _print_run_expectancy(self, game: dict):
+        self.display_manager.clear_section(129, 82, 240, 108)
+
         column_offset = 129
         row_offset = 96
 
@@ -224,6 +238,8 @@ class Gamecast:
             color, f'1+:{re_ts*100:5.1f}%')
 
     def _print_win_probability(self, game: dict):
+        self.display_manager.clear_section(129, 108, 240, 120)
+
         column_offset = 129
         row_offset = 120
 
@@ -243,6 +259,8 @@ class Gamecast:
             color, f'WP:{wp*100:5.1f}% {team}')
 
     def _print_pitch_details(self, game: dict):
+        self.display_manager.clear_section(129, 132, 240, 168)
+
         column_offset = 129
         row_offset = 144
 
@@ -272,6 +290,8 @@ class Gamecast:
             color, f'{pitch_zone:2d}')
 
     def _print_hit_details(self, game: dict):
+        self.display_manager.clear_section(129, 180, 240, 216)
+
         column_offset = 129
         row_offset = 192
 
@@ -296,18 +316,50 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{launch_angle:5.1f}°')
 
-    def print_game(self, game: dict):
-        self.display_manager.clear_section(128, 0, 384, 256)
-        self._print_team_names(game)
-        self._print_linescores(game)
-        self._print_inning(game)
-        self._print_bases(game)
-        self._print_count(game)
-        self._print_umpire(game)
-        self._print_run_expectancy(game)
-        self._print_win_probability(game)
-        self._print_pitch_details(game)
-        self._print_hit_details(game)
+    def print_game(self, new_data: Union[dict, None] = None, game: Union[dict, None] = None):
+        print(new_data)
+        print()
+        # self.display_manager.clear_section(128, 0, 384, 256)
+
+        away = new_data.get('away', None)
+        home = new_data.get('home', None)
+        if (away is not None) or (home is not None):
+            self._print_team_names(game)
+            self._print_linescores(game)
+
+        inning = new_data.get('inning', None)
+        inning_state = new_data.get('inning_state', None)
+        if (inning is not None) or (inning_state is not None):
+            self._print_inning(game)
+
+        runners = new_data.get('runners', None)
+        if (runners is not None):
+            self._print_bases(game)
+
+        count = new_data.get('count', None)
+        if (count is not None):
+            self._print_count(game)
+
+        umpire = new_data.get('umpire', None)
+        if (umpire is not None):
+            self._print_umpire(game)
+
+        re = new_data.get('run_expectancy', None)
+        if (re is not None):
+            self._print_run_expectancy(game)
+
+        wp = new_data.get('win_probability', None)
+        if (wp is not None):
+            self._print_win_probability(game)
+
+        pitch = new_data.get('pitch_details', None)
+        if pitch is not None:
+            self._print_pitch_details(game)
+
+        hit = new_data.get('hit_details', None)
+        if hit is not None:
+            self._print_hit_details(game)
+
         self.display_manager.swap_frame()
 
 if __name__ == '__main__':

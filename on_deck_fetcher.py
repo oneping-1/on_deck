@@ -121,7 +121,7 @@ class Fetcher:
         num_games = len(self.games)
         self.redis_set('num_games', num_games)
 
-    def update_games(self):
+    def update_all_games(self):
         """
         Updates the game data in the games list and redis database.
         """
@@ -130,6 +130,7 @@ class Fetcher:
             if diff:
                 self.redis_set(str(i), game.to_dict())
                 self.redis_publish(str(i), diff)
+            time.sleep(1)
 
     def _update_gamecast(self):
         if self.gamecast_id is None:
@@ -142,7 +143,7 @@ class Fetcher:
             self.redis_publish('gamecast', diff)
             self.redis_publish(self.gamecast_id, diff)
 
-    def gamecast(self):
+    def thread_gamecast(self):
         """
         Specifically updates the gamecast game more frequently than the
         other games.
@@ -153,7 +154,7 @@ class Fetcher:
                 gamecast_id = self.redis.get('gamecast_id')
                 self.gamecast_id = int(gamecast_id)
                 self._update_gamecast()
-                time.sleep(1)
+                time.sleep(.5)
             else:
                 time.sleep(60)
 
@@ -171,8 +172,9 @@ class Fetcher:
 
         if channel == 'delay':
             self.delay = int(message['data'])
+            # Thread this to not interupt another delay message
             threading.Thread(target=self._update_gamecast).start()
-            threading.Thread(target=self.update_games).start()
+            threading.Thread(target=self.update_all_games).start()
 
         if channel == 'gamecast_id':
             self.gamecast_id = int(message['data'])
@@ -196,10 +198,10 @@ class Fetcher:
         self.initialize_games()
         print('done initializing')
         threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
-        threading.Thread(target=self.gamecast, daemon=True).start()
+        threading.Thread(target=self.thread_gamecast, daemon=True).start()
         while True:
             self.delay = int(self.redis.get('delay'))
-            self.update_games()
+            self.update_all_games()
             # Check for user input from server
             time.sleep(10)
 
