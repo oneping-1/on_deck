@@ -80,6 +80,10 @@ class Fetcher:
         if self.gamecast_id is not None:
             self.gamecast_id = int(self.gamecast_id)
 
+        self.mode = self.redis.get('mode')
+        if self.mode is None:
+            self.redis.set('mode', 'overview')
+
     def redis_set(self, key: Union[str, int], value: Union[int, dict]):
         """
         Set a key-value pair in the redis database
@@ -133,14 +137,24 @@ class Fetcher:
             time.sleep(1)
 
     def _update_gamecast(self):
+        mode = self.redis.get('mode')
+        if (mode == b'gamecast') and (self.gamecast_id != b'gamecast'):
+            self.mode = 'gamecast'
+            game = self.games[self.gamecast_id]
+            self.redis_set('gamecast', game.to_dict())
+            self.redis_set(self.gamecast_id, game.to_dict())
+            self.redis_publish('gamecast', game.to_dict())
+            self.redis_publish(self.gamecast_id, game.to_dict())
+            return
+
         new_gamecast_id = int(self.redis.get('gamecast_id'))
         if new_gamecast_id != self.gamecast_id:
+            self.gamecast_id = new_gamecast_id
             game = self.games[new_gamecast_id]
             self.redis_set('gamecast', game.to_dict())
             self.redis_set(new_gamecast_id, game.to_dict())
             self.redis_publish('gamecast', game.to_dict())
             self.redis_publish(new_gamecast_id, game.to_dict())
-            self.gamecast_id = new_gamecast_id
             return
 
         if self.gamecast_id is None:
@@ -165,7 +179,7 @@ class Fetcher:
                 self._update_gamecast()
                 time.sleep(.5)
             else:
-                time.sleep(60)
+                time.sleep(1)
 
     def _read_pubsub_message(self, message):
         """
@@ -206,6 +220,8 @@ class Fetcher:
         """
         self.initialize_games()
         print('done initializing')
+        self.redis.publish('init', 'init')
+
         threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
         threading.Thread(target=self.thread_gamecast, daemon=True).start()
         while True:

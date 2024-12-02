@@ -122,13 +122,23 @@ class Scoreboard:
         self.gamecast = Gamecast(self.display_manager)
         self._gamecast_id: int = None
 
-        brightness = self.redis.get('brightness')
-        if brightness is not None:
-            self._change_brightness(brightness)
-
         self.time_thread = threading.Thread(target=self.thread_time, daemon=True)
         self.pubsub_thread = threading.Thread(target=self.thread_pubsub, daemon=True)
         self.gamecast_thread = threading.Thread(target=self.thread_gamecast, daemon=True)
+
+    def initialize_games(self):
+        """
+        Initializes the games
+        """
+        num_games = int(self.redis.get('num_games'))
+
+        for i in range(num_games):
+            self.games.append(json.loads(self.redis.get(str(i))))
+            self.pubsub.subscribe(str(i))
+
+        if self.mode == 'gamecast':
+            self.gamecast_game = json.loads(self.redis.get('gamecast'))
+            self.gamecast.print_game(self.gamecast_game, self.gamecast_game)
 
     def _print_welcome_message(self):
         ip = get_ip_address()
@@ -176,9 +186,10 @@ class Scoreboard:
         """
         Continuously prints the single column pages for gamecast mode
         """
-        while self.mode == 'gamecast':
-            self._loop_single_column_pages()
-        time.sleep(1)
+        while True:
+            if self.mode == 'gamecast':
+                self._loop_single_column_pages()
+            time.sleep(1)
 
     def _change_brightness(self, brightness):
         """
@@ -202,6 +213,9 @@ class Scoreboard:
 
         if self.mode == 'overview':
             self._print_overview_page()
+        if self.mode == 'gamecast':
+            self.gamecast.print_game(self.gamecast_game, self.gamecast_game)
+            self._print_single_column_page()
 
         self._print_time()
 
@@ -225,6 +239,10 @@ class Scoreboard:
 
         if message['channel'] == b'mode':
             self._change_mode(message['data'])
+            return
+
+        if message['channel'] == b'init':
+            self.initialize_games()
             return
 
         game_id = int(message['channel'])
@@ -305,13 +323,13 @@ class Scoreboard:
             time.sleep(1)
 
         # Prints gamecast game immediately. No need to wait for update
-        self.gamecast.print_game(self.gamecast_game, self.gamecast_game)
+        self.gamecast.print_game(self.mode, self.gamecast_game, self.gamecast_game)
 
         while True:
             message = self.pubsub2.get_message(timeout=5)
             new_data = self._update_gamecast(message)
             if new_data is not False:
-                self.gamecast.print_game(new_data, self.gamecast_game)
+                self.gamecast.print_game(self.mode, new_data, self.gamecast_game)
             time.sleep(.1)
 
     def start(self):

@@ -316,7 +316,10 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{launch_angle:5.1f}°')
 
-    def print_game(self, new_data: Union[dict, None] = None, game: Union[dict, None] = None):
+    def print_game(self, mode: str, new_data: Union[dict, None] = None, game: Union[dict, None] = None):
+        if mode != 'gamecast':
+            return
+
         print(new_data)
         print()
         # self.display_manager.clear_section(128, 0, 384, 256)
