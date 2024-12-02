@@ -133,8 +133,19 @@ class Fetcher:
             time.sleep(1)
 
     def _update_gamecast(self):
+        new_gamecast_id = int(self.redis.get('gamecast_id'))
+        if new_gamecast_id != self.gamecast_id:
+            game = self.games[new_gamecast_id]
+            self.redis_set('gamecast', game.to_dict())
+            self.redis_set(new_gamecast_id, game.to_dict())
+            self.redis_publish('gamecast', game.to_dict())
+            self.redis_publish(new_gamecast_id, game.to_dict())
+            self.gamecast_id = new_gamecast_id
+            return
+
         if self.gamecast_id is None:
             return
+
         game = self.games[self.gamecast_id]
         diff = game.update_return_difference(self.delay)
         if diff:
@@ -151,8 +162,6 @@ class Fetcher:
         while True:
             mode = self.redis.get('mode')
             if mode == b'gamecast':
-                gamecast_id = self.redis.get('gamecast_id')
-                self.gamecast_id = int(gamecast_id)
                 self._update_gamecast()
                 time.sleep(.5)
             else:
@@ -177,7 +186,7 @@ class Fetcher:
             threading.Thread(target=self.update_all_games).start()
 
         if channel == 'gamecast_id':
-            self.gamecast_id = int(message['data'])
+            # gamecast_id updates within method
             threading.Thread(target=self._update_gamecast).start()
 
         return

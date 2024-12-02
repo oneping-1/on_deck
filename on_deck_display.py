@@ -120,6 +120,7 @@ class Scoreboard:
 
         self.overview = Overview(self.display_manager)
         self.gamecast = Gamecast(self.display_manager)
+        self._gamecast_id: int = None
 
         brightness = self.redis.get('brightness')
         if brightness is not None:
@@ -276,6 +277,16 @@ class Scoreboard:
 
         if new_data == {}:
             return False
+
+        # Update entire game if gamecast_id changes
+        x = int(self.redis.get('gamecast_id'))
+        if self._gamecast_id != x:
+            self._gamecast_id = x
+            new_data = self.redis.get('gamecast')
+            new_data = json.loads(new_data)
+            self.gamecast_game = new_data
+            self.gamecast.print_game(self.gamecast_game, self.gamecast_game)
+            return new_data
 
         self.gamecast_game = recursive_update(self.gamecast_game, new_data)
         return new_data
