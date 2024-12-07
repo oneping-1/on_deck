@@ -38,6 +38,10 @@ cd rpi-rgb-led-matrix
 make build-python
 sudo make install-python
 
+# Debugging
+make build-python PYTHON=$(which python3)
+sudo make install-python PYTHON=$(which python3)
+
 sudo rm /etc/nginx/sites-enabled/default
 
 sudo nano /etc/redis/redis.conf

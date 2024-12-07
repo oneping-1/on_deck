@@ -138,7 +138,7 @@ class Fetcher:
 
     def _update_gamecast(self):
         mode = self.redis.get('mode')
-        if (mode == b'gamecast') and (self.gamecast_id != b'gamecast'):
+        if (mode == b'gamecast') and (self.mode != b'gamecast'):
             self.mode = 'gamecast'
             game = self.games[self.gamecast_id]
             self.redis_set('gamecast', game.to_dict())
