@@ -56,7 +56,7 @@ requirepass your_password
 
 ```
 sudo systemctl restart redis
-
+```
 Open crontab by
 ```
 crontab -e
