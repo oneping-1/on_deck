@@ -260,6 +260,7 @@ class Overview:
         delay_time = current_time - delay_delta
 
         current_time = current_time.strftime('%I:%M:%S')
+        delay_date = delay_time.isoformat()[0:10]
         delay_time = delay_time.strftime('%I:%M:%S')
         delay = self._time_delta_strftime(delay)
 
@@ -270,8 +271,10 @@ class Overview:
         if delay_time[0] == '0':
             delay_time = ' ' + delay_time[1:]
 
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
-            row_offset-6, color, current_time)
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset-16,
+            row_offset-6, color, delay_date)
+        # self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
+        #     row_offset-6, color, current_time)
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
             row_offset+6, color, delay_time)

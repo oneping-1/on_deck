@@ -11,12 +11,13 @@ class Gamecast:
 
         self._ddo = 4 # double digit offset
 
-    def _print_team_names(self, game: dict):
+    def _print_team_names(self, away: dict, home: dict):
         color = Colors.white
 
+        # self.display_manager.clear_section(129, 0, 200, 28)
         self.display_manager.clear_section(129, 0, 200, 28)
-        self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, game['away']['name'])
-        self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, game['home']['name'])
+        self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, away['name'])
+        self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, home['name'])
 
     def _print_linescore(self, home: bool, runs: int, hits: int, errors: int, lob: int):
         color = Colors.white
@@ -55,30 +56,27 @@ class Gamecast:
             self.display_manager.draw_text(Fonts.ter_u16b, 128 + lob_column_offset,
                 row_offset, color, f'{lob}')
 
-    def _print_linescores(self, game: dict):
+    def _print_linescores(self, away: dict, home: dict):
         self.display_manager.clear_section(200, 0, 275, 24)
 
-        runs = game['away']['runs']
-        hits = game['away']['hits']
-        errors = game['away']['errors']
-        lob = game['away']['left_on_base']
+        runs = away['runs']
+        hits = away['hits']
+        errors = away['errors']
+        lob = away['left_on_base']
         self._print_linescore(False, runs, hits, errors, lob)
 
-        runs = game['home']['runs']
-        hits = game['home']['hits']
-        errors = game['home']['errors']
-        lob = game['home']['left_on_base']
+        runs = home['runs']
+        hits = home['hits']
+        errors = home['errors']
+        lob = home['left_on_base']
         self._print_linescore(True, runs, hits, errors, lob)
 
-    def _print_inning(self, game: dict):
+    def _print_inning(self, inning: int, inning_state: str):
         self.display_manager.clear_section(275, 0, 293, 24)
 
         column_offset = 128 + 152
         row_offset = 18
         arrow_size = 5
-
-        inning = game['inning']
-        inning_state = game['inning_state']
 
         color = Colors.white
 
@@ -96,7 +94,7 @@ class Gamecast:
             self.display_manager.draw_inning_arrow(column_offset+3, row_offset+1,
                 arrow_size, False, color)
 
-    def _print_bases(self, game: dict):
+    def _print_bases(self, runners: int):
         self.display_manager.clear_section(293, 0, 328, 24)
 
         second_base_column_offset = 128 + 182
@@ -110,11 +108,11 @@ class Gamecast:
 
         bases = [False, False, False]
 
-        if game['runners'] & 1:
+        if runners & 1:
             bases[0] = True
-        if game['runners'] & 2:
+        if runners & 2:
             bases[1] = True
-        if game['runners'] & 4:
+        if runners & 4:
             bases[2] = True
 
         self.display_manager.draw_diamond(second_base_column_offset - base_offset,
@@ -124,7 +122,7 @@ class Gamecast:
         self.display_manager.draw_diamond(second_base_column_offset + base_offset,
             second_base_row_offset + base_offset, base_length, thickness, bases[0], Colors.white)
 
-    def _print_count(self, game: dict):
+    def _print_count(self, count: dict):
         self.display_manager.clear_section(328, 0, 370, 24)
 
         circle_column_offset = 128 + 206
@@ -137,61 +135,64 @@ class Gamecast:
         thickness = 1
         delta = 2*radius + gap + 1
 
-        balls_int = game['count']['balls']
-        balls = [False, False, False, False]
-        if balls_int >= 1:
-            balls[0] = True
-        if balls_int >= 2:
-            balls[1] = True
-        if balls_int >= 3:
-            balls[2] = True
-        if balls_int >= 4:
-            balls[3] = True
+        balls_int = count.get('balls', None)
+        if balls_int is not None:
+            balls = [False, False, False, False]
+            if balls_int >= 1:
+                balls[0] = True
+            if balls_int >= 2:
+                balls[1] = True
+            if balls_int >= 3:
+                balls[2] = True
+            if balls_int >= 4:
+                balls[3] = True
 
-        self.display_manager.draw_circle(circle_column_offset + 0*delta,
-            ball_row_offset, radius, thickness, balls[0], Colors.green)
-        self.display_manager.draw_circle(circle_column_offset + 1*delta,
-            ball_row_offset, radius, thickness, balls[1], Colors.green)
-        self.display_manager.draw_circle(circle_column_offset + 2*delta,
-            ball_row_offset, radius, thickness, balls[2], Colors.green)
-        self.display_manager.draw_circle(circle_column_offset + 3*delta,
-            ball_row_offset, radius, thickness, balls[3], Colors.green)
-
-
-        strikes_int = game['count']['strikes']
-        strikes = [False, False, False]
-        if strikes_int >= 1:
-            strikes[0] = True
-        if strikes_int >= 2:
-            strikes[1] = True
-        if strikes_int >= 3:
-            strikes[2] = True
-
-        self.display_manager.draw_circle(circle_column_offset + 0*delta,
-            strike_row_offset, radius, thickness, strikes[0], Colors.red)
-        self.display_manager.draw_circle(circle_column_offset + 1*delta,
-            strike_row_offset, radius, thickness, strikes[1], Colors.red)
-        self.display_manager.draw_circle(circle_column_offset + 2*delta,
-            strike_row_offset, radius, thickness, strikes[2], Colors.red)
+            self.display_manager.draw_circle(circle_column_offset + 0*delta,
+                ball_row_offset, radius, thickness, balls[0], Colors.green)
+            self.display_manager.draw_circle(circle_column_offset + 1*delta,
+                ball_row_offset, radius, thickness, balls[1], Colors.green)
+            self.display_manager.draw_circle(circle_column_offset + 2*delta,
+                ball_row_offset, radius, thickness, balls[2], Colors.green)
+            self.display_manager.draw_circle(circle_column_offset + 3*delta,
+                ball_row_offset, radius, thickness, balls[3], Colors.green)
 
 
-        outs_int = game['count']['outs']
-        outs = [False, False, False]
-        if outs_int >= 1:
-            outs[0] = True
-        if outs_int >= 2:
-            outs[1] = True
-        if outs_int >= 3:
-            outs[2] = True
+        strikes_int = count.get('strikes', None)
+        if strikes_int is not None:
+            strikes = [False, False, False]
+            if strikes_int >= 1:
+                strikes[0] = True
+            if strikes_int >= 2:
+                strikes[1] = True
+            if strikes_int >= 3:
+                strikes[2] = True
 
-        self.display_manager.draw_circle(circle_column_offset + 0*delta,
-            out_row_offset, radius, thickness, outs[0], Colors.white)
-        self.display_manager.draw_circle(circle_column_offset + 1*delta,
-            out_row_offset, radius, thickness, outs[1], Colors.white)
-        self.display_manager.draw_circle(circle_column_offset + 2*delta,
-            out_row_offset, radius, thickness, outs[2], Colors.white)
+            self.display_manager.draw_circle(circle_column_offset + 0*delta,
+                strike_row_offset, radius, thickness, strikes[0], Colors.red)
+            self.display_manager.draw_circle(circle_column_offset + 1*delta,
+                strike_row_offset, radius, thickness, strikes[1], Colors.red)
+            self.display_manager.draw_circle(circle_column_offset + 2*delta,
+                strike_row_offset, radius, thickness, strikes[2], Colors.red)
 
-    def _print_umpire(self, game: dict):
+
+        outs_int = count.get('outs', None)
+        if outs_int is not None:
+            outs = [False, False, False]
+            if outs_int >= 1:
+                outs[0] = True
+            if outs_int >= 2:
+                outs[1] = True
+            if outs_int >= 3:
+                outs[2] = True
+
+            self.display_manager.draw_circle(circle_column_offset + 0*delta,
+                out_row_offset, radius, thickness, outs[0], Colors.white)
+            self.display_manager.draw_circle(circle_column_offset + 1*delta,
+                out_row_offset, radius, thickness, outs[1], Colors.white)
+            self.display_manager.draw_circle(circle_column_offset + 2*delta,
+                out_row_offset, radius, thickness, outs[2], Colors.white)
+
+    def _print_umpire(self, umpire: dict, away: dict, home: dict):
         self.display_manager.clear_section(129, 36, 240, 72)
 
         column_offset = 129
@@ -199,29 +200,29 @@ class Gamecast:
 
         color = Colors.white
 
-        num_missed = game['umpire']['num_missed']
+        num_missed = umpire['num_missed']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'# Miss: {num_missed:2d}')
 
         row_offset += 12
-        favor = game['umpire']['home_favor']
-        abv = game['home']['abv']
+        favor = umpire['home_favor']
+        abv = home['abv']
         if favor < 0:
-            abv = game['away']['abv']
+            abv = away['abv']
             favor *= -1
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'FV: {favor:.2f} {abv}')
 
         row_offset += 12
-        wpa = game['umpire']['home_wpa']
-        abv = game['home']['abv']
+        wpa = umpire['home_wpa']
+        abv = home['abv']
         if wpa < 0:
-            abv = game['away']['abv']
+            abv = away['abv']
             wpa *= -1
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'WP: {wpa*100:.1f}% {abv}')
+            color, f'WP: {wpa:.1%} {abv}')
 
-    def _print_run_expectancy(self, game: dict):
+    def _print_run_expectancy(self, run_expectancy: dict):
         self.display_manager.clear_section(129, 82, 240, 108)
 
         column_offset = 129
@@ -229,15 +230,15 @@ class Gamecast:
 
         color = Colors.white
 
-        re_avg = game['run_expectancy']['average_runs']
-        re_ts = game['run_expectancy']['to_score']
+        re_avg = run_expectancy['average_runs']
+        re_ts = run_expectancy['to_score']
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'AVG:{re_avg:5.2f}')
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
-            color, f'1+:{re_ts*100:5.1f}%')
+            color, f'1+:{re_ts:5.1%}')
 
-    def _print_win_probability(self, game: dict):
+    def _print_win_probability(self, win_probability: dict, away: dict, home: dict):
         self.display_manager.clear_section(129, 108, 240, 120)
 
         column_offset = 129
@@ -245,20 +246,20 @@ class Gamecast:
 
         color = Colors.white
 
-        wp_away = game['win_probability']['away']
-        wp_home = game['win_probability']['home']
+        wp_away = win_probability['away']
+        wp_home = win_probability['home']
 
         if wp_away > wp_home:
-            team = game['away']['abv']
+            team = away['abv']
             wp = wp_away
         else:
-            team = game['home']['abv']
+            team = home['abv']
             wp = wp_home
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'WP:{wp*100:5.1f}% {team}')
+            color, f'WP:{wp:5.1%} {team}')
 
-    def _print_pitch_details(self, game: dict):
+    def _print_pitch_details(self, pitch_details: dict):
         self.display_manager.clear_section(129, 132, 240, 168)
 
         column_offset = 129
@@ -266,13 +267,15 @@ class Gamecast:
 
         color = Colors.white
 
-        pitch_type = game['pitch_details']['type']
+        pitch_type = pitch_details['type']
+        if pitch_type is None:
+            return
         if pitch_type == 'Four-Seam Fastball':
             pitch_type = 'Four-Seam'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{pitch_type}')
 
-        pitch_speed = game['pitch_details']['speed']
+        pitch_speed = pitch_details['speed']
         if pitch_speed is None:
             return
         row_offset += 12
@@ -280,7 +283,7 @@ class Gamecast:
             color, f'{pitch_speed:.1f} MPH')
 
         row_offset += 12
-        pitch_zone = game['pitch_details']['zone']
+        pitch_zone = pitch_details['zone']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, 'Zone:')
         color = Colors.red
@@ -289,7 +292,7 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+48, row_offset,
             color, f'{pitch_zone:2d}')
 
-    def _print_hit_details(self, game: dict):
+    def _print_hit_details(self, hit_details: dict):
         self.display_manager.clear_section(129, 180, 240, 216)
 
         column_offset = 129
@@ -297,73 +300,37 @@ class Gamecast:
 
         color = Colors.white
 
-        if game['hit_details']['distance'] is None:
+        if hit_details['distance'] is None:
             self.display_manager.clear_section(column_offset, row_offset,
                 column_offset+128, row_offset+24)
             return
 
-        distance = game['hit_details']['distance']
+        distance = hit_details['distance']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{distance:5.1f} ft')
 
-        exit_velo = game['hit_details']['exit_velo']
+        exit_velo = hit_details['exit_velo']
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{exit_velo:5.1f} MPH')
 
-        launch_angle = game['hit_details']['launch_angle']
+        launch_angle = hit_details['launch_angle']
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{launch_angle:5.1f}°')
 
-    def print_game(self, mode: str, new_data: Union[dict, None] = None, game: Union[dict, None] = None):
-        if mode != 'gamecast':
-            return
-
-        print(new_data)
-        print()
-        # self.display_manager.clear_section(128, 0, 384, 256)
-
-        away = new_data.get('away', None)
-        home = new_data.get('home', None)
-        if (away is not None) or (home is not None):
-            self._print_team_names(game)
-            self._print_linescores(game)
-
-        inning = new_data.get('inning', None)
-        inning_state = new_data.get('inning_state', None)
-        if (inning is not None) or (inning_state is not None):
-            self._print_inning(game)
-
-        runners = new_data.get('runners', None)
-        if (runners is not None):
-            self._print_bases(game)
-
-        count = new_data.get('count', None)
-        if (count is not None):
-            self._print_count(game)
-
-        umpire = new_data.get('umpire', None)
-        if (umpire is not None):
-            self._print_umpire(game)
-
-        re = new_data.get('run_expectancy', None)
-        if (re is not None):
-            self._print_run_expectancy(game)
-
-        wp = new_data.get('win_probability', None)
-        if (wp is not None):
-            self._print_win_probability(game)
-
-        pitch = new_data.get('pitch_details', None)
-        if pitch is not None:
-            self._print_pitch_details(game)
-
-        hit = new_data.get('hit_details', None)
-        if hit is not None:
-            self._print_hit_details(game)
-
-        self.display_manager.swap_frame()
+    def print_game(self, game: dict):
+            self._print_team_names(game['away'], game['home'])
+            self._print_linescores(game['away'], game['home'])
+            self._print_inning(game['inning'], game['inning_state'])
+            self._print_bases(game['runners'])
+            self._print_count(game['count'])
+            self._print_umpire(game['umpire'], game['away'], game['home'])
+            self._print_run_expectancy(game['run_expectancy'])
+            self._print_win_probability(game['win_probability'], game['away'], game['home'])
+            self._print_pitch_details(game['pitch_details'])
+            self._print_hit_details(game['hit_details'])
+            self.display_manager.swap_frame()
 
 if __name__ == '__main__':
     print('wrong module dummy')
