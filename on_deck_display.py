@@ -113,6 +113,9 @@ class GamecastHandler:
         self.pubsub.subscribe('gamecast_id')
         self.pubsub.subscribe('mode')
 
+        brightness = int(self.redis.get('brightness'))
+        self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
+
         self.gamecast: Gamecast = Gamecast(self.display_manager)
         self.gamecast_game: dict = None
 
@@ -141,7 +144,9 @@ class GamecastHandler:
         """
         channel = message['channel']
 
-        if channel == b'gamecast_id':
+        if channel in (b'gamecast_id', b'delay'):
+            print('waiting')
+            time.sleep(1) # delay to let fetcher update gamecast
             new_data = self.redis.get('gamecast')
             new_data = json.loads(new_data)
             self.gamecast_game = new_data
@@ -151,18 +156,15 @@ class GamecastHandler:
         if channel == b'brightness':
             brightness = int(message['data'])
             self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
-            mode = self.redis.get('mode')
-            if mode == b'gamecast':
-                self.gamecast.print_game(self.gamecast_game)
             return
 
+        mode = self.redis.get('mode')
         if channel == b'mode':
             mode = message['data']
-            if mode == b'gamecast':
-                self.gamecast.print_game(self.gamecast_game)
-            elif mode == b'overview':
-                self.display_manager.clear_section(129, 0, 384, 256)
-                self.display_manager.swap_frame()
+
+        if mode == b'gamecast':
+            self.display_manager.clear_section(129, 0, 384, 256)
+            self.gamecast.print_game(self.gamecast_game)
             return
 
     def update_gamecast(self) -> Union[bool, dict]:
@@ -184,7 +186,7 @@ class GamecastHandler:
         if message['type'] != 'message':
             return False
 
-        if message['channel'] in (b'gamecast_id', b'brightness', b'mode'):
+        if message['channel'] in (b'gamecast_id', b'brightness', b'mode', b'delay'):
             self.change_settings(message)
             return False
 
@@ -314,19 +316,24 @@ class OverviewHandler:
         channel = message['channel']
 
         if channel == b'mode':
-            self.display_manager.clear_section(0, 0, 384, 256)
-            mode = message['data']
-            if mode == b'overview':
-                self.print_overview()
+            if message['data'] == b'overview':
+                self.display_manager.clear_section(0, 0, 384, 256)
+            elif message['data'] == b'gamecast':
+                self.display_manager.clear_section(0, 0, 128, 256)
+            self._page = 0
 
         if channel == b'brightness':
             x = int(message['data'])
             self.display_manager.set_brightness(brightness_dict_2pwm[x])
-            mode = self.redis.get('mode')
-            if mode == b'overview':
-                self.print_overview()
-            elif mode == b'gamecast':
-                self.print_gamecast_page()
+
+        if channel == b'init':
+            self._initialize_games()
+
+        mode = self.redis.get('mode')
+        if mode == b'overview':
+            self.print_overview()
+        elif mode == b'gamecast':
+            self.print_gamecast_page()
 
     def pubsub_listener(self):
         """
@@ -341,11 +348,11 @@ class OverviewHandler:
         if message['type'] != 'message':
             return
 
-        if message['channel'] in (b'mode', b'brightness'):
+        if message['channel'] in (b'mode', b'brightness', b'init'):
             self.change_settings(message)
             return
 
-        print(f'{message=}\n')
+        # print(f'{message=}\n')
 
         game_id = int(message['channel'])
         new_data = message['data'].decode('utf-8')
