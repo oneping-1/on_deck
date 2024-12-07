@@ -1,7 +1,13 @@
-from typing import List, Union
-import threading
+"""
+This module is responsible for fetching data from the MLB Stats API
+and updating the Redis database with the fetched data. It also listens
+for changes to the settings and updates the Redis database accordingly.
+"""
+
 import time
+from typing import List, Union
 import json
+import threading
 from datetime import datetime
 import pytz
 import redis
@@ -14,7 +20,7 @@ def seconds_since_iso8601(iso_timestamp: str) -> int:
     Calculate the number of seconds since a given ISO 8601 timestamp.
 
     Args:
-        iso_timestamp (str): The ISO 8601 formatted timestamp (e.g., "2024-05-29T15:00:00+04:00").
+        iso_timestamp (str): The ISO 8601 formatted timestamp (e.g., "2024-05-29T15:00:00-04:00").
 
     Returns:
         int: The number of seconds since the given timestamp.
@@ -50,185 +56,179 @@ def get_daily_gamepks() -> List[int]:
     gamepks = ssp.get_daily_gamepks('2024-05-29')
     return gamepks
 
-class Fetcher:
+class GamecastFetcher:
     """
-    Class that fetches game data from the at_bat module. It stores the
-    game data in a redis database and updates the data periodically.
+    Class that fetches gamecast data from the Redis database and updates
+    the gamecast data in the Redis database. It listens for changes to the
+    settings and updates the gamecast data accordingly.
     """
-    def __init__(self, delay: int = None):
-        # Used of offseason testing
-        date = '2024-05-29T14:37:00-04:00'
-        delay = seconds_since_iso8601(date)
-
-        self.gamepks: List[int] = []
-        self.games: List[ScoreboardData] = []
-
+    def __init__(self):
         self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
         self.pubsub.subscribe('gamecast_id')
-        self.pubsub.subscribe('gamecast')
 
-        if delay is not None:
-            print(f'Delay: {delay}')
-            self.redis.set('delay', delay)
-            self.delay = delay
-        else:
-            self.delay = int(self.redis.get('delay'))
+        self.gamepk: int = None
+        self.game: ScoreboardData = None
 
-        self.gamecast_id = self.redis.get('gamecast_id')
-        if self.gamecast_id is not None:
-            self.gamecast_id = int(self.gamecast_id)
-
-        self.mode = self.redis.get('mode')
-        if self.mode is None:
-            self.redis.set('mode', 'overview')
-
-    def redis_set(self, key: Union[str, int], value: Union[int, dict]):
+    def initialize_gamecast(self):
         """
-        Set a key-value pair in the redis database
-
-        Args:
-            key (Union[str, int]): Normally game id number
-            value (Union[int, dict]): Value
+        Initializes the gamecast data by fetching the gamecast_id and delay
+        from the Redis database and creating a ScoreboardData object for the
+        corresponding game. It then updates the gamecast data in the Redis
+        database.
         """
-        key = str(key)
-        value = json.dumps(value)
+        delay = int(self.redis.get('delay'))
+        gamecast_id = int(self.redis.get('gamecast_id'))
 
-        self.redis.set(key, value)
+        game_dict = json.loads(self.redis.get(gamecast_id))
+        gamepk = int(game_dict['gamepk'])
 
-    def redis_publish(self, key: Union[str, int], value: Union[int, dict]):
+        self.game = ScoreboardData(gamepk, delay)
+        self.redis.set('gamecast', json.dumps(self.game.to_dict()))
+
+        print('Gamecast initialized')
+
+    def update_gamecast(self):
         """
-        Publish a message to the redis database
-
-        Args:
-            key (Union[str, int]): Normally game id number
-            value (Union[int, dict]): Value
+        Updates the gamecast data by fetching the delay from the Redis database
+        and updating the ScoreboardData object with the new delay. It then
+        updates the gamecast data in the Redis database and publishes the
+        updated data to the 'gamecast' channel.
         """
-        key = str(key)
-        value = json.dumps(value)
+        delay = int(self.redis.get('delay'))
 
-        self.redis.publish(key, value)
+        new_data = self.game.update_return_difference(delay)
+        if new_data:
+            # Update gamecast and cooresponding overview game
+            gamecast_dict = json.dumps(self.game.to_dict())
+            new_data = json.dumps(new_data)
 
-    def initialize_games(self):
+            self.redis.set('gamecast', gamecast_dict)
+            self.redis.publish('gamecast', new_data)
+
+    def update_settings(self):
         """
-        Initializes the games list with the game data from the at_bat
-        module. It stores the game data in the redis database.
+        Listens for changes to the settings in the Redis database and updates
+        the gamecast data accordingly. It listens for changes to the 'delay'
+        and 'gamecast_id' channels.
         """
-        self.gamepks = get_daily_gamepks()
+        message = self.pubsub.get_message(timeout=5)
 
-        for i, gamepk in enumerate(self.gamepks):
-            game = ScoreboardData(gamepk, self.delay)
-            self.games.append(game)
-            self.redis_set(str(i), game.to_dict())
-
-        num_games = len(self.games)
-        self.redis_set('num_games', num_games)
-
-    def update_all_games(self):
-        """
-        Updates the game data in the games list and redis database.
-        """
-        for i, game in enumerate(self.games):
-            diff = game.update_return_difference(self.delay)
-            if diff:
-                self.redis_set(str(i), game.to_dict())
-                self.redis_publish(str(i), diff)
-            time.sleep(1)
-
-    def _update_gamecast(self):
-        mode = self.redis.get('mode')
-        if (mode == b'gamecast') and (self.mode != b'gamecast'):
-            self.mode = 'gamecast'
-            game = self.games[self.gamecast_id]
-            self.redis_set('gamecast', game.to_dict())
-            self.redis_set(self.gamecast_id, game.to_dict())
-            self.redis_publish('gamecast', game.to_dict())
-            self.redis_publish(self.gamecast_id, game.to_dict())
+        if not message:
             return
 
-        new_gamecast_id = int(self.redis.get('gamecast_id'))
-        if new_gamecast_id != self.gamecast_id:
-            self.gamecast_id = new_gamecast_id
-            game = self.games[new_gamecast_id]
-            self.redis_set('gamecast', game.to_dict())
-            self.redis_set(new_gamecast_id, game.to_dict())
-            self.redis_publish('gamecast', game.to_dict())
-            self.redis_publish(new_gamecast_id, game.to_dict())
-            return
-
-        if self.gamecast_id is None:
-            return
-
-        game = self.games[self.gamecast_id]
-        diff = game.update_return_difference(self.delay)
-        if diff:
-            self.redis_set('gamecast', game.to_dict())
-            self.redis_set(self.gamecast_id, game.to_dict())
-            self.redis_publish('gamecast', diff)
-            self.redis_publish(self.gamecast_id, diff)
-
-    def thread_gamecast(self):
-        """
-        Specifically updates the gamecast game more frequently than the
-        other games.
-        """
-        while True:
-            mode = self.redis.get('mode')
-            if mode == b'gamecast':
-                self._update_gamecast()
-                time.sleep(.5)
-            else:
-                time.sleep(1)
-
-    def _read_pubsub_message(self, message):
-        """
-        Reads the pubsub message and sets the delay attribute.
-
-        Args:
-            message: Pubsub message
-        """
         if message['type'] != 'message':
             return
 
-        channel = message['channel'].decode('utf-8')
-
-        if channel == 'delay':
-            self.delay = int(message['data'])
-            # Thread this to not interupt another delay message
-            threading.Thread(target=self._update_gamecast).start()
-            threading.Thread(target=self.update_all_games).start()
-
-        if channel == 'gamecast_id':
-            # gamecast_id updates within method
-            threading.Thread(target=self._update_gamecast).start()
-
-        return
-
-    def listen_for_pubsub(self):
-        """
-        Listens for user input from the server.
-        """
-        while True:
-            for message in self.pubsub.listen():
-                self._read_pubsub_message(message)
-            time.sleep(1) # Multithreading Help
+        if message['channel'] in (b'delay', b'gamecast_id'):
+            self.initialize_gamecast()
 
     def start(self):
         """
-        Starts the fetcher and periodically updates the game data.
+        Starts the gamecast fetcher and listens for changes to the settings
+        in the Redis database. It initializes the gamecast data and then
+        updates the gamecast data in a loop.
         """
-        self.initialize_games()
-        print('done initializing')
-        self.redis.publish('init', 'init')
+        self.initialize_gamecast()
 
-        threading.Thread(target=self.listen_for_pubsub, daemon=True).start()
-        threading.Thread(target=self.thread_gamecast, daemon=True).start()
         while True:
-            self.delay = int(self.redis.get('delay'))
-            self.update_all_games()
-            # Check for user input from server
-            time.sleep(10)
+            self.update_settings()
+            self.update_gamecast()
+            time.sleep(.1)
+
+class Fetcher:
+    """
+    Class that fetches scoreboard data from the MLB Stats API and updates
+    the Redis database with the fetched data. It listens for changes to the
+    settings and updates the Redis database accordingly. It also fetches
+    gamecast data and updates the Redis database with the fetched data.
+    """
+    def __init__(self):
+        self.games: List[ScoreboardData] = []
+
+        self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
+        self.pubsub = self.redis.pubsub()
+        self.pubsub.subscribe('delay') # do i need this?
+
+        self.gamecast_fetcher = GamecastFetcher()
+
+    def redis_set_game(self, key: Union[str, int], full_game: dict):
+        """
+        Sets the game data in the Redis database.
+
+        Args:
+            key (Union[str, int]): key to set
+            full_game (dict): full game data to set
+        """
+        key = f'{key}'
+        full_game = json.dumps(full_game)
+        self.redis.set(key, full_game)
+
+    def redis_publish_game(self, key: Union[str, int], new_data: dict):
+        """
+        Publishes the updated game data to the corresponding channel in
+        the Redis database.
+
+        Args:
+            key (Union[str, int]): key to publish to
+            new_data (dict): updated game data
+        """
+        key = f'{key}'
+        new_data = json.dumps(new_data)
+        self.redis.publish(key, new_data)
+
+    def initialize_games(self):
+        """
+        Initializes the games by fetching the gamepks for the current date
+        and creating ScoreboardData objects for each game. It then updates
+        the games in the Redis database and publishes the updated data to the
+        corresponding channels.
+        """
+        gamepks = get_daily_gamepks()
+        delay = int(self.redis.get('delay'))
+
+        for i, gamepk in enumerate(gamepks):
+            game = ScoreboardData(gamepk, delay)
+            self.games.append(game)
+            self.redis_set_game(i, game.to_dict())
+
+        print(f'{delay=}')
+        print('Overview initialized')
+        num_games = len(self.games)
+        self.redis.set('num_games', num_games)
+        self.redis.publish('init_games', 'init_games')
+
+    def update_games(self):
+        """
+        Updates the games by fetching the delay from the Redis database and
+        updating the ScoreboardData objects with the new delay. It then updates
+        the games in the Redis database and publishes the updated data to the
+        corresponding channels.
+        """
+        for i, game in enumerate(self.games):
+            delay = int(self.redis.get('delay'))
+            new_data = game.update_return_difference(delay)
+            if new_data:
+                self.redis_set_game(i, game.to_dict())
+                self.redis_publish_game(i, new_data)
+            time.sleep(.1)
+
+    def start(self):
+        """
+        Starts the fetcher and listens for changes to the settings in the
+        Redis database. It initializes the games and then updates the games
+        in a loop.
+        """
+        date = '2024-05-29T14:37:00-04:00'
+        delay = seconds_since_iso8601(date)
+        self.redis.set('delay', delay)
+        self.redis.publish('delay', delay)
+
+        self.initialize_games()
+        threading.Thread(target=self.gamecast_fetcher.start, daemon=True).start()
+        while True:
+            self.update_games()
 
 if __name__ == '__main__':
     fetcher = Fetcher()
