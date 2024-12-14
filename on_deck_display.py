@@ -156,6 +156,7 @@ class GamecastHandler:
         if channel == b'brightness':
             brightness = int(message['data'])
             self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
+            self.gamecast.print_game(self.gamecast_game)
             return
 
         mode = self.redis.get('mode')
