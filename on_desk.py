@@ -351,8 +351,8 @@ class Scoreboard:
         color = self._get_color(i)
         offset = self._get_offset(i)
 
-        away = str(game.away_score)
-        home = str(game.home_score)
+        away = str(game.away.runs)
+        home = str(game.home.runs)
 
         if len(away) > 1:
             self.display_manager.draw_text(Fonts.ter_u22b, 35, 15 + offset, color, away)
