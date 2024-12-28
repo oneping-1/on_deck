@@ -319,18 +319,41 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{launch_angle:5.1f}°')
 
+    def _print_batting_order(self, batting_order: dict):
+        row_offset = 36
+        column_offset = 240
+
+        # self.display_manager.draw_box(240, 36, 386, 144, Colors.white)
+        self.display_manager.clear_section(240, 36, 386, 144)
+
+        at_bat_index = batting_order['at_bat_index']
+        batting_order = batting_order['batting_order']
+
+        for i, batter in enumerate(batting_order):
+            color = Colors.white
+            if at_bat_index == i+1:
+                color = Colors.yellow
+
+            row_offset += 12
+            name = batter['last_name']
+            ops = batter['ops']
+            position = batter['position']
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+                color, rf'{position:>2s} {name[:11]:11s}{ops}')
+
     def print_game(self, game: dict):
-            self._print_team_names(game['away'], game['home'])
-            self._print_linescores(game['away'], game['home'])
-            self._print_inning(game['inning'], game['inning_state'])
-            self._print_bases(game['runners'])
-            self._print_count(game['count'])
-            self._print_umpire(game['umpire'], game['away'], game['home'])
-            self._print_run_expectancy(game['run_expectancy'])
-            self._print_win_probability(game['win_probability'], game['away'], game['home'])
-            self._print_pitch_details(game['pitch_details'])
-            self._print_hit_details(game['hit_details'])
-            self.display_manager.swap_frame()
+        self._print_team_names(game['away'], game['home'])
+        self._print_linescores(game['away'], game['home'])
+        self._print_inning(game['inning'], game['inning_state'])
+        self._print_bases(game['runners'])
+        self._print_count(game['count'])
+        self._print_umpire(game['umpire'], game['away'], game['home'])
+        self._print_run_expectancy(game['run_expectancy'])
+        self._print_win_probability(game['win_probability'], game['away'], game['home'])
+        self._print_pitch_details(game['pitch_details'])
+        self._print_hit_details(game['hit_details'])
+        self._print_batting_order(game['batting_order'])
+        self.display_manager.swap_frame()
 
 if __name__ == '__main__':
     print('wrong module dummy')

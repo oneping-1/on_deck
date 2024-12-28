@@ -15,6 +15,8 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
+redis_ip = 'localhost'
+
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """
     Calculate the number of seconds since a given ISO 8601 timestamp.
@@ -63,7 +65,7 @@ class GamecastFetcher:
     settings and updates the gamecast data accordingly.
     """
     def __init__(self):
-        self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
+        self.redis = redis.Redis(host=redis_ip, port=6379, db=0)#, password='ondeck')
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
         self.pubsub.subscribe('gamecast_id')
@@ -147,7 +149,7 @@ class Fetcher:
     def __init__(self):
         self.games: List[ScoreboardData] = []
 
-        self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
+        self.redis = redis.Redis(host=redis_ip, port=6379, db=0)#, password='ondeck')
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay') # do i need this?
 
