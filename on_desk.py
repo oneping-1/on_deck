@@ -45,7 +45,7 @@ import socket
 import argparse
 
 from at_bat import statsapi_plus as ssp
-from at_bat.scoreboard_data import ScoreboardData
+from at_bat.scoreboard_data import ScoreboardData, ScoreboardStandings
 
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
@@ -58,6 +58,7 @@ else:
 
 ABV_A = 'CLE'
 ABV_B = 'TEX'
+TEAMS = [ABV_A, ABV_B]
 
 on_time = datetime.time(0, 0)
 off_time = datetime.time(23,59)
@@ -85,10 +86,20 @@ def get_options() -> RGBMatrixOptions:
     return options
 
 def get_daily_gamepks():
-    gamepks = ssp.get_daily_gamepks('2024-09-03')
+    """
+    Function to call daily gamepks function and have all function calls
+    using the same date for testing
+    """
+    gamepks = ssp.get_daily_gamepks()
     return gamepks
 
 def get_ip_address() -> str:
+    """
+    Returns the IP address of the Raspberry Pi
+
+    Returns:
+        str: Local IP address of the Raspberry Pi
+    """
     # Create a socket to get the local IP address
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -145,6 +156,9 @@ class GameHandler:
                 game.update()
 
 class Scoreboard:
+    """
+    This class handles all the logic for printing the data on the display
+    """
     def __init__(self, games: List[ScoreboardData]):
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
@@ -163,6 +177,8 @@ class Scoreboard:
 
     def _loop(self):
         current_time = datetime.datetime.now().time()
+
+        # Night mode. Turns off display between on_time and off_time
         if (current_time < on_time) or (current_time > off_time):
             self.display_manager.clear_section(0, 0, 128, 64)
             self.display_manager.draw_line(127, 63, 127, 63, Colors.white)
@@ -171,17 +187,29 @@ class Scoreboard:
             return
 
         for i, game in enumerate(self.games):
-            # self.display_manager.clear_section(0, 0, 128, 64)
-            self.print_game(i, game)
-            self.display_manager.swap_frame()
-            time.sleep(10)
+            self.display_manager.clear_section(0, 32*i, 128, 32*(i+1))
+
+            if game is not None:
+                self.print_game(i, game)
+            else:
+                self.print_off_day(i)
+        self.display_manager.swap_frame()
+        time.sleep(10)
+
+    def print_off_day(self, i):
+        """
+        Prints the off day
+        """
+        color = self._get_color(i)
+        offset = self._get_offset(i)
+
+        self.display_manager.draw_text(Fonts.ter_u22b, 0, 15 + offset, color, TEAMS[i])
+        self._print_off_day_standings(i)
 
     def print_game(self, i, game):
         """
         Prints the page
         """
-        if game is None:
-            return
 
         self.display_manager.clear_section(0, i*32, 128, 32+32*i)
 
@@ -306,19 +334,30 @@ class Scoreboard:
             self.display_manager.draw_text(Fonts.symbols, 63, 29 + offset, color, 'w')
 
     def _print_standings(self, i, game):
-        wins = game.away.wins
-        losses = game.away.losses
-        streak = game.away.streak
-        division_rank = game.away.division_rank
-        games_back = game.away.games_back
+        standings = ScoreboardStandings(game.away.abv)
+        wins = standings.wins
+        losses = standings.losses
+        streak = standings.streak
+        division_rank = standings.division_rank
+        games_back = standings.games_back
         self._print_standing(i, False, wins, losses, streak, division_rank, games_back)
 
-        wins = game.home.wins
-        losses = game.home.losses
-        streak = game.home.streak
-        division_rank = game.home.division_rank
-        games_back = game.home.games_back
+        standings = ScoreboardStandings(game.home.abv)
+        wins = standings.wins
+        losses = standings.losses
+        streak = standings.streak
+        division_rank = standings.division_rank
+        games_back = standings.games_back
         self._print_standing(i, True, wins, losses, streak, division_rank, games_back)
+
+    def _print_off_day_standings(self, i):
+        standings = ScoreboardStandings(TEAMS[i])
+        wins = standings.wins
+        losses = standings.losses
+        streak = standings.streak
+        division_rank = standings.division_rank
+        games_back = standings.games_back
+        self._print_standing(i, False, wins, losses, streak, division_rank, games_back)
 
     def _print_standing(self, i, is_home: bool, wins, losses, streak, division_rank, games_back):
         color = self._get_color(i)
