@@ -124,15 +124,17 @@ class GameHandler:
     """
     This class is used to handle the games
     """
-    def __init__(self, games: List[ScoreboardData]):
+    def __init__(self, games: List[ScoreboardData], standings: List[ScoreboardStandings]):
         self.games = games
+        self.standings = standings
+        self.gamepks = None
 
     def start(self):
         """
         This method is used to start the game updater
         """
-        gamepks = get_daily_gamepks()
-        games = [ScoreboardData(gamepk) for gamepk in gamepks]
+        self.gamepks = get_daily_gamepks()
+        games = [ScoreboardData(gamepk) for gamepk in self.gamepks]
 
         for game in games:
             if ABV_A in (game.away.abv, game.home.abv):
@@ -144,10 +146,12 @@ class GameHandler:
 
     def loop(self):
         while True:
-            self.update()
+            self.update_games()
+            self.update_standings()
+            self.check_for_new_day()
             time.sleep(60)
 
-    def update(self):
+    def update_games(self):
         """
         This method is used to update the games
         """
@@ -155,18 +159,33 @@ class GameHandler:
             if game is not None:
                 game.update()
 
+    def update_standings(self):
+        """
+        This method is used to update the standings
+        """
+        self.standings[0] = ScoreboardStandings(TEAMS[0])
+        self.standings[1] = ScoreboardStandings(TEAMS[1])
+
+    def check_for_new_day(self):
+        new_gamespk = get_daily_gamepks()
+        if new_gamespk != self.gamepks:
+            self.start()
+            return
+
 class Scoreboard:
     """
     This class handles all the logic for printing the data on the display
     """
-    def __init__(self, games: List[ScoreboardData]):
+    def __init__(self, games: List[ScoreboardData], standings: List[ScoreboardStandings]):
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
 
         self.games = games
+        self.standings = standings
 
     def start(self):
         self._print_welcome()
+        time.sleep(10)
         while True:
             self._loop()
 
@@ -334,29 +353,26 @@ class Scoreboard:
             self.display_manager.draw_text(Fonts.symbols, 63, 29 + offset, color, 'w')
 
     def _print_standings(self, i, game):
-        standings = ScoreboardStandings(game.away.abv)
-        wins = standings.wins
-        losses = standings.losses
-        streak = standings.streak
-        division_rank = standings.division_rank
-        games_back = standings.games_back
+        wins = game.away.wins
+        losses = game.away.losses
+        streak = game.away.streak
+        division_rank = game.away.division_rank
+        games_back = game.away.games_back
         self._print_standing(i, False, wins, losses, streak, division_rank, games_back)
 
-        standings = ScoreboardStandings(game.home.abv)
-        wins = standings.wins
-        losses = standings.losses
-        streak = standings.streak
-        division_rank = standings.division_rank
-        games_back = standings.games_back
+        wins = game.home.wins
+        losses = game.home.losses
+        streak = game.home.streak
+        division_rank = game.home.division_rank
+        games_back = game.home.games_back
         self._print_standing(i, True, wins, losses, streak, division_rank, games_back)
 
     def _print_off_day_standings(self, i):
-        standings = ScoreboardStandings(TEAMS[i])
-        wins = standings.wins
-        losses = standings.losses
-        streak = standings.streak
-        division_rank = standings.division_rank
-        games_back = standings.games_back
+        wins = self.standings[i].wins
+        losses = self.standings[i].losses
+        streak = self.standings[i].streak
+        division_rank = self.standings[i].division_rank
+        games_back = self.standings[i].games_back
         self._print_standing(i, False, wins, losses, streak, division_rank, games_back)
 
     def _print_standing(self, i, is_home: bool, wins, losses, streak, division_rank, games_back):
@@ -434,9 +450,10 @@ def main():
     Description: This function is used to start the scoreboard
     """
     games: List[ScoreboardData] = [None, None]
+    standings: List[ScoreboardStandings] = [None, None]
 
-    game_handler = GameHandler(games)
-    scoreboard = Scoreboard(games)
+    game_handler = GameHandler(games, standings)
+    scoreboard = Scoreboard(games, standings)
 
     game_handler_thread = threading.Thread(target=start_game_handler, args=(game_handler,))
     scoreboard_thread = threading.Thread(target=start_scoreboard, args=(scoreboard,))
