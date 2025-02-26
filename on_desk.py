@@ -186,10 +186,10 @@ class Scoreboard:
     def start(self):
         self._print_welcome()
 
-        for i in range(60):
-            self.display_manager.draw_line(i+8, 63, i+8, 63, Colors.white)
+        for i in range(120):
+            self.display_manager.draw_line(0, 63, i+8, 63, Colors.white)
             self.display_manager.swap_frame()
-            time.sleep(1)
+            time.sleep(.5)
 
         while True:
             self._loop()
@@ -276,9 +276,6 @@ class Scoreboard:
         offset = self._get_offset(i)
 
         start_time = game.start_time
-
-        if i == 1:
-            start_time = '10:10'
 
         if len(start_time) < 5:
             start_time = ' ' + start_time
