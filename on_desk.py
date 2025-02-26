@@ -185,7 +185,12 @@ class Scoreboard:
 
     def start(self):
         self._print_welcome()
-        time.sleep(10)
+
+        for i in range(60):
+            self.display_manager.draw_line(i+8, 63, i+8, 63, Colors.white)
+            self.display_manager.swap_frame()
+            time.sleep(1)
+
         while True:
             self._loop()
 
@@ -396,7 +401,7 @@ class Scoreboard:
 
         streak = _convert_streak(streak)
 
-        record = f'{wins}-{losses} {streak}'
+        record = f'{wins:02d}-{losses:02d} {streak}'
         gb = f'P{division_rank} {games_back}'
 
         self.display_manager.draw_text(Fonts.f6x10, 80, 8 + offset, color, record)
