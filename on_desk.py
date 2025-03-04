@@ -187,7 +187,7 @@ class Scoreboard:
         self._print_welcome()
 
         for i in range(120):
-            self.display_manager.draw_line(0, 63, i+8, 63, Colors.red)
+            self.display_manager.draw_line(0, 63, i+8, 63, Colors.middle_blue)
             self.display_manager.swap_frame()
             time.sleep(.5)
 
@@ -195,7 +195,7 @@ class Scoreboard:
             self._loop()
 
     def _print_welcome(self):
-        self.display_manager.draw_text(Fonts.ter_u18b, 0, 14, Colors.white, 'OnDesk')
+        self.display_manager.draw_text(Fonts.ter_u18b, 0, 14, Colors.white, 'on_desk')
         self.display_manager.draw_text(Fonts.ter_u18b, 0, 28, Colors.green, get_ip_address())
         self.display_manager.swap_frame()
 
