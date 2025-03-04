@@ -187,7 +187,7 @@ class Scoreboard:
         self._print_welcome()
 
         for i in range(120):
-            self.display_manager.draw_line(0, 63, i+8, 63, Colors.light_blue)
+            self.display_manager.draw_line(0, 63, i+8, 63, Colors.red)
             self.display_manager.swap_frame()
             time.sleep(.5)
 
@@ -257,7 +257,7 @@ class Scoreboard:
     def _get_color(self, i):
         if i == 0:
             return Colors.red
-        return Colors.light_blue
+        return Colors.middle_blue
 
     def _get_offset(self, i):
         if i == 0:
