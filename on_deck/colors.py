@@ -24,6 +24,7 @@ class Colors:
 
     # These colors require pwm_bits >= 2
     orange = graphics.Color(255, 170, 0)
+    lighter_blue = graphics.Color(0, 170, 255)
 
     # wont show on display due to pwm bits
     grey = graphics.Color(20, 20, 20)
