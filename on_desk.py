@@ -187,7 +187,7 @@ class Scoreboard:
         self._print_welcome()
 
         for i in range(120):
-            self.display_manager.draw_line(0, 63, i+8, 63, Colors.middle_blue)
+            self.display_manager.draw_line(0, 63, i+8, 63, Colors.green)
             self.display_manager.swap_frame()
             time.sleep(.5)
 
@@ -241,18 +241,20 @@ class Scoreboard:
             self._print_teams(i, game)
             self._print_start_time(i, game)
             self._print_standings(i, game)
-        if game.game_state == 'L':
+        elif game.game_state == 'L':
             self._print_teams(i, game)
             self._print_score(i, game)
             self._print_inning(i, game)
             self._print_runners(i, game)
             self._print_outs(i, game)
             self._print_inning_arrows(i, game)
-        if game.game_state == 'F':
+        elif game.game_state == 'F':
             self._print_teams(i, game)
             self._print_score(i, game)
             self._print_inning(i, game)
             self._print_standings(i, game)
+        else:
+            self._print_off_day_standings(i)
 
     def _get_color(self, i):
         if i == 0:
@@ -370,6 +372,12 @@ class Scoreboard:
         self._print_standing(i, True, wins, losses, streak, division_rank, games_back)
 
     def _print_off_day_standings(self, i):
+        color = self._get_color(i)
+        offset = self._get_offset(i)
+
+        self.display_manager.draw_text(Fonts.ter_u22b, 0, 15 + offset, color, TEAMS[i])
+
+
         wins = self.standings[i].wins
         losses = self.standings[i].losses
         streak = self.standings[i].streak
