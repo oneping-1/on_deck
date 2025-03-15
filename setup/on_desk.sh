@@ -1,5 +1,5 @@
 #!/bin/bash
-exec >> /home/ondeck/ondeck.log 2>&1
+exec >> /home/ondeck/on_deck.log 2>&1
 
 cd /home/on_deck/at_bat || exit
 git fetch
