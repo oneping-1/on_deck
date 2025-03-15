@@ -28,7 +28,7 @@ else:
     from rgbmatrix import RGBMatrixOptions
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
-redis_ip = '192.168.1.83'
+redis_ip = 'localhost'
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -114,7 +114,11 @@ class GamecastHandler:
         self.pubsub.subscribe('gamecast_id')
         self.pubsub.subscribe('mode')
 
-        brightness = int(self.redis.get('brightness'))
+        try:
+            brightness = int(self.redis.get('brightness'))
+        except TypeError:
+            brightness = 3
+
         self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
 
         self.gamecast: Gamecast = Gamecast(self.display_manager)
@@ -411,6 +415,7 @@ class Scoreboard:
         """
         Starts all the scoreboard elements in seperate threads.
         """
+
         threading.Thread(target=self.overview_handler.start, daemon=True).start()
         threading.Thread(target=self.gamecast_handler.start, daemon=True).start()
 

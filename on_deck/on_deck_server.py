@@ -9,7 +9,7 @@ from at_bat.scoreboard_data import ScoreboardData
 
 class Server:
     def __init__(self):
-        self.redis = redis.Redis(host='192.168.1.83', port=6379, db=0, password='ondeck')
+        self.redis = redis.Redis(host='localhost', port=6379, db=0, password='ondeck')
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])

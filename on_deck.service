@@ -1,0 +1,13 @@
+[Unit]
+Description=on_deck startup
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/home/ondeck/OnDeck-RaspberryPi/on_deck.sh
+WorkingDirectory=/home/ondeck/OnDeck-RaspberryPi
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target

@@ -8,29 +8,7 @@ sudo apt-get update
 sudo apt-get install comitup
 sudo apt-get upgrade -y
 
-sudo nano /boot/firmware/cmdline.txt
-add isolcpus=3 to the end of the line
-
-python3 -m venv venv
-. venv/bin/activate
-
-sudo apt-get install comitup git python3-dev cython3 -y
-git clone https://github.com/hzeller/rpi-rgb-led-matrix
-git clone https://github.com/oneping-1/OnDeck-RaspberryPi
-git clone https://github.com/oneping-1/at_bat
-
-cd at_bat
-pip install -e .
-pip install -r requirements.txt
-
-cd ..
-cd rpi-rgb-led-matrix
-make build-python PYTHON=$(which python3)
-sudo make install-python PYTHON=$(which python3)
-
-sudo reboot
-
-. venv/bin/activate
+sudo nano /boot/firmware/cmdline.txtp
 cd OnDeck-RaspberryPi
 python OnDesk.py
 

@@ -15,7 +15,7 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
-redis_ip = '192.168.1.83'
+redis_ip = 'localhost'
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """
@@ -55,7 +55,7 @@ def get_daily_gamepks() -> List[int]:
     Returns:
         List[int]: List of gamepks
     """
-    gamepks = ssp.get_daily_gamepks('2024-05-29')
+    gamepks = ssp.get_daily_gamepks()
     return gamepks
 
 class GamecastFetcher:
@@ -81,7 +81,11 @@ class GamecastFetcher:
         database.
         """
         delay = int(self.redis.get('delay'))
-        gamecast_id = int(self.redis.get('gamecast_id'))
+
+        try:
+            gamecast_id = int(self.redis.get('gamecast_id'))
+        except TypeError:
+            gamecast_id = 0
 
         game_dict = json.loads(self.redis.get(gamecast_id))
         gamepk = int(game_dict['gamepk'])
@@ -222,10 +226,10 @@ class Fetcher:
         Redis database. It initializes the games and then updates the games
         in a loop.
         """
-        date = '2024-05-29T14:37:00-04:00'
-        delay = seconds_since_iso8601(date)
-        self.redis.set('delay', delay)
-        self.redis.publish('delay', delay)
+        # date = '2024-05-29T14:37:00-04:00'
+        # delay = seconds_since_iso8601(date)
+        # self.redis.set('delay', delay)
+        # self.redis.publish('delay', delay)
 
         self.initialize_games()
         threading.Thread(target=self.gamecast_fetcher.start, daemon=True).start()

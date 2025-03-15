@@ -329,6 +329,9 @@ class Gamecast:
         at_bat_index = batting_order['at_bat_index']
         batting_order = batting_order['batting_order']
 
+        if batting_order is None:
+            return
+
         for i, batter in enumerate(batting_order):
             color = Colors.white
             if at_bat_index == i+1:
