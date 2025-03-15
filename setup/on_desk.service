@@ -4,8 +4,8 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/home/ondeck/OnDeck-RaspberryPi/on_desk.sh
-WorkingDirectory=/home/ondeck/OnDeck-RaspberryPi
+ExecStart=~/on_deck/setup/on_desk.sh
+WorkingDirectory=~/on_deck
 Restart=always
 User=pi
 
