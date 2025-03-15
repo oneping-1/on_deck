@@ -9,6 +9,7 @@ cd /home/on_deck/on_deck || exit
 git fetch
 git pull
 
+cd /home/on_deck/on_deck/on_deck # lmao 3 on_decks
+sudo /home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 on_deck_server:app >> /home/on_deck/on_deck_server.log &
 /home/on_deck/venv/bin/python /home/on_deck/on_deck/on_deck/on_deck_fetcher.py >> /home/on_deck/on_deck_fetcher.log &
-/home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 on_deck_server:app >> /home/on_deck/on_deck_server.log &
 sudo python /home/on_deck/on_deck/on_deck/on_deck_display.py >> /home/on_deck/on_deck_display.log &
