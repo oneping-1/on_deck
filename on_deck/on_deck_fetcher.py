@@ -193,7 +193,11 @@ class Fetcher:
         corresponding channels.
         """
         gamepks = get_daily_gamepks()
-        delay = int(self.redis.get('delay'))
+        try:
+            delay = int(self.redis.get('delay'))
+        except TypeError
+            delay = 0
+            self.redis.set('delay', delay)
 
         for i, gamepk in enumerate(gamepks):
             game = ScoreboardData(gamepk, delay)
