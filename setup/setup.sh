@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 # install on_deck
 cd ..
-cd OnDeck-RaspberryPi
+cd on_deck
 pip install -e .
 pip install -r requirements.txt
 sudo pip install -e . --break-system-packages
@@ -42,7 +42,7 @@ sudo sed -i '1s/$/ isolcpus=3/' /boot/firmware/cmdline.txt # adds isolcpus=3 to 
 sudo rm /etc/nginx/sites-enabled/default
 
 # redis
-cp ~/on_deck/setup/redis.conf /etc/redis/redis.conf
+sudo cp ~/on_deck/setup/redis.conf /etc/redis/redis.conf
 sudo systemctl restart redis
 sudo systemctl restart redis-server
 
