@@ -195,7 +195,7 @@ class Fetcher:
         gamepks = get_daily_gamepks()
         try:
             delay = int(self.redis.get('delay'))
-        except TypeError
+        except TypeError:
             delay = 0
             self.redis.set('delay', delay)
 
