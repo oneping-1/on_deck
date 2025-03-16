@@ -3,7 +3,6 @@ Description=on_deck startup
 After=network.target
 
 [Service]
-User=on_deck
 WorkingDirectory=/home/on_deck
 ExecStart=/home/on_deck/on_deck/setup/on_deck_display.sh
 Restart=always
