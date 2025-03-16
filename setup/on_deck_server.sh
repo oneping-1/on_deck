@@ -19,7 +19,7 @@ rm /home/on_deck/*.log
 cd /home/on_deck/on_deck/on_deck || exit
 
 echo "Starting gunicorn..." >> /home/on_deck/on_deck.log
-sudo /home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 on_deck_server:app >> /home/on_deck/on_deck_server.log 2>&1 &
+/home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 on_deck_server:app >> /home/on_deck/on_deck_server.log 2>&1 &
 
 echo "Starting fetcher..." >> /home/on_deck/on_deck.log
 /home/on_deck/venv/bin/python /home/on_deck/on_deck/on_deck/on_deck_fetcher.py >> /home/on_deck/on_deck_fetcher.log 2>&1

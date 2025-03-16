@@ -152,7 +152,7 @@ class GamecastHandler:
 
         if channel in (b'gamecast_id', b'delay'):
             print('waiting')
-            time.sleep(2) # delay to let fetcher update gamecast
+            time.sleep(4) # delay to let fetcher update gamecast
             new_data = self.redis.get('gamecast')
             new_data = json.loads(new_data)
             self.gamecast_game = new_data

@@ -5,8 +5,7 @@ After=network.target
 [Service]
 WorkingDirectory=/home/on_deck
 ExecStart=/home/on_deck/on_deck/setup/on_deck_server.sh
-Restart=always
-RestartSec=5
+Type=forking
 
 [Install]
 WantedBy=multi-user.target

@@ -19,6 +19,6 @@ rm /home/on_deck/*.log
 cd /home/on_deck/on_deck/on_deck || exit
 
 echo "Starting display..." >> /home/on_deck/on_deck.log
-sudo python /home/on_deck/on_deck/on_deck/on_deck_display.py >> /home/on_deck/on_deck_display.log 2>&1
+python /home/on_deck/on_deck/on_deck/on_deck_display.py >> /home/on_deck/on_deck_display.log 2>&1
 
 cd /home/on_deck || exit
