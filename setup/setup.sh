@@ -27,6 +27,9 @@ cd on_deck
 pip install -e .
 pip install -r requirements.txt
 sudo pip install -e . --break-system-packages
+chmod +x setup/on_deck_server.sh
+chmod +x setup/on_deck_display.sh
+chmod +x setup/on_desk.sh
 
 # install rpi-rgb-led-matrix
 deactivate
