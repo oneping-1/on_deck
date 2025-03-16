@@ -5,9 +5,8 @@ Wants=network-online.target
 
 [Service]
 ExecStart=/home/on_deck/on_deck/setup/on_deck_display.sh
-WorkingDirectory=/home/on_deck/on_deck
+WorkingDirectory=/home/on_deck
 Restart=always
-User=pi
 
 [Install]
 WantedBy=multi-user.target
