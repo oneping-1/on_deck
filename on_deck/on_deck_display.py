@@ -28,7 +28,7 @@ else:
     from rgbmatrix import RGBMatrixOptions
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
-redis_ip = '0.0.0.0'
+redis_ip = '192.168.1.90'
 redis_password = 'on_deck'
 
 def get_options() -> RGBMatrixOptions:

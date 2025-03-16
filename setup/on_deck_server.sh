@@ -16,7 +16,6 @@ rm /home/on_deck/*.log
     git pull
 } >> /home/on_deck/on_deck.log 2>&1
 
-# Run the three processes and log them separately
 cd /home/on_deck/on_deck/on_deck || exit
 
 echo "Starting gunicorn..." >> /home/on_deck/on_deck.log
@@ -25,5 +24,4 @@ sudo /home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 on_deck_server:app >> /h
 echo "Starting fetcher..." >> /home/on_deck/on_deck.log
 /home/on_deck/venv/bin/python /home/on_deck/on_deck/on_deck/on_deck_fetcher.py >> /home/on_deck/on_deck_fetcher.log 2>&1 &
 
-echo "Starting display..." >> /home/on_deck/on_deck.log
-sudo python /home/on_deck/on_deck/on_deck/on_deck_display.py >> /home/on_deck/on_deck_display.log 2>&1 &
+cd /home/on_deck || exit

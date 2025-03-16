@@ -4,7 +4,7 @@ After=network-online.target
 Wants=network-online.target
 
 [Service]
-ExecStart=/home/on_deck/on_deck/setup/on_deck.sh
+ExecStart=/home/on_deck/on_deck/setup/on_deck_display.sh
 WorkingDirectory=/home/on_deck/on_deck
 Restart=always
 User=pi

@@ -15,7 +15,7 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
-redis_ip = '0.0.0.0'
+redis_ip = '192.168.1.90'
 redis_password = 'on_deck'
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
