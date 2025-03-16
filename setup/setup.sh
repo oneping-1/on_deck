@@ -47,7 +47,8 @@ sudo systemctl restart redis
 sudo systemctl restart redis-server
 
 # startup scripts
-sudo cp ~/on_deck/setup/on_deck.service /etc/systemd/system/on_deck.service
+sudo cp ~/on_deck/setup/on_deck_server.service /etc/systemd/system/on_deck.service
+#sudo cp ~/on_deck/setup/on_deck_display.service /etc/systemd/system/on_deck.service
 #sudo cp ~/on_deck/setup/on_desk.service /etc/systemd/system/on_deck.service
 
 sudo systemctl daemon-reload
