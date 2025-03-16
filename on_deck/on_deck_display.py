@@ -84,7 +84,7 @@ class TimeHandler:
         self.display_manager = display_manager
         self.overview = overview
 
-        self.redis = redis.Redis(redis_ip, port=6379, db=0, password='ondeck')
+        self.redis = redis.Redis(redis_ip, port=6379, db=0, password=redis_password)
 
     def start(self):
         """

@@ -54,3 +54,6 @@ sudo cp ~/on_deck/setup/on_deck_server.service /etc/systemd/system/on_deck.servi
 sudo systemctl daemon-reload
 sudo systemctl enable on_deck.service
 sudo systemctl start on_deck.service
+
+# go back to home
+cd /home/on_deck/
