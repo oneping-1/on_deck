@@ -1,0 +1,13 @@
+[Unit]
+Description=on_deck_fetcher startup
+After=update.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/on_deck/on_deck/on_deck
+ExecStart=/home/on_deck/venv/bin/python on_deck_fetcher.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

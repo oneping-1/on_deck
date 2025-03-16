@@ -1,0 +1,12 @@
+[Unit]
+Description=on_deck update
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/on_deck
+ExecStart=/home/on_deck/on_deck/setup/update.sh
+RemainAfterExit=true
+
+[Install]
+WantedBy=multi-user.target

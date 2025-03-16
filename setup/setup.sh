@@ -27,9 +27,7 @@ cd on_deck
 pip install -e .
 pip install -r requirements.txt
 sudo pip install -e . --break-system-packages
-chmod +x setup/on_deck_server.sh
-chmod +x setup/on_deck_display.sh
-chmod +x setup/on_desk.sh
+chmod +x setup/update.sh
 
 # install rpi-rgb-led-matrix
 deactivate
@@ -49,14 +47,35 @@ sudo cp ~/on_deck/setup/redis.conf /etc/redis/redis.conf
 sudo systemctl restart redis
 sudo systemctl restart redis-server
 
-# startup scripts
-sudo cp ~/on_deck/setup/on_deck_server.service /etc/systemd/system/on_deck.service
-#sudo cp ~/on_deck/setup/on_deck_display.service /etc/systemd/system/on_deck.service
-#sudo cp ~/on_deck/setup/on_desk.service /etc/systemd/system/on_deck.service
-
+# update script
+sudo cp ~/on_deck/setup/update.service /etc/systemd/system/update.service
 sudo systemctl daemon-reload
-sudo systemctl enable on_deck.service
-sudo systemctl start on_deck.service
+sudo systemctl enable update.service
+sudo systemctl start update.service
+
+# server script
+sudo cp ~/on_deck/setup/server.service /etc/systemd/system/server.service
+sudo systemctl daemon-reload
+sudo systemctl enable server.service
+sudo systemctl start server.service
+
+# fetcher script
+sudo cp ~/on_deck/setup/fetcher.service /etc/systemd/system/fetcher.service
+sudo systemctl daemon-reload
+sudo systemctl enable fetcher.service
+sudo systemctl start fetcher.service
+
+# display script
+sudo cp ~/on_deck/setup/display.service /etc/systemd/system/display.service
+sudo systemctl daemon-reload
+sudo systemctl enable display.service
+sudo systemctl start display.service
+
+# on_desk script
+# sudo cp ~/on_deck/setup/on_desk.service /etc/systemd/system/on_desk.service
+# sudo systemctl daemon-reload
+# sudo systemctl enable on_desk.service
+# sudo systemctl start on_desk.service
 
 # go back to home
 cd /home/on_deck/

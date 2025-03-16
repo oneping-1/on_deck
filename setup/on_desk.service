@@ -1,13 +1,13 @@
 ﻿[Unit]
 Description=on_desk startup
-After=network-online.target
-Wants=network-online.target
+After=update.target
 
 [Service]
-ExecStart=/home/on_deck/on_deck/setup/on_desk.sh
+Type=simple
 WorkingDirectory=/home/on_deck/on_deck
+ExecStart=/home/on_deck/on_deck/setup/on_desk.sh
 Restart=always
-User=pi
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

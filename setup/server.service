@@ -1,0 +1,13 @@
+[Unit]
+Description=on_deck_server startup
+After=update.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/on_deck/on_deck/on_deck
+ExecStart=/home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 --timeout 120 on_deck_server:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

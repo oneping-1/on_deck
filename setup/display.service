@@ -1,0 +1,13 @@
+[Unit]
+Description=on_deck_display startup
+After=update.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/on_deck/on_deck/on_deck
+ExecStart=python on_deck_display.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
