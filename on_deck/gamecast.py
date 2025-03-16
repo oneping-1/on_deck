@@ -28,6 +28,15 @@ class Gamecast:
         error_column_offset = 116
         lob_column_offset = 132
 
+        if runs is None:
+            runs = 0
+        if hits is None:
+            hits = 0
+        if errors is None:
+            errors = 0
+        if lob is None:
+            lob = 0
+
         run_column_offset -= self._ddo if runs >= 10 else 0
         hit_column_offset -= self._ddo if hits >= 10 else 0
         lob_column_offset -= self._ddo if lob >= 10 else 0

@@ -87,6 +87,7 @@ class GamecastFetcher:
             gamecast_id = int(self.redis.get('gamecast_id'))
         except TypeError:
             gamecast_id = 0
+            self.redis.set('gamecast_id', gamecast_id)
 
         game_dict = json.loads(self.redis.get(gamecast_id))
         gamepk = int(game_dict['gamepk'])
