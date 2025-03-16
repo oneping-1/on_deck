@@ -242,6 +242,9 @@ class Gamecast:
         re_avg = run_expectancy['average_runs']
         re_ts = run_expectancy['to_score']
 
+        if (re_avg is None) or (re_ts is None):
+            return
+
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'AVG:{re_avg:5.2f}')
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
@@ -257,6 +260,9 @@ class Gamecast:
 
         wp_away = win_probability['away']
         wp_home = win_probability['home']
+
+        if (wp_away is None) or (wp_home is None):
+            return
 
         if wp_away > wp_home:
             team = away['abv']
