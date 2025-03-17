@@ -338,8 +338,8 @@ class Gamecast:
         row_offset = 36
         column_offset = 240
 
-        # self.display_manager.draw_box(240, 36, 386, 144, Colors.white)
-        self.display_manager.clear_section(240, 36, 386, 144)
+        # self.display_manager.draw_box(240, 36, 386, 146, Colors.white)
+        self.display_manager.clear_section(240, 36, 386, 146)
 
         at_bat_index = batting_order['at_bat_index']
         batting_order = batting_order['batting_order']

@@ -6,6 +6,8 @@ After=update.target
 Type=simple
 WorkingDirectory=/home/on_deck/on_deck/on_deck
 ExecStart=python on_deck_display.py
+StandardOutput=file:/home/on_deck/display.log
+StandardError=file:/home/on_deck/display.log
 Restart=always
 RestartSec=5
 

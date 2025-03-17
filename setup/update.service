@@ -1,6 +1,7 @@
 [Unit]
 Description=on_deck update
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=oneshot
