@@ -156,7 +156,8 @@ class GamecastHandler:
             new_data = self.redis.get('gamecast')
             new_data = json.loads(new_data)
             self.gamecast_game = new_data
-            self.gamecast.print_game(self.gamecast_game)
+            if self.redis.get('mode') == b'gamecast':
+                self.gamecast.print_game(self.gamecast_game)
             return
 
         if channel == b'brightness':
