@@ -9,7 +9,10 @@ class Colors:
     """
     This class is used to store the colors used in the scoreboard.
     """
-    black = graphics.Color(0, 0, 0)
+    if platform.system() == 'Windows':
+        black = graphics.Color(20, 20, 20)
+    else:
+        black = graphics.Color(0, 0, 0)
     white = graphics.Color(255, 255, 255)
 
     red = graphics.Color(255, 0, 0)

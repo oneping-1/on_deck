@@ -196,10 +196,7 @@ class DisplayManager:
         """This method is used to clear a section of the display."""
         num_rows = y2 - y1 + 1
 
-        if platform.system() == 'Windows':
-            color = Colors.grey
-        else:
-            color = Colors.black
+        color = Colors.black
 
         for i in range(num_rows):
             graphics.DrawLine(self.canvas, x1, y1 + i, x2, y1 + i, color)

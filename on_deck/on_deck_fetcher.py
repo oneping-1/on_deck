@@ -243,5 +243,6 @@ class Fetcher:
             self.update_games()
 
 if __name__ == '__main__':
+    time.sleep(30) # Wait for Redis to start
     fetcher = Fetcher()
     fetcher.start()
