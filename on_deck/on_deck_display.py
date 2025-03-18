@@ -236,7 +236,9 @@ class GamecastHandler:
         continue to wait for new data until the mode is changed.
         """
         game = self.load_gamecast()
-        self.gamecast.print_game(game)
+        mode = self.redis.get('mode')
+        if mode == b'gamecast':
+            self.gamecast.print_game(game)
 
         while True:
             self.print_gamecast_game()
