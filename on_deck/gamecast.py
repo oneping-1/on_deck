@@ -371,7 +371,7 @@ class Gamecast:
         if (pitcher is None) or (pitcher['name'] is None):
             return
 
-        pitcher_name = f' P {pitcher["name"]:10s}{pitcher["era"]:>5s}'
+        pitcher_name = f' P {pitcher["name"][:10]:10s}{pitcher["era"]:>5s}'
         pitch_count = f'{pitcher["strikes"]}/{pitcher["pitches"]}'
         outcome = f'{pitcher["strike_outs"]}/{pitcher["walks"]}'
         # pitch_count = f'  {pitch_count:7s}    {outcome:>5s}'
