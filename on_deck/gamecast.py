@@ -357,7 +357,26 @@ class Gamecast:
             ops = batter['ops']
             position = batter['position']
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-                color, rf'{position:>2s} {name[:11]:11s}{ops}')
+                color, rf'{position:>2s} {name[:10]:10s}{ops:>5s}')
+
+    def _print_pitcher(self, matchup: dict):
+        row_offset = 168
+        column_offset = 240
+
+        pitcher = matchup['pitcher']
+
+        if pitcher is None:
+            return
+
+        pitcher_name = f' P {pitcher["name"]:10s}{pitcher["era"]:>5s}'
+        pitch_count = f'{pitcher["strikes"]}/{pitcher["pitches"]}'
+        outcome = f'{pitcher["strike_outs"]}/{pitcher["walks"]}'
+        # pitch_count = f'  {pitch_count:7s}    {outcome:>5s}'
+        pitch_count = f'   {outcome:5s}   {pitch_count:>7s}'
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            Colors.white, pitcher_name)
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
+            Colors.white, pitch_count)
 
     def print_game(self, game: dict):
         self._print_team_names(game['away'], game['home'])
@@ -371,6 +390,7 @@ class Gamecast:
         self._print_pitch_details(game['pitch_details'])
         self._print_hit_details(game['hit_details'])
         self._print_batting_order(game['batting_order'])
+        self._print_pitcher(game['matchup'])
         self.display_manager.swap_frame()
 
 if __name__ == '__main__':
