@@ -363,6 +363,8 @@ class Gamecast:
         row_offset = 168
         column_offset = 240
 
+        self.display_manager.clear_section(168, 240, 256, 240+24)
+
         pitcher = matchup['pitcher']
 
         if (pitcher is None) or (pitcher['name'] is None):
