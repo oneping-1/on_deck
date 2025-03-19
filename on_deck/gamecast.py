@@ -365,7 +365,7 @@ class Gamecast:
 
         pitcher = matchup['pitcher']
 
-        if pitcher is None:
+        if (pitcher is None) or (pitcher['name'] is None):
             return
 
         pitcher_name = f' P {pitcher["name"]:10s}{pitcher["era"]:>5s}'
