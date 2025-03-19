@@ -77,5 +77,8 @@ sudo systemctl start display.service
 # sudo systemctl enable on_desk.service
 # sudo systemctl start on_desk.service
 
+# menu-complete
+bind -f /home/on_deck/on_deck/setup/.inputrc
+
 # go back to home
 cd /home/on_deck/
