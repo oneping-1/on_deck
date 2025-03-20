@@ -9,9 +9,9 @@ from typing import List, Union
 import json
 import threading
 from datetime import datetime
+import platform
 import pytz
 import redis
-import platform
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData

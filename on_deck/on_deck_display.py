@@ -16,16 +16,14 @@ import platform
 import threading
 import time
 import math
+import argparse
+import os
 import redis
 
 from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
 from on_deck.gamecast import Gamecast
-
-if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrixOptions
-else:
-    from rgbmatrix import RGBMatrixOptions
+from on_deck.matrix_loader import RGBMatrixOptions
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
 redis_ip = '192.168.1.90'
@@ -424,5 +422,12 @@ class Scoreboard:
         self.time_handler.start()
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--use-emulator', action='store_true')
+    args = parser.parse_args()
+    if args.use_emulator:
+        os.environ['use_emulator'] = '1'
+        print('loading emulator')
+
     scoreboard = Scoreboard()
     scoreboard.start()

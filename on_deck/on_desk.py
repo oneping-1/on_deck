@@ -21,6 +21,7 @@ import datetime
 import platform
 import socket
 import argparse
+import os
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData, ScoreboardStandings
@@ -29,10 +30,7 @@ from on_deck.colors import Colors
 from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 
-if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrixOptions
-else:
-    from rgbmatrix import RGBMatrixOptions
+from on_deck.matrix_loader import RGBMatrixOptions
 
 ABV_A = 'CLE'
 ABV_B = 'TEX'
@@ -458,6 +456,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--on', type=str, default='00:00', help='The time to turn the display on')
     parser.add_argument('--off', type=str, default='23:59', help='The time to turn the display off')
+    parser.add_argument('--use-emulator', action='store_true')
     args = parser.parse_args()
 
     if args.on is not None:
@@ -468,5 +467,8 @@ if __name__ == '__main__':
         hour = int(args.off.split(':')[0])
         minute = int(args.off.split(':')[1])
         off_time = datetime.time(hour, minute)
+    if args.use_emulator:
+        os.environ['use_emulator'] = '1'
+        print('loading emulator')
 
     main()

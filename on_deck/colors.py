@@ -1,9 +1,6 @@
 import platform
 
-if platform.system() == 'Windows':
-    from RGBMatrixEmulator import graphics # pylint: disable=E0401
-else:
-    from rgbmatrix import graphics # pylint: disable=E0401
+from on_deck.matrix_loader import graphics
 
 class Colors:
     """

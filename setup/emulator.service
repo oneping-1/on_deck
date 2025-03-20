@@ -1,0 +1,16 @@
+[Unit]
+Description=on_deck_fetcher startup
+After=update.target
+
+[Service]
+User=on_deck
+Type=simple
+WorkingDirectory=/home/on_deck/on_deck/on_deck
+ExecStart=/home/on_deck/venv/bin/python on_deck_display.py --use-emulator
+StandardOutput=journal
+StandardError=journal
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

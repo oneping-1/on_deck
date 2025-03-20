@@ -65,6 +65,12 @@ sudo systemctl daemon-reload
 sudo systemctl enable fetcher.service
 sudo systemctl start fetcher.service
 
+# emulator script
+sudo cp ~/on_deck/setup/display.service /etc/systemd/system/emulator.service
+sudo systemctl daemon-reload
+sudo systemctl enable emulator.service
+sudo systemctl start emulator.service
+
 # display script
 sudo cp ~/on_deck/setup/display.service /etc/systemd/system/display.service
 sudo systemctl daemon-reload

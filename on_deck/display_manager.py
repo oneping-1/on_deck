@@ -8,11 +8,7 @@ import time
 import math
 
 from on_deck.colors import Colors
-
-if platform.system() == 'Windows':
-    from RGBMatrixEmulator import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
-else:
-    from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics # pylint: disable=E0401
+from on_deck.matrix_loader import RGBMatrix, RGBMatrixOptions, graphics
 
 def get_options() -> RGBMatrixOptions:
     """
