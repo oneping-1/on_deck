@@ -38,7 +38,16 @@ def get_options() -> RGBMatrixOptions:
     """
     options = RGBMatrixOptions()
 
-    if platform.system() == 'Windows':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--use-emulator', action='store_true')
+    args = parser.parse_args()
+    if args.use_emulator:
+        use_emulator = True
+        print('loading emulator')
+    else:
+        use_emulator = False
+
+    if (platform.system() == 'Windows') or (use_emulator):
         options.cols = int(384)
         options.rows = int(256)
     else:
@@ -48,7 +57,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-        options.pwm_bits = 2 # Can run at 2 with sudo, 1 without
+        options.pwm_bits = 2 # Can run 2 with sudo, 1 without
         options.gpio_slowdown = 4
 
     return options
@@ -422,12 +431,5 @@ class Scoreboard:
         self.time_handler.start()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--use-emulator', action='store_true')
-    args = parser.parse_args()
-    if args.use_emulator:
-        os.environ['use_emulator'] = '1'
-        print('loading emulator')
-
     scoreboard = Scoreboard()
     scoreboard.start()
