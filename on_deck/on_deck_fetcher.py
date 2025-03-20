@@ -11,6 +11,7 @@ import threading
 from datetime import datetime
 import pytz
 import redis
+import platform
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
@@ -243,6 +244,7 @@ class Fetcher:
             self.update_games()
 
 if __name__ == '__main__':
-    time.sleep(30) # Wait for Redis to start
+    if platform.system() != 'Windows':
+        time.sleep(30) # Wait for Redis to start
     fetcher = Fetcher()
     fetcher.start()
