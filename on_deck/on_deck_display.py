@@ -114,6 +114,7 @@ class GamecastHandler:
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('gamecast_id')
         self.pubsub.subscribe('mode')
+        self.pubsub.subscribe('gamecast_reset')
 
         try:
             brightness = int(self.redis.get('brightness'))
@@ -150,22 +151,16 @@ class GamecastHandler:
         """
         channel = message['channel']
 
-        if channel in (b'gamecast_id', b'delay'):
-            print('waiting')
-            time.sleep(1) # delay to let fetcher update gamecast
-            new_data = self.redis.get('gamecast')
-            new_data = json.loads(new_data)
-            self.gamecast_game = new_data
-            if self.redis.get('mode') == b'gamecast':
-                self.gamecast.print_game(self.gamecast_game)
-            return
+        # get new data anyway when settings is loaded. despite inputs
+        print('waiting')
+        time.sleep(1) # delay to let fetcher update gamecast
+        new_data = self.redis.get('gamecast')
+        new_data = json.loads(new_data)
+        self.gamecast_game = new_data
 
         if channel == b'brightness':
             brightness = int(message['data'])
             self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
-            if self.redis.get('mode') == b'gamecast':
-                self.gamecast.print_game(self.gamecast_game)
-            return
 
         mode = self.redis.get('mode')
         if channel == b'mode':
@@ -174,6 +169,7 @@ class GamecastHandler:
         if mode == b'gamecast':
             self.display_manager.clear_section(129, 0, 384, 256)
             self.gamecast.print_game(self.gamecast_game)
+            print('gamecast reloaded')
             return
 
     def update_gamecast(self) -> Union[bool, dict]:
@@ -195,7 +191,7 @@ class GamecastHandler:
         if message['type'] != 'message':
             return False
 
-        if message['channel'] in (b'gamecast_id', b'brightness', b'mode', b'delay'):
+        if message['channel'] in (b'gamecast_id', b'brightness', b'mode', b'delay', b'gamecast_reset'):
             self.change_settings(message)
             return False
 

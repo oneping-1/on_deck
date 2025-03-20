@@ -118,6 +118,7 @@ class Server:
     def gamecast(self):
         gamecast_game = self.redis.get('gamecast')
         gamecast_game = json.loads(gamecast_game)
+        self.redis.publish('gamecast_reset', 'gamecast_reset')
 
         return Response(json.dumps(gamecast_game, indent=4), status=200, mimetype='text/plain')
 
