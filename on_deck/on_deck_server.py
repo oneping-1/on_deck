@@ -47,6 +47,24 @@ class Server:
         sys.stdout.flush()
         os.system('sudo reboot')
 
+    def _parse_delay(self, delay: str) -> int:
+        if delay[0] not in ('p', 'm'):
+            return delay
+
+        old_delay = int(self.redis.get('delay'))
+        delay_delta = int(delay[1:])
+
+        if delay[0] == 'p':
+            return int(old_delay + delay_delta)
+
+        if delay[0] == 'm':
+            new_delay = int(old_delay - delay_delta)
+            if new_delay < 0:
+                return 0
+            return new_delay
+
+        raise ValueError("Invalid delay format. Must start with '+' or '-'.")
+
     def settings(self):
         """
         Fetches settings from the flask server. Allows the user to
@@ -64,6 +82,7 @@ class Server:
             self.redis.set('mode', mode)
             self.redis.publish('mode', mode)
         if delay is not None:
+            delay = self._parse_delay(delay)
             self.redis.set('delay', delay)
             self.redis.publish('delay', delay)
         if brightness is not None:
