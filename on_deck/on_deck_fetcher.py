@@ -228,7 +228,7 @@ class Fetcher:
             if new_data:
                 self.redis_set_game(i, game.to_dict())
                 self.redis_publish_game(i, new_data)
-            time.sleep(.1)
+            time.sleep(1)
 
         if (time.time() - self.last_check) > 60:
             self.last_check = time.time()
