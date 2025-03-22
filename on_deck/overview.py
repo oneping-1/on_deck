@@ -29,7 +29,10 @@ class Overview:
         row_offset += (i - self._games_per_column * column) * 42
         return (column_offset, row_offset)
 
-    def _calculate_color(self, i):
+    def _calculate_color(self, i, game: dict = None):
+        if (game['flags']['no_hitter'] is True) or (game['flags']['perfect_game'] is True):
+            return Colors.pink
+
         column = math.floor(i / self._games_per_column)
         middle_column = column & 1
 
@@ -39,7 +42,7 @@ class Overview:
 
     def _print_scores(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 50
 
@@ -62,7 +65,7 @@ class Overview:
 
     def _print_text(self, text: str, column_offset: int, row_offset: int, font, i: int):
         c, r = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += c
         row_offset += r + 10
@@ -72,7 +75,7 @@ class Overview:
 
     def _print_inning(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 74
         row_offset += 10
@@ -89,7 +92,7 @@ class Overview:
 
     def _print_inning_arrows(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 80
 
@@ -102,7 +105,7 @@ class Overview:
 
     def _print_bases(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 109
         row_offset -= 8
@@ -126,7 +129,7 @@ class Overview:
 
     def _print_outs(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 109
         row_offset += 12
@@ -155,7 +158,7 @@ class Overview:
 
     def _print_start_time(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 50
         row_offset += 10
@@ -169,7 +172,7 @@ class Overview:
 
     def print_game(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         self.clear_game(i)
 
@@ -251,7 +254,7 @@ class Overview:
         self.clear_game(i)
 
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i)
+        color = self._calculate_color(i, game)
 
         column_offset += 33
 

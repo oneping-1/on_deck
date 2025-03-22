@@ -20,6 +20,8 @@ class Colors:
     magenta = graphics.Color(255, 0, 255)
     light_blue = graphics.Color(0, 255, 255)
 
+    pink = graphics.Color(255, 85, 255)
+
     x = graphics.Color(0, 64, 255)
 
     # These colors require pwm_bits >= 2
