@@ -163,6 +163,8 @@ class Fetcher:
 
         self.gamecast_fetcher = GamecastFetcher()
 
+        self.last_check = time.time()
+
     def redis_set_game(self, key: Union[str, int], full_game: dict):
         """
         Sets the game data in the Redis database.
@@ -228,10 +230,8 @@ class Fetcher:
                 self.redis_publish_game(i, new_data)
             time.sleep(.1)
 
-        # Check for new gamepks every 60 seconds
-        last_check = time.time()
-        if (time.time() - last_check) > 60:
-            last_check = time.time()
+        if (time.time() - self.last_check) > 60:
+            self.last_check = time.time()
             new_gamepks = get_daily_gamepks()
             if new_gamepks != self.gamepks:
                 print('New gamepks detected, reinitializing games')
