@@ -17,7 +17,6 @@ import threading
 import time
 import math
 import argparse
-import os
 import redis
 
 from on_deck.display_manager import DisplayManager
@@ -26,8 +25,8 @@ from on_deck.gamecast import Gamecast
 from on_deck.matrix_loader import RGBMatrixOptions
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
-redis_ip = '192.168.1.90'
-redis_password = 'on_deck'
+REDIS_IP = '192.168.1.90'
+REDIS_PASSWORD = 'on_deck'
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -91,7 +90,7 @@ class TimeHandler:
         self.display_manager = display_manager
         self.overview = overview
 
-        self.redis = redis.Redis(redis_ip, port=6379, db=0, password=redis_password)
+        self.redis = redis.Redis(REDIS_IP, port=6379, db=0, password=REDIS_PASSWORD)
 
     def start(self):
         """
@@ -115,7 +114,7 @@ class GamecastHandler:
         self.display_manager = display_manager
         self.game: dict = None
 
-        self.redis = redis.Redis(redis_ip, port=6379, db=0, password=redis_password)
+        self.redis = redis.Redis(REDIS_IP, port=6379, db=0, password=REDIS_PASSWORD)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('gamecast')
         self.pubsub.subscribe('brightness')
@@ -256,7 +255,7 @@ class OverviewHandler:
         self.display_manager = display_manager
         self.overview = Overview(self.display_manager)
 
-        self.redis = redis.Redis(redis_ip, port=6379, db=0, password=redis_password)
+        self.redis = redis.Redis(REDIS_IP, port=6379, db=0, password=REDIS_PASSWORD)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
