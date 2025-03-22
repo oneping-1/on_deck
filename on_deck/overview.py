@@ -30,8 +30,9 @@ class Overview:
         return (column_offset, row_offset)
 
     def _calculate_color(self, i, game: dict = None):
-        if (game['flags']['no_hitter'] is True) or (game['flags']['perfect_game'] is True):
-            return Colors.pink
+        if game is not None:
+            if (game['flags']['no_hitter'] is True) or (game['flags']['perfect_game'] is True):
+                return Colors.pink
 
         column = math.floor(i / self._games_per_column)
         middle_column = column & 1
@@ -63,9 +64,8 @@ class Overview:
             self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
                 row_offset+20, color, home_score)
 
-    def _print_text(self, text: str, column_offset: int, row_offset: int, font, i: int):
+    def _print_text(self, text: str, color, column_offset: int, row_offset: int, font, i: int):
         c, r = self._calculate_offset(i)
-        color = self._calculate_color(i, game)
 
         column_offset += c
         row_offset += r + 10
@@ -202,13 +202,13 @@ class Overview:
             self._print_scores(game, i)
             inning = game['inning']
             if inning == 9:
-                self._print_text('F', 74, 0, Fonts.ter_u28b, i)
+                self._print_text('F', color, 74, 0, Fonts.ter_u28b, i)
             else:
                 # Multiple print statements to squeeze the text into
                 # tight space
-                self._print_text('F', 74, 0, Fonts.ter_u28b, i)
-                self._print_text('/', 84, 0, Fonts.ter_u28b, i)
-                self._print_text(f'{inning}', 94, 0, Fonts.ter_u28b, i)
+                self._print_text('F', color, 74, 0, Fonts.ter_u28b, i)
+                self._print_text('/', color, 84, 0, Fonts.ter_u28b, i)
+                self._print_text(f'{inning}', color, 94, 0, Fonts.ter_u28b, i)
 
         # Pregame
         elif game_state == 'P':
@@ -218,14 +218,14 @@ class Overview:
         elif game_state == 'S':
             self._print_scores(game, i)
             self._print_inning(game, i)
-            self._print_text('SUSP', 92, -4, Fonts.ter_u16b, i)
+            self._print_text('SUSP', color, 92, -4, Fonts.ter_u16b, i)
 
         # Delay
         elif game_state == 'D':
             self._print_scores(game, i)
             self._print_inning(game, i)
             self._print_inning_arrows(game, i)
-            self._print_text('DLY', 92, -4, Fonts.ter_u16b, i)
+            self._print_text('DLY', color, 92, -4, Fonts.ter_u16b, i)
 
     def _time_delta_strftime(self, delay: int) -> str:
         """
@@ -254,7 +254,7 @@ class Overview:
         self.clear_game(i)
 
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i, game)
+        color = self._calculate_color(i, None)
 
         column_offset += 33
 
