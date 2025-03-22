@@ -260,6 +260,7 @@ class OverviewHandler:
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
+        self.pubsub.subscribe('init')
 
         self.games: List[dict] = []
 

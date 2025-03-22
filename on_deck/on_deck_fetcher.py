@@ -211,7 +211,7 @@ class Fetcher:
         print('Overview initialized')
         num_games = len(self.games)
         self.redis.set('num_games', num_games)
-        self.redis.publish('init_games', 'init_games')
+        self.redis.publish('init', 'init')
 
     def update_games(self):
         """
