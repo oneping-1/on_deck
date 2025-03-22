@@ -154,6 +154,7 @@ class Fetcher:
     gamecast data and updates the Redis database with the fetched data.
     """
     def __init__(self):
+        self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
         self.redis = redis.Redis(host=redis_ip, port=6379, db=0, password=redis_password)
@@ -194,14 +195,14 @@ class Fetcher:
         the games in the Redis database and publishes the updated data to the
         corresponding channels.
         """
-        gamepks = get_daily_gamepks()
+        self.gamepks = get_daily_gamepks()
         try:
             delay = int(self.redis.get('delay'))
         except TypeError:
             delay = 0
             self.redis.set('delay', delay)
 
-        for i, gamepk in enumerate(gamepks):
+        for i, gamepk in enumerate(self.gamepks):
             game = ScoreboardData(gamepk, delay)
             self.games.append(game)
             self.redis_set_game(i, game.to_dict())
@@ -226,6 +227,15 @@ class Fetcher:
                 self.redis_set_game(i, game.to_dict())
                 self.redis_publish_game(i, new_data)
             time.sleep(.1)
+
+        # Check for new gamepks every 60 seconds
+        last_check = time.time()
+        if (time.time() - last_check) > 60:
+            last_check = time.time()
+            new_gamepks = get_daily_gamepks()
+            if new_gamepks != self.gamepks:
+                print('New gamepks detected, reinitializing games')
+                self.initialize_games()
 
     def start(self):
         """
