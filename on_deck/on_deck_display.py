@@ -268,6 +268,7 @@ class OverviewHandler:
 
     def _initialize_games(self):
         num_games = int(self.redis.get('num_games'))
+        self.games = []
 
         for i in range(num_games):
             self.pubsub.subscribe(f'{i}')
