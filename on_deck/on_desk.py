@@ -109,6 +109,8 @@ class GameHandler:
         """
         This method is used to start the game updater
         """
+        self.games = []
+
         self.gamepks = get_daily_gamepks()
         games = [ScoreboardData(gamepk) for gamepk in self.gamepks]
 
