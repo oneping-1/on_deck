@@ -133,20 +133,29 @@ class GameHandler:
         """
         for game in self.games:
             if game is not None:
-                game.update()
+                try:
+                    game.update()
+                except Exception as e:
+                    print(f"Error updating game: {e}")
 
     def update_standings(self):
         """
         This method is used to update the standings
         """
-        self.standings[0] = ScoreboardStandings(TEAMS[0])
-        self.standings[1] = ScoreboardStandings(TEAMS[1])
+        try:
+            self.standings[0] = ScoreboardStandings(TEAMS[0])
+            self.standings[1] = ScoreboardStandings(TEAMS[1])
+        except Exception as e:
+            print(f"Error updating standings: {e}")
 
     def check_for_new_day(self):
-        new_gamespk = get_daily_gamepks()
-        if new_gamespk != self.gamepks:
-            self.start()
-            return
+        try:
+            new_gamespk = get_daily_gamepks()
+            if new_gamespk != self.gamepks:
+                self.start()
+        except Exception as e:
+            print(f"Error checking for new day: {e}")
+            os.system('sudo reboot')
 
 class Scoreboard:
     """
