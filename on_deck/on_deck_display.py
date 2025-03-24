@@ -98,10 +98,13 @@ class TimeHandler:
         delay time for the current game. This function will print the
         time and then wait 100ms before printing the time again
         """
+        last_print = time.time()
         while True:
-            delay = int(self.redis.get('delay'))
-            self.overview.print_time(delay, 17)
-            time.sleep(.2)
+            if (time.time() - last_print) > 0.9:
+                last_print = time.time()
+                delay = int(self.redis.get('delay'))
+                self.overview.print_time(delay, 17)
+
 
 class GamecastHandler:
     """
