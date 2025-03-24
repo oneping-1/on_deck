@@ -100,7 +100,7 @@ class TimeHandler:
         """
         last_print = time.time()
         while True:
-            if (time.time() - last_print) > 0.2:
+            if (time.time() - last_print) > 0.9:
                 last_print = time.time()
                 delay = int(self.redis.get('delay'))
                 self.overview.print_time(delay, 17)
