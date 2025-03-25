@@ -462,27 +462,7 @@ def main():
     scoreboard_thread.start()
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        prog='OnDesk',
-        description='OnDesk is a scoreboard for the Raspberry Pi',
-        epilog='Enjoy the game!'
-    )
-
-    parser.add_argument('--on', type=str, default='00:00', help='The time to turn the display on')
-    parser.add_argument('--off', type=str, default='23:59', help='The time to turn the display off')
-    parser.add_argument('--use-emulator', action='store_true')
-    args = parser.parse_args()
-
-    if args.on is not None:
-        hour = int(args.on.split(':')[0])
-        minute = int(args.on.split(':')[1])
-        on_time = datetime.time(hour, minute)
-    if args.off is not None:
-        hour = int(args.off.split(':')[0])
-        minute = int(args.off.split(':')[1])
-        off_time = datetime.time(hour, minute)
-    if args.use_emulator:
-        os.environ['use_emulator'] = '1'
-        print('loading emulator')
+    on = datetime.time(8, 30)
+    off = datetime.time(17, 15)
 
     main()
