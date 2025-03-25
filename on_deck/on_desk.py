@@ -160,7 +160,7 @@ class GameHandler:
                 self.start()
         except Exception as e:
             print(f"Error checking for new day: {e}")
-            os.system('sudo reboot')
+            # os.system('sudo reboot')
 
 class Scoreboard:
     """
