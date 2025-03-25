@@ -198,6 +198,8 @@ class Fetcher:
         corresponding channels.
         """
         self.gamepks = get_daily_gamepks()
+        self.games: List[ScoreboardData] = None
+
         try:
             delay = int(self.redis.get('delay'))
         except TypeError:
