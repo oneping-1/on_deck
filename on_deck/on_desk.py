@@ -1,17 +1,7 @@
 """
-Install instructions:
-
-get newest debian file from: https://davesteele.github.io/comitup/ppa.html
-wget davesteele-comitup-apt-source*.deb
-sudo dpkg -i davesteele-comitup-apt-source*.deb
-sudo apt-get update
-sudo apt-get install comitup
-sudo apt-get upgrade -y
-
-sudo nano /boot/firmware/cmdline.txtp
-cd OnDeck-RaspberryPi
-python OnDesk.py
-
+This module is a smaller version of the main on_deck modules. It is made
+of a single led matrix board that is meant to sit on a desk. It will
+display the current game information for 2 teams.
 """
 
 from typing import List
@@ -20,8 +10,6 @@ import time
 import datetime
 import platform
 import socket
-import argparse
-import os
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData, ScoreboardStandings
@@ -36,8 +24,8 @@ ABV_A = 'CLE'
 ABV_B = 'TEX'
 TEAMS = [ABV_A, ABV_B]
 
-on_time = datetime.time(0, 0)
-off_time = datetime.time(23,59)
+# on_time = datetime.time(0, 0)
+# off_time = datetime.time(23,59)
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -462,7 +450,7 @@ def main():
     scoreboard_thread.start()
 
 if __name__ == '__main__':
-    on = datetime.time(8, 30)
-    off = datetime.time(17, 15)
+    on_time = datetime.time(8, 30)
+    off_time = datetime.time(17, 15)
 
     main()
