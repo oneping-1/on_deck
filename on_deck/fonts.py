@@ -1,5 +1,4 @@
 import os
-import platform
 
 from on_deck.matrix_loader import graphics
 
@@ -79,7 +78,7 @@ class Fonts:
             cls.ter_u18b = graphics.Font()
             cls.ter_u18b.LoadFont(os.path.join(terminus_path, 'ter-u18b.bdf'))
 
-            cls.ter_u18n = graphics.Fonts()
+            cls.ter_u18n = graphics.Font()
             cls.ter_u18n.LoadFont(os.path.join(terminus_path, 'ter-u18n.bdf'))
 
             cls.ter_u22b = graphics.Font()
@@ -97,7 +96,7 @@ class Fonts:
             cls.ter_u28b = graphics.Font()
             cls.ter_u28b.LoadFont(os.path.join(terminus_path, 'ter-u28b.bdf'))
 
-            cls.ter_28n = graphics.Font()
+            cls.ter_u28n = graphics.Font()
             cls.ter_u28n.LoadFont(os.path.join(terminus_path, 'ter-u28n.bdf'))
 
             cls.ter_u32b = graphics.Font()
