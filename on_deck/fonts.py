@@ -23,10 +23,20 @@ class Fonts:
     ter_u16v = None
 
     ter_u18b = None
+    ter_u18n = None
+
     ter_u22b = None
+    ter_u22n = None
+
     ter_u24b = None
+    ter_u24n = None
+
     ter_u28b = None
+    ter_u28n = None
+
     ter_u32b = None
+    ter_u32n = None
+
     symbols = None
 
     # Class initialization block
@@ -69,17 +79,32 @@ class Fonts:
             cls.ter_u18b = graphics.Font()
             cls.ter_u18b.LoadFont(os.path.join(terminus_path, 'ter-u18b.bdf'))
 
+            cls.ter_u18n = graphics.Fonts()
+            cls.ter_u18n.LoadFont(os.path.join(terminus_path, 'ter-u18n.bdf'))
+
             cls.ter_u22b = graphics.Font()
             cls.ter_u22b.LoadFont(os.path.join(terminus_path, 'ter-u22b.bdf'))
+
+            cls.ter_u22n = graphics.Font()
+            cls.ter_u22n.LoadFont(os.path.join(terminus_path, 'ter-u22n.bdf'))
 
             cls.ter_u24b = graphics.Font()
             cls.ter_u24b.LoadFont(os.path.join(terminus_path, 'ter-u24b.bdf'))
 
+            cls.ter_u24n = graphics.Font()
+            cls.ter_u24n.LoadFont(os.path.join(terminus_path, 'ter-u24n.bdf'))
+
             cls.ter_u28b = graphics.Font()
             cls.ter_u28b.LoadFont(os.path.join(terminus_path, 'ter-u28b.bdf'))
 
+            cls.ter_28n = graphics.Font()
+            cls.ter_u28n.LoadFont(os.path.join(terminus_path, 'ter-u28n.bdf'))
+
             cls.ter_u32b = graphics.Font()
             cls.ter_u32b.LoadFont(os.path.join(terminus_path, 'ter-u32b.bdf'))
+
+            cls.ter_u32n = graphics.Font()
+            cls.ter_u32n.LoadFont(os.path.join(terminus_path, 'ter-u32n.bdf'))
 
             cls.symbols = graphics.Font()
             cls.symbols.LoadFont(os.path.join(fonts_path, 'symbols.bdf'))
