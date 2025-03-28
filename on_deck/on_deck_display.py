@@ -272,6 +272,9 @@ class OverviewHandler:
         num_games = int(self.redis.get('num_games'))
         self.games = []
 
+        self.display_manager.clear_section(0, 0, 384, 256)
+        self.display_manager.swap_frame()
+
         for i in range(num_games):
             self.pubsub.subscribe(f'{i}')
             game = self.redis.get(f'{i}')
