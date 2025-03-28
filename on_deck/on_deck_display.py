@@ -202,7 +202,7 @@ class GamecastHandler:
         if message['type'] != 'message':
             return False
 
-        if message['channel'] in (b'gamecast_id', b'brightness', b'mode', b'delay', b'gamecast_reset'):
+        if message['channel'] in (b'gamecast_id', b'brightness', b'mode', b'delay', b'gamecast_reset', b'init'):
             self.change_settings(message)
             return False
 
