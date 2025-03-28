@@ -124,6 +124,8 @@ class GamecastHandler:
         self.pubsub.subscribe('gamecast_id')
         self.pubsub.subscribe('mode')
         self.pubsub.subscribe('gamecast_reset')
+        self.pubsub.subscribe('init')
+        self.pubsub.subscribe('delay')
 
         try:
             brightness = int(self.redis.get('brightness'))
