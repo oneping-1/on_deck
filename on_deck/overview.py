@@ -218,14 +218,17 @@ class Overview:
         elif game_state == 'S':
             self._print_scores(game, i)
             self._print_inning(game, i)
-            self._print_text('SUSP', color, 92, -4, Fonts.ter_u16b, i)
+            self._print_inning_arrows(game, i)
+            self._print_outs(game, i)
+            self._print_text('SUSP', color, 94, -8, Fonts.ter_u16b, i)
 
         # Delay
         elif game_state == 'D':
             self._print_scores(game, i)
             self._print_inning(game, i)
             self._print_inning_arrows(game, i)
-            self._print_text('DLY', color, 92, -4, Fonts.ter_u16b, i)
+            self._print_outs(game, i)
+            self._print_text('DLY', color, 92, -8, Fonts.ter_u16b, i)
 
     def _time_delta_strftime(self, delay: int) -> str:
         """
