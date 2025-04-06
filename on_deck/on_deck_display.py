@@ -106,7 +106,7 @@ class TimeHandler:
                 previous_time = current_time
                 delay = int(self.redis.get('delay'))
                 self.overview.print_time(delay, 17)
-            time.sleep(0.1)
+            # time.sleep(0.1)
 
 
 class GamecastHandler:
