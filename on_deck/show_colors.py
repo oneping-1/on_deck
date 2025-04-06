@@ -1,3 +1,4 @@
+import time
 import platform
 import argparse
 import math
@@ -41,10 +42,13 @@ def get_options() -> RGBMatrixOptions:
 
 def show_colors():
     display_manager = DisplayManager(get_options())
+    # display_manager.set_brightness(255)
 
-    for red in range(4):
-        for green in range(4):
-            for blue in range(4):
+    bits = 2
+
+    for red in range(bits ** 2):
+        for green in range(bits ** 2):
+            for blue in range(bits ** 2):
                 i = red * 16 + green * 4 + blue
                 column = math.floor(i / 10)
                 row = i % 10
@@ -53,10 +57,14 @@ def show_colors():
                 x = 10 + column * 22
                 y = 10 + row * 22
 
-                color = graphics.Color(red * 85, green * 85, blue * 85)
+                z = math.floor(255 / (bits ** 2))
+                print(z)
+                color = graphics.Color(red * z, green * z, blue * z)
                 display_manager.draw_text(Fonts.ter_u12b, x, y, c.white, f'{red}{green}{blue}')
                 display_manager.draw_box(x, y, x+10, y+10, color, fill=True)
-    display_manager.swap_frame()
+    while True:
+        time.sleep(1)
+        display_manager.swap_frame()
 
 if __name__ == "__main__":
     show_colors()

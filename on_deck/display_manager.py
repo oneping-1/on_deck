@@ -40,7 +40,10 @@ class DisplayManager:
             self.matrix.Fill(20, 20, 20)
 
     def set_brightness(self, brightness: int):
-        """This method is used to change the brightness of the display."""
+        """
+        This method is used to change the brightness of the display.
+        Accepts values from 0 to 255.
+        """
         if (brightness < 0) or (brightness > 255):
             raise ValueError(f'Brightness {brightness} not recognized')
         self.brightness = brightness
