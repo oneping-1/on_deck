@@ -44,12 +44,12 @@ def show_colors():
     display_manager = DisplayManager(get_options())
     # display_manager.set_brightness(255)
 
-    bits = 2
+    bits = 1
 
-    for red in range(bits ** 2):
-        for green in range(bits ** 2):
-            for blue in range(bits ** 2):
-                i = red * 16 + green * 4 + blue
+    for red in range(2 ** bits):
+        for green in range(2 ** bits):
+            for blue in range(2 ** bits):
+                i = red * (2 ** bits) * (2 ** bits) + green * (2 ** bits) + blue
                 column = math.floor(i / 10)
                 row = i % 10
                 # print(f'i: {i}, column: {column}, row: {row}')
@@ -57,9 +57,10 @@ def show_colors():
                 x = 10 + column * 22
                 y = 10 + row * 22
 
-                z = math.floor(255 / (bits ** 2))
+                z = math.floor(255 / ((2 ** bits) - 1))
                 print(z)
-                color = graphics.Color(red * z, green * z, blue * z)
+                d = {0: 0, 1: 255, 2: 172, 3: 255}
+                color = graphics.Color(d[red], d[green], d[blue])
                 display_manager.draw_text(Fonts.ter_u12b, x, y, c.white, f'{red}{green}{blue}')
                 display_manager.draw_box(x, y, x+10, y+10, color, fill=True)
     while True:
