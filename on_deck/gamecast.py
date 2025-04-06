@@ -314,10 +314,7 @@ class Gamecast:
             'Changeup': Colors.green,
             'Splitter': Colors.yellow,
         }
-        try:
-            pitch_color = pitch_colors[pitch_type]
-        except KeyError:
-            pitch_color = Colors.white
+        pitch_color = pitch_colors.get(pitch_type, Colors.white)
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_type}')
 
