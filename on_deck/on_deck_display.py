@@ -98,12 +98,14 @@ class TimeHandler:
         delay time for the current game. This function will print the
         time and then wait 100ms before printing the time again
         """
-        prev_delay = None
+
+        previous_time = None
         while True:
-            current_delay = int(self.redis.get('delay'))
-            if current_delay != prev_delay:
-                prev_delay = current_delay
-                self.overview.print_time(current_delay, 17)
+            current_time = int(time.time())
+            if current_time != previous_time:
+                previous_time = current_time
+                delay = int(self.redis.get('delay'))
+                self.overview.print_time(delay, 17)
             time.sleep(0.1)
 
 
@@ -155,7 +157,7 @@ class GamecastHandler:
         Changes the settings based on the message received from the
         pubsub listener. The settings that can be changed are the mode
         and the brightness. This function will also call the appropriate
-        function to print the correct data based on the mode to ahcieve
+        function to print the correct data based on the mode to achieve
         maximum speed.
 
         Args:
@@ -330,8 +332,8 @@ class OverviewHandler:
         """
         Changes the settings based on the message received from the
         pubsub listener. The settings that can be changed are the mode
-        and the brightness. This fucntion will also call the appropriate
-        function to print the correct data based on the mode to ahcieve
+        and the brightness. This function will also call the appropriate
+        function to print the correct data based on the mode to achieve
         maximum speed.
 
         Args:
@@ -431,7 +433,7 @@ class Scoreboard:
 
     def start(self):
         """
-        Starts all the scoreboard elements in seperate threads.
+        Starts all the scoreboard elements in separate threads.
         """
 
         threading.Thread(target=self.overview_handler.start, daemon=True).start()
