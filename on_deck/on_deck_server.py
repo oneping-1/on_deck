@@ -1,3 +1,9 @@
+"""
+This file contains the server for the scoreboard. It is used to
+communicate with the scoreboard and the redis database. It is
+used to fetch the current games, change the settings of the
+scoreboard, and reboot the Raspberry Pi.
+"""
 from typing import List
 import os
 import sys
@@ -8,6 +14,12 @@ from flask import Flask, request, Response
 from at_bat.scoreboard_data import ScoreboardData
 
 class Server:
+    """
+    This class contains the server for the scoreboard. It is used to
+    communicate with the scoreboard and the redis database. It is
+    used to fetch the current games, change the settings of the
+    scoreboard, and reboot the Raspberry Pi.
+    """
     def __init__(self):
         self.redis = redis.Redis(host='192.168.1.90', port=6379, db=0, password='on_deck')
 
@@ -17,6 +29,7 @@ class Server:
         self.app.add_url_rule('/settings', 'settings', self.settings, methods=['GET'])
         self.app.add_url_rule('/<int:gamepk>', 'gamepk', self.gamepk, methods=['GET'])
         self.app.add_url_rule('/gamecast', 'gamecast', self.gamecast, methods=['GET'])
+
 
     def home(self):
         """
@@ -40,12 +53,14 @@ class Server:
 
         return Response(json.dumps(games, indent=4), status=200, mimetype='application/json')
 
+
     def reboot(self):
         """
         Hard reboots the Raspberry Pi
         """
         sys.stdout.flush()
         os.system('sudo reboot')
+
 
     def _parse_delay(self, delay: str) -> int:
         if delay[0] not in ('p', 'm'):
@@ -64,6 +79,7 @@ class Server:
             return new_delay
 
         raise ValueError("Invalid delay format. Must start with '+' or '-'.")
+
 
     def settings(self):
         """
@@ -117,6 +133,7 @@ class Server:
 
         return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')
 
+
     def gamepk(self, gamepk: int):
         """
         Allows a user to fetch scoreboard data for a specific game.
@@ -134,12 +151,23 @@ class Server:
 
         return Response(json.dumps(game, indent=4), status=200, mimetype='text/plain')
 
+
     def gamecast(self):
+        """
+        Allows a user to fetch gamecast data for the current game.
+        This game does not have to be one that is currently in the
+        daily gamepks list
+        This is used to fetch gamecast data for the current game.
+
+        Returns:
+            Response: HTML Response
+        """
         gamecast_game = self.redis.get('gamecast')
         gamecast_game = json.loads(gamecast_game)
         self.redis.publish('gamecast_reset', 'gamecast_reset')
 
         return Response(json.dumps(gamecast_game, indent=4), status=200, mimetype='text/plain')
+
 
 server = Server()
 app = server.app

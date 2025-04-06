@@ -1,3 +1,6 @@
+"""
+Overview class for displaying game information on the screen.
+"""
 import math
 import datetime
 
@@ -6,6 +9,11 @@ from on_deck.colors import Colors
 from on_deck.fonts import Fonts
 
 class Overview:
+    """
+    Overview class for displaying game information on the screen.
+    It handles the drawing of game scores, inning information, bases,
+    outs, and other relevant information on the display.
+    """
     def __init__(self, display_manager: DisplayManager):
         self.display_manager = display_manager
 
@@ -13,13 +21,22 @@ class Overview:
         self._ddo = 7 # double digit offset
         self._games_per_column = 6
 
+
     def clear_game(self, i: int):
+        """
+        Clears the game information from the display.
+        This includes the team names, scores, inning information,
+
+        Args:
+            i (int): Index of the game to clear
+        """
         column_offset, row_offset = self._calculate_offset(i)
 
         row_offset -= 20
 
         self.display_manager.clear_section(column_offset, row_offset,
             column_offset + 128, row_offset + 42)
+
 
     def _calculate_offset(self, i):
         column = math.floor(i / self._games_per_column) # column number
@@ -28,6 +45,7 @@ class Overview:
         row_offset = 20
         row_offset += (i - self._games_per_column * column) * 42
         return (column_offset, row_offset)
+
 
     def _calculate_color(self, i, game: dict = None):
         if game is not None:
@@ -40,6 +58,7 @@ class Overview:
         if i % 2 == middle_column:
             return Colors.white
         return Colors.green
+
 
     def _print_scores(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
@@ -64,6 +83,7 @@ class Overview:
             self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
                 row_offset+20, color, home_score)
 
+
     def _print_text(self, text: str, color, column_offset: int, row_offset: int, font, i: int):
         c, r = self._calculate_offset(i)
 
@@ -72,6 +92,7 @@ class Overview:
 
         self.display_manager.draw_text(font, column_offset,
             row_offset, color, text)
+
 
     def _print_inning(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
@@ -90,6 +111,7 @@ class Overview:
             self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
                 row_offset, color, inning)
 
+
     def _print_inning_arrows(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i, game)
@@ -102,6 +124,7 @@ class Overview:
             self.display_manager.draw_inning_arrow(column_offset, row_offset-11, 7, True, color)
         elif inning_state == 'B':
             self.display_manager.draw_inning_arrow(column_offset, row_offset+12, 7, False, color)
+
 
     def _print_bases(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
@@ -126,6 +149,7 @@ class Overview:
             thickness, runners[1], color)
         self.display_manager.draw_diamond(column_offset-delta, row_offset+delta, radius,
             thickness, runners[2], color)
+
 
     def _print_outs(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
@@ -156,6 +180,7 @@ class Overview:
             thickness, outs[2], color)
         return
 
+
     def _print_start_time(self, game: dict, i: int):
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i, game)
@@ -170,7 +195,18 @@ class Overview:
         self.display_manager.draw_text(Fonts.ter_u28b, column_offset,
             row_offset, color, start_time)
 
+
     def print_game(self, game: dict, i: int):
+        """
+        Prints the game information on the display. This includes team
+        names, scores, inning information, bases, outs, and other
+        relevant information.
+
+        Args:
+            game (dict): Game data dictionary containing information
+                about the game.
+            i (int): Index of the game to print.
+        """
         column_offset, row_offset = self._calculate_offset(i)
         color = self._calculate_color(i, game)
 
@@ -230,6 +266,7 @@ class Overview:
             self._print_outs(game, i)
             self._print_text('DLY', color, 92, -8, Fonts.ter_u16b, i)
 
+
     def _time_delta_strftime(self, delay: int) -> str:
         """
         Prints delay seconds in a format to the strftime("%I:%M:%S")
@@ -251,7 +288,16 @@ class Overview:
             return f'   {minutes:2}:{seconds:02}'
         return f'{hours:2}:{minutes:02}:{seconds:02}'
 
+
     def print_time(self, delay: int, i: int):
+        """
+        Prints the time information on the display. This includes
+        the current time, delay time, and formatted delay string.
+
+        Args:
+            delay (int): Delay in seconds
+            i (int): Index of the game to print time for
+        """
         # Texts need to move to better looking location
         # But all the logic is here
         self.clear_game(i)
@@ -293,6 +339,7 @@ class Overview:
             row_offset+18, color, delay)
 
         self.display_manager.swap_frame()
+
 
 if __name__ == '__main__':
     print('wrong module dummy')

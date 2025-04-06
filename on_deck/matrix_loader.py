@@ -1,4 +1,8 @@
-import os
+"""
+This module loads the RGBMatrix and graphics classes from either the
+emulator or the real hardware. It checks the platform and command line
+arguments to determine which one to load.
+"""
 import platform
 import argparse
 

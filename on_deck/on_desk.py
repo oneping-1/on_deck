@@ -40,6 +40,7 @@ TEAMS = [ABV_A, ABV_B]
 # on_time = datetime.time(0, 0)
 # off_time = datetime.time(23,59)
 
+
 def get_options() -> RGBMatrixOptions:
     """
     Returns the RGBMatrixOptions object based on the platform.
@@ -62,6 +63,7 @@ def get_options() -> RGBMatrixOptions:
 
     return options
 
+
 def get_daily_gamepks():
     """
     Function to call daily gamepks function and have all function calls
@@ -69,6 +71,7 @@ def get_daily_gamepks():
     """
     gamepks = ssp.get_daily_gamepks()
     return gamepks
+
 
 def get_ip_address() -> str:
     """
@@ -89,6 +92,7 @@ def get_ip_address() -> str:
         s.close()
     return ip_address
 
+
 def _convert_streak(streak):
     if len(streak) > 1 and streak[1:].isdigit():  # Check if streak has a number
         streak_num = int(streak[1:])
@@ -96,6 +100,7 @@ def _convert_streak(streak):
             streak_letter = chr(ord('A') + (streak_num - 10))  # 'A' for 10, 'B' for 11, etc.
             return f'{streak[0]}{streak_letter}'
     return streak
+
 
 class GameHandler:
     """
@@ -105,6 +110,7 @@ class GameHandler:
         self.games = games
         self.standings = standings
         self.gamepks = None
+
 
     def start(self):
         """
@@ -126,12 +132,19 @@ class GameHandler:
 
         self.loop()
 
+
     def loop(self):
+        """
+        This method is used to loop through the games and update them
+        until the game is over. It will check for new games every 60 seconds.
+        It will also check for new standings every 60 seconds.
+        """
         while True:
             self.update_games()
             self.update_standings()
             self.check_for_new_day()
             time.sleep(60)
+
 
     def update_games(self):
         """
@@ -144,6 +157,7 @@ class GameHandler:
                 except Exception as e:
                     print(f"Error updating game: {e}")
 
+
     def update_standings(self):
         """
         This method is used to update the standings
@@ -154,7 +168,12 @@ class GameHandler:
         except Exception as e:
             print(f"Error updating standings: {e}")
 
+
     def check_for_new_day(self):
+        """
+        This method is used to check for a new day. If a new day is detected,
+        it will reinitialize the games and standings.
+        """
         try:
             new_gamespk = get_daily_gamepks()
             if new_gamespk != self.gamepks:
@@ -162,6 +181,7 @@ class GameHandler:
         except Exception as e:
             print(f"Error checking for new day: {e}")
             # os.system('sudo reboot')
+
 
 class Scoreboard:
     """
@@ -174,7 +194,12 @@ class Scoreboard:
         self.games = games
         self.standings = standings
 
+
     def start(self):
+        """
+        This method is used to start the scoreboard. It will print the welcome
+        message and then start the loop to print the games and standings.
+        """
         self._print_welcome()
 
         for i in range(120):
@@ -185,10 +210,12 @@ class Scoreboard:
         while True:
             self._loop()
 
+
     def _print_welcome(self):
         self.display_manager.draw_text(Fonts.ter_u18b, 0, 14, Colors.white, 'on_desk')
         self.display_manager.draw_text(Fonts.ter_u18b, 0, 28, Colors.middle_blue, get_ip_address())
         self.display_manager.swap_frame()
+
 
     def _loop(self):
         current_time = datetime.datetime.now().time()
@@ -211,6 +238,7 @@ class Scoreboard:
         self.display_manager.swap_frame()
         time.sleep(10)
 
+
     def print_off_day(self, i):
         """
         Prints the off day
@@ -220,6 +248,7 @@ class Scoreboard:
 
         self.display_manager.draw_text(Fonts.ter_u22b, 0, 15 + offset, color, TEAMS[i])
         self._print_off_day_standings(i)
+
 
     def print_game(self, i, game):
         """
@@ -247,15 +276,18 @@ class Scoreboard:
         else:
             self._print_off_day_standings(i)
 
+
     def _get_color(self, i):
         if i == 0:
             return Colors.red
         return Colors.middle_blue
 
+
     def _get_offset(self, i):
         if i == 0:
             return 0
         return 32
+
 
     def _print_teams(self, i, game):
         color = self._get_color(i)
@@ -263,6 +295,7 @@ class Scoreboard:
 
         self.display_manager.draw_text(Fonts.ter_u22b, 0, 15 + offset, color, game.away.abv)
         self.display_manager.draw_text(Fonts.ter_u22b, 0, 31 + offset, color, game.home.abv)
+
 
     def _print_start_time(self, i, game):
         color = self._get_color(i)
@@ -281,6 +314,7 @@ class Scoreboard:
         self.display_manager.draw_text(Fonts.ter_u18b, 35, 22 + offset, color, hour)
         self.display_manager.draw_text(Fonts.ter_u18b, 53, 22 + offset, color, ':')
         self.display_manager.draw_text(Fonts.ter_u18b, 60, 22 + offset, color, minute)
+
 
     def _print_runners(self, i, game):
         color = self._get_color(i)
@@ -314,6 +348,7 @@ class Scoreboard:
         y2 = second_base_row_offset + base_offset
         self.display_manager.draw_text(Fonts.symbols, x2, y2, color, bases_list[2])
 
+
     def _print_outs(self, i, game):
         color = self._get_color(i)
         offset = self._get_offset(i)
@@ -336,6 +371,7 @@ class Scoreboard:
         self.display_manager.draw_text(Fonts.symbols,  98, 29 + offset, color, outs_list[1])
         self.display_manager.draw_text(Fonts.symbols, 105, 29 + offset, color, outs_list[2])
 
+
     def _print_inning_arrows(self, i, game):
         color = self._get_color(i)
         offset = self._get_offset(i)
@@ -346,6 +382,7 @@ class Scoreboard:
             self.display_manager.draw_text(Fonts.symbols, 63,  8 + offset, color, '_')
         elif inning_state == 'B':
             self.display_manager.draw_text(Fonts.symbols, 63, 29 + offset, color, 'w')
+
 
     def _print_standings(self, i, game):
         wins = game.away.wins
@@ -362,6 +399,7 @@ class Scoreboard:
         games_back = game.home.games_back
         self._print_standing(i, True, wins, losses, streak, division_rank, games_back)
 
+
     def _print_off_day_standings(self, i):
         color = self._get_color(i)
         offset = self._get_offset(i)
@@ -375,6 +413,7 @@ class Scoreboard:
         division_rank = self.standings[i].division_rank
         games_back = self.standings[i].games_back
         self._print_standing(i, False, wins, losses, streak, division_rank, games_back)
+
 
     def _print_standing(self, i, is_home: bool, wins, losses, streak, division_rank, games_back):
         color = self._get_color(i)
@@ -403,6 +442,7 @@ class Scoreboard:
         self.display_manager.draw_text(Fonts.f6x10, 80, 8 + offset, color, record)
         self.display_manager.draw_text(Fonts.f6x10, 80, 16 + offset, color, gb)
 
+
     def _print_score(self, i, game):
         color = self._get_color(i)
         offset = self._get_offset(i)
@@ -420,6 +460,7 @@ class Scoreboard:
         else:
             self.display_manager.draw_text(Fonts.ter_u22b, 40, 31 + offset, color, home)
 
+
     def _print_inning(self, i, game):
         color = self._get_color(i)
         offset = self._get_offset(i)
@@ -434,17 +475,20 @@ class Scoreboard:
         else:
             self.display_manager.draw_text(Fonts.ter_u22b, 62, 23 + offset, color, inning)
 
+
 def start_game_handler(game_handler: GameHandler):
     """
     Starts the game handler
     """
     game_handler.start()
 
+
 def start_scoreboard(scoreboard: Scoreboard):
     """
     Starts the scoreboard
     """
     scoreboard.start()
+
 
 def main():
     """
@@ -461,6 +505,7 @@ def main():
 
     game_handler_thread.start()
     scoreboard_thread.start()
+
 
 if __name__ == '__main__':
     on_time = datetime.time(8, 30)
