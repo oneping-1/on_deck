@@ -119,11 +119,15 @@ class DisplayManager:
                 y4 = round(y + r_eff * math.sin(a4))
                 self.draw_pixel(x4, y4, color)
 
-    def draw_box(self, x1: int, y1: int, x2: int, y2: int, color: graphics.Color):
+    def draw_box(self, x1: int, y1: int, x2: int, y2: int, color: graphics.Color, fill: bool = False):
         self.draw_line(x1, y1, x2, y1, color) # Top
         self.draw_line(x1, y1, x1, y2, color) # Left
         self.draw_line(x1, y2, x2, y2, color) # Bottom
         self.draw_line(x2, y1, x2, y2, color) # Right
+
+        if fill:
+            for y in range(y1 + 1, y2):
+                self.draw_line(x1 + 1, y, x2 - 1, y, color)
 
     def draw_diamond(self, x: int, y: int, radius: int, thickness: int,
         fill: bool, color: graphics.Color):
