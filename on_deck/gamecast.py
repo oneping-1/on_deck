@@ -325,7 +325,7 @@ class Gamecast:
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_speed:.1f}')
-        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+40, row_offset,
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+38, row_offset,
             pitch_color, 'MPH')
 
         break_horizontal = pitch_details['break_horizontal']
