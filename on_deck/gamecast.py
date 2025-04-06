@@ -311,6 +311,7 @@ class Gamecast:
             'Cutter': Colors.pink,
             'Curveball': Colors.blue,
             'Slider': Colors.light_blue,
+            'Sweeper': Colors.light_blue,
             'Changeup': Colors.green,
             'Splitter': Colors.yellow,
         }
