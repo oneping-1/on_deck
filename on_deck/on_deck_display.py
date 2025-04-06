@@ -252,6 +252,7 @@ class GamecastHandler:
         """
         game = self.load_gamecast()
         mode = self.redis.get('mode')
+        time.sleep(1) # i think overview clears the screen after gamecast loads
         if mode == b'gamecast':
             self.gamecast.print_game(game)
 
