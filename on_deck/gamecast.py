@@ -275,7 +275,7 @@ class Gamecast:
             color, f'WP:{wp:5.1%} {team}')
 
     def _print_pitch_details(self, pitch_details: dict):
-        self.display_manager.clear_section(129, 132, 240, 168)
+        self.display_manager.clear_section(129, 132, 240+24, 180)
 
         column_offset = 129
         row_offset = 144
@@ -287,31 +287,58 @@ class Gamecast:
             return
         if pitch_type == 'Four-Seam Fastball':
             pitch_type = 'Four-Seam'
+
+        pitch_colors = {
+            'Four-Seam': Colors.red,
+            'Sinker': Colors.pink,
+            'Cutter': Colors.pink,
+            'Curveball': Colors.blue,
+            'Slider': Colors.light_blue,
+            'Changeup': Colors.green,
+            'Splitter': Colors.yellow,
+        }
+        try:
+            pitch_color = pitch_colors[pitch_type]
+
+        except KeyError:
+            pitch_color = Colors.white
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{pitch_type}')
+            pitch_color, f'{pitch_type}')
+
 
         pitch_speed = pitch_details['speed']
+        break_horizontal = pitch_details['break_horizontal']
         if pitch_speed is None:
             return
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{pitch_speed:.1f} MPH')
+            pitch_color, f'{pitch_speed:.1f}')
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+40, row_offset,
+            pitch_color, 'MPH')
+
+        break_horizontal = pitch_details['break_horizontal']
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+64, row_offset,
+            color, f'{break_horizontal:5.1f}')
+
 
         row_offset += 12
         pitch_zone = pitch_details['zone']
+        break_vertical_induced = pitch_details['break_vertical_induced']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, 'Zone:')
+            color, f'Zone:   {break_vertical_induced:5.1f}')
         color = Colors.red
         if pitch_zone > 9:
             color = Colors.green
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+48, row_offset,
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
             color, f'{pitch_zone:2d}')
 
+
+
     def _print_hit_details(self, hit_details: dict):
-        self.display_manager.clear_section(129, 180, 240, 216)
+        self.display_manager.clear_section(129, 180+24, 240, 216+24)
 
         column_offset = 129
-        row_offset = 192
+        row_offset = 192 + 24
 
         color = Colors.white
 
