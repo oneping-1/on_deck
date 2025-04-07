@@ -3,21 +3,21 @@ This module loads the RGBMatrix and graphics classes from either the
 emulator or the real hardware. It checks the platform and command line
 arguments to determine which one to load.
 """
-import platform
-import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--use-emulator', action='store_true')
-args = parser.parse_args()
-if args.use_emulator:
-    USE_EMULATOR = True
-    print('loading emulator')
+use_emulator = False
+
+import os
+
+if os.path.exists("on_deck/use_emulator.txt"):
+    with open("on_deck/use_emulator.txt") as f:
+        use_emulator = f.read().strip().lower() == "true"
 else:
-    USE_EMULATOR = False
+    print("Warning: 'on_deck/use_emulator.txt' not found. Defaulting to hardware.")
+    use_emulator = False
 
-if (platform.system() == 'Windows') or USE_EMULATOR:
+if use_emulator:
     from RGBMatrixEmulator import RGBMatrix, RGBMatrixOptions, graphics
-    print('emulator')
+    print('Using emulator')
 else:
     from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
-    print('real')
+    print('Using hardware')
