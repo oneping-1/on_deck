@@ -342,11 +342,11 @@ class Gamecast:
         pitch_zone = pitch_details['zone']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, 'Zone:')
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
-            color, f'{pitch_zone:2d}')
         color = Colors.red
         if pitch_zone > 9:
             color = Colors.green
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
+            color, f'{pitch_zone:2d}')
 
         color = Colors.white
         break_vertical_induced = pitch_details['break_vertical_induced']
