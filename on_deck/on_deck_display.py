@@ -23,6 +23,7 @@ from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
 from on_deck.gamecast import Gamecast
 from on_deck.matrix_loader import RGBMatrixOptions
+from on_deck.emulator_checker import is_emulator
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
 REDIS_IP = '192.168.1.90'
@@ -38,16 +39,7 @@ def get_options() -> RGBMatrixOptions:
     """
     options = RGBMatrixOptions()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--use-emulator', action='store_true')
-    args = parser.parse_args()
-    if args.use_emulator:
-        use_emulator = True
-        print('loading emulator')
-    else:
-        use_emulator = False
-
-    if (platform.system() == 'Windows') or (use_emulator):
+    if is_emulator() is True:
         options.cols = int(384)
         options.rows = int(256)
     else:
