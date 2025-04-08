@@ -12,7 +12,10 @@ if os.path.exists(use_emulator_path):
     with open(use_emulator_path, encoding='utf-8') as f:
         use_emulator = f.read().strip().lower() == "true"
 else:
-    print(f"Warning: '{use_emulator_path}' not found. Defaulting to hardware.")
+    # Create the file with default content "false"
+    with open(use_emulator_path, "w", encoding='utf-8') as f:
+        f.write("false")
+    print(f"'{use_emulator_path}' not found. Created with default value 'false'.")
     use_emulator = False
 
 def is_emulator():
