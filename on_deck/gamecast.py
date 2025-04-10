@@ -328,21 +328,33 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u12b, column_offset+38, row_offset,
             pitch_color, 'MPH')
 
+        pitch_hand = pitch_details['pitch_hand']
+        is_rhp = True if pitch_hand == 'R' else False
         break_horizontal = pitch_details['break_horizontal']
+        break_direction = 'A' if (is_rhp ^ (break_horizontal < 0)) else 'G'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+64, row_offset,
-            color, f'{break_horizontal:5.1f}')
+            color, f'{abs(break_horizontal):5.1f}')
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
+            color, break_direction)
 
 
         row_offset += 12
         pitch_zone = pitch_details['zone']
-        break_vertical_induced = pitch_details['break_vertical_induced']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'Zone:   {break_vertical_induced:5.1f}')
+            color, 'Zone:')
         color = Colors.red
         if pitch_zone > 9:
             color = Colors.green
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
             color, f'{pitch_zone:2d}')
+
+        color = Colors.white
+        break_vertical_induced = pitch_details['break_vertical_induced']
+        break_direction = 'U' if break_vertical_induced > 0 else 'D'
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+64, row_offset,
+            color, f'{abs(break_vertical_induced):5.1f}')
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
+            color, break_direction)
 
 
     def _print_hit_details(self, hit_details: dict):

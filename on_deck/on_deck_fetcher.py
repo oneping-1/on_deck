@@ -16,6 +16,8 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
+from on_deck.emulator_checker import is_emulator
+
 REDIS_IP = '192.168.1.90'
 REDIS_PASSWORD = 'on_deck'
 
@@ -270,7 +272,7 @@ class Fetcher:
 
 
 if __name__ == '__main__':
-    if platform.system() != 'Windows':
+    if is_emulator() is False:
         time.sleep(30) # Wait for Redis to start
     fetcher = Fetcher()
     fetcher.start()
