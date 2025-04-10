@@ -4,19 +4,6 @@ of a single led matrix board that is meant to sit on a desk. It will
 display the current game information for 2 teams.
 """
 
-def update_dependencies():
-    """
-    This function is used to update the dependencies
-    """
-    import subprocess
-    import sys
-    subprocess.check_call([
-        sys.executable, "-m", "pip", "install", "--upgrade", "MLB-StatsAPI"
-    ])
-import time
-time.sleep(120)
-update_dependencies()
-
 from typing import List
 import threading
 import time
@@ -424,10 +411,12 @@ class Scoreboard:
 
         if games_back == 0:
             games_back = '  0.0'
-        elif games_back < 10:
-            games_back = f' -{games_back:.1f}'
-        else:
+        elif games_back > 10:
             games_back = f'-{games_back:.1f}'
+        elif games_back < 0:
+            games_back = f' +{-games_back:.1f}'
+        else:
+            games_back = f' -{games_back:.1f}'
 
         if wins >= 100:
             wins = str(wins)[1:3]
