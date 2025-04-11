@@ -23,10 +23,12 @@ from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
 from on_deck.gamecast import Gamecast
 from on_deck.matrix_loader import RGBMatrixOptions
+from on_deck.emulator_checker import is_emulator
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
 REDIS_IP = '192.168.1.90'
 REDIS_PASSWORD = 'on_deck'
+
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -37,16 +39,7 @@ def get_options() -> RGBMatrixOptions:
     """
     options = RGBMatrixOptions()
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--use-emulator', action='store_true')
-    args = parser.parse_args()
-    if args.use_emulator:
-        use_emulator = True
-        print('loading emulator')
-    else:
-        use_emulator = False
-
-    if (platform.system() == 'Windows') or (use_emulator):
+    if is_emulator() is True:
         options.cols = int(384)
         options.rows = int(256)
     else:
@@ -60,6 +53,7 @@ def get_options() -> RGBMatrixOptions:
         options.gpio_slowdown = 4
 
     return options
+
 
 def recursive_update(d: dict, u: dict) -> dict:
     """
@@ -78,6 +72,7 @@ def recursive_update(d: dict, u: dict) -> dict:
         else:
             d[k] = v
     return d
+
 
 class TimeHandler:
     """
@@ -184,7 +179,6 @@ class GamecastHandler:
             self.display_manager.clear_section(129, 0, 384, 256)
             self.gamecast.print_game(self.gamecast_game)
             print('gamecast reloaded')
-            return
 
     def update_gamecast(self) -> Union[bool, dict]:
         """
@@ -205,7 +199,10 @@ class GamecastHandler:
         if message['type'] != 'message':
             return False
 
-        if message['channel'] in (b'gamecast_id', b'brightness', b'mode', b'delay', b'gamecast_reset', b'init'):
+        settings_channels = (b'gamecast_id', b'brightness', b'mode', b'delay',
+            b'gamecast_reset', b'init')
+
+        if message['channel'] in settings_channels:
             self.change_settings(message)
             return False
 
@@ -247,6 +244,7 @@ class GamecastHandler:
         """
         game = self.load_gamecast()
         mode = self.redis.get('mode')
+        time.sleep(1) # i think overview clears the screen after gamecast loads
         if mode == b'gamecast':
             self.gamecast.print_game(game)
 
@@ -273,6 +271,7 @@ class OverviewHandler:
 
         self._page: int = None
 
+
     def _initialize_games(self):
         num_games = int(self.redis.get('num_games'))
         self.games = []
@@ -286,6 +285,7 @@ class OverviewHandler:
             game = json.loads(game)
             self.games.append(game)
 
+
     def print_overview(self):
         """
         Prints all the games in the overview mode. It prints all games
@@ -297,6 +297,7 @@ class OverviewHandler:
 
         for i in range(num_games):
             self.overview.print_game(self.games[i], i)
+
 
     def print_gamecast_page(self):
         """
@@ -311,6 +312,7 @@ class OverviewHandler:
                 return
             self.overview.print_game(self.games[game], i)
         self.display_manager.swap_frame()
+
 
     def print_gamecast_pages(self):
         """
@@ -327,6 +329,7 @@ class OverviewHandler:
                 return
             self.print_gamecast_page()
             time.sleep(5)
+
 
     def change_settings(self, message: dict):
         """
@@ -361,6 +364,7 @@ class OverviewHandler:
         elif mode == b'gamecast':
             self.print_gamecast_page()
 
+
     def pubsub_listener(self):
         """
         Listens for messages from the pubsub and updates the games
@@ -393,6 +397,7 @@ class OverviewHandler:
             if page == self._page:
                 self.overview.print_game(self.games[game_id], game_id % 6)
 
+
     def pubsub_thread(self):
         """
         Starts the pubsub listener thread that listens for messages
@@ -401,6 +406,7 @@ class OverviewHandler:
         """
         while True:
             self.pubsub_listener()
+
 
     def start(self):
         """
@@ -418,6 +424,7 @@ class OverviewHandler:
         while True:
             self.print_gamecast_pages()
 
+
 class Scoreboard:
     """
     Main class that connects all the aspects of the scoreboard together.
@@ -431,6 +438,7 @@ class Scoreboard:
         self.overview_handler = OverviewHandler(self.display_manager)
         self.gamecast_handler = GamecastHandler(self.display_manager)
 
+
     def start(self):
         """
         Starts all the scoreboard elements in separate threads.
@@ -441,6 +449,7 @@ class Scoreboard:
 
         # Easy main thread that runs continuously
         self.time_handler.start()
+
 
 if __name__ == '__main__':
     scoreboard = Scoreboard()

@@ -1,19 +1,6 @@
-import os
-import platform
-import argparse
+from on_deck.emulator_checker import is_emulator
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--use-emulator', action='store_true')
-args = parser.parse_args()
-if args.use_emulator:
-    USE_EMULATOR = True
-    print('loading emulator')
-else:
-    USE_EMULATOR = False
-
-if (platform.system() == 'Windows') or USE_EMULATOR:
+if is_emulator() is True:
     from RGBMatrixEmulator import RGBMatrix, RGBMatrixOptions, graphics
-    print('emulator')
 else:
     from rgbmatrix import RGBMatrix, RGBMatrixOptions, graphics
-    print('real')

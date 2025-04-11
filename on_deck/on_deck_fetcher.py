@@ -16,8 +16,11 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
+from on_deck.emulator_checker import is_emulator
+
 REDIS_IP = '192.168.1.90'
 REDIS_PASSWORD = 'on_deck'
+
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """
@@ -47,6 +50,7 @@ def seconds_since_iso8601(iso_timestamp: str) -> int:
     difference = current_time - target_time
     return int(difference.total_seconds())
 
+
 def get_daily_gamepks() -> List[int]:
     """
     Returns a list of gamepks for a given date.
@@ -59,6 +63,7 @@ def get_daily_gamepks() -> List[int]:
     """
     gamepks = ssp.get_daily_gamepks()
     return gamepks
+
 
 class GamecastFetcher:
     """
@@ -74,6 +79,7 @@ class GamecastFetcher:
 
         self.gamepk: int = None
         self.game: ScoreboardData = None
+
 
     def initialize_gamecast(self):
         """
@@ -98,6 +104,7 @@ class GamecastFetcher:
 
         print('Gamecast initialized')
 
+
     def update_gamecast(self):
         """
         Updates the gamecast data by fetching the delay from the Redis database
@@ -116,6 +123,7 @@ class GamecastFetcher:
             self.redis.set('gamecast', gamecast_dict)
             self.redis.publish('gamecast', new_data)
 
+
     def update_settings(self):
         """
         Listens for changes to the settings in the Redis database and updates
@@ -133,6 +141,7 @@ class GamecastFetcher:
         if message['channel'] in (b'delay', b'gamecast_id'):
             self.initialize_gamecast()
 
+
     def start(self):
         """
         Starts the gamecast fetcher and listens for changes to the settings
@@ -145,6 +154,7 @@ class GamecastFetcher:
             self.update_settings()
             self.update_gamecast()
             time.sleep(.1)
+
 
 class Fetcher:
     """
@@ -165,6 +175,7 @@ class Fetcher:
 
         self.last_check = time.time()
 
+
     def redis_set_game(self, key: Union[str, int], full_game: dict):
         """
         Sets the game data in the Redis database.
@@ -176,6 +187,7 @@ class Fetcher:
         key = f'{key}'
         full_game = json.dumps(full_game)
         self.redis.set(key, full_game)
+
 
     def redis_publish_game(self, key: Union[str, int], new_data: dict):
         """
@@ -189,6 +201,7 @@ class Fetcher:
         key = f'{key}'
         new_data = json.dumps(new_data)
         self.redis.publish(key, new_data)
+
 
     def initialize_games(self):
         """
@@ -217,6 +230,7 @@ class Fetcher:
         self.redis.set('num_games', num_games)
         self.redis.publish('init', 'init')
 
+
     def update_games(self):
         """
         Updates the games by fetching the delay from the Redis database and
@@ -239,6 +253,7 @@ class Fetcher:
                 print('New gamepks detected, reinitializing games')
                 self.initialize_games()
 
+
     def start(self):
         """
         Starts the fetcher and listens for changes to the settings in the
@@ -255,8 +270,9 @@ class Fetcher:
         while True:
             self.update_games()
 
+
 if __name__ == '__main__':
-    if platform.system() != 'Windows':
+    if is_emulator() is False:
         time.sleep(30) # Wait for Redis to start
     fetcher = Fetcher()
     fetcher.start()

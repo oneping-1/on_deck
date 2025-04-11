@@ -1,15 +1,23 @@
-from typing import Union
-
+"""
+Gamecast module for displaying baseball game information on a screen.
+This module is part of the On Deck project, which provides a real-time display
+of baseball game statistics and information.
+"""
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 
+
 class Gamecast:
+    """
+    A class to handle the gamecast display for a baseball game.
+    """
     def __init__(self, display_manager: DisplayManager):
         self.display_manager = display_manager
         self.game: dict = None
 
         self._ddo = 4 # double digit offset
+
 
     def _print_team_names(self, away: dict, home: dict):
         color = Colors.white
@@ -18,6 +26,7 @@ class Gamecast:
         self.display_manager.clear_section(129, 0, 200, 28)
         self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, away['name'])
         self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, home['name'])
+
 
     def _print_linescore(self, home: bool, runs: int, hits: int, errors: int, lob: int):
         color = Colors.white
@@ -65,6 +74,7 @@ class Gamecast:
             self.display_manager.draw_text(Fonts.ter_u16b, 128 + lob_column_offset,
                 row_offset, color, f'{lob}')
 
+
     def _print_linescores(self, away: dict, home: dict):
         self.display_manager.clear_section(200, 0, 275, 24)
 
@@ -79,6 +89,7 @@ class Gamecast:
         errors = home['errors']
         lob = home['left_on_base']
         self._print_linescore(True, runs, hits, errors, lob)
+
 
     def _print_inning(self, inning: int, inning_state: str):
         self.display_manager.clear_section(275, 0, 293, 24)
@@ -102,6 +113,7 @@ class Gamecast:
         elif inning_state == 'B':
             self.display_manager.draw_inning_arrow(column_offset+3, row_offset+1,
                 arrow_size, False, color)
+
 
     def _print_bases(self, runners: int):
         self.display_manager.clear_section(293, 0, 328, 24)
@@ -130,6 +142,7 @@ class Gamecast:
             second_base_row_offset, base_length, thickness, bases[1], Colors.white)
         self.display_manager.draw_diamond(second_base_column_offset + base_offset,
             second_base_row_offset + base_offset, base_length, thickness, bases[0], Colors.white)
+
 
     def _print_count(self, count: dict):
         self.display_manager.clear_section(328, 0, 370, 24)
@@ -201,6 +214,7 @@ class Gamecast:
             self.display_manager.draw_circle(circle_column_offset + 2*delta,
                 out_row_offset, radius, thickness, outs[2], Colors.white)
 
+
     def _print_umpire(self, umpire: dict, away: dict, home: dict):
         self.display_manager.clear_section(129, 36, 240, 72)
 
@@ -231,6 +245,7 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'WP: {wpa:.1%} {abv}')
 
+
     def _print_run_expectancy(self, run_expectancy: dict):
         self.display_manager.clear_section(129, 82, 240, 108)
 
@@ -249,6 +264,7 @@ class Gamecast:
             color, f'AVG:{re_avg:5.2f}')
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
             color, f'1+:{re_ts:5.1%}')
+
 
     def _print_win_probability(self, win_probability: dict, away: dict, home: dict):
         self.display_manager.clear_section(129, 108, 240, 120)
@@ -274,6 +290,7 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'WP:{wp:5.1%} {team}')
 
+
     def _print_pitch_details(self, pitch_details: dict):
         self.display_manager.clear_section(129, 132, 240+24, 180)
 
@@ -294,51 +311,57 @@ class Gamecast:
             'Cutter': Colors.pink,
             'Curveball': Colors.blue,
             'Slider': Colors.light_blue,
+            'Sweeper': Colors.light_blue,
             'Changeup': Colors.green,
             'Splitter': Colors.yellow,
         }
-        try:
-            pitch_color = pitch_colors[pitch_type]
-
-        except KeyError:
-            pitch_color = Colors.white
+        pitch_color = pitch_colors.get(pitch_type, Colors.white)
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_type}')
 
-
         pitch_speed = pitch_details['speed']
-        break_horizontal = pitch_details['break_horizontal']
         if pitch_speed is None:
             return
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_speed:.1f}')
-        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+40, row_offset,
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+38, row_offset,
             pitch_color, 'MPH')
 
+        pitch_hand = pitch_details['pitch_hand']
+        is_rhp = True if pitch_hand == 'R' else False
         break_horizontal = pitch_details['break_horizontal']
+        break_direction = 'A' if (is_rhp ^ (break_horizontal < 0)) else 'G'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+64, row_offset,
-            color, f'{break_horizontal:5.1f}')
+            color, f'{abs(break_horizontal):5.1f}')
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
+            color, break_direction)
 
 
         row_offset += 12
         pitch_zone = pitch_details['zone']
-        break_vertical_induced = pitch_details['break_vertical_induced']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'Zone:   {break_vertical_induced:5.1f}')
+            color, 'Zone:')
         color = Colors.red
         if pitch_zone > 9:
             color = Colors.green
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
             color, f'{pitch_zone:2d}')
 
+        color = Colors.white
+        break_vertical_induced = pitch_details['break_vertical_induced']
+        break_direction = 'U' if break_vertical_induced > 0 else 'D'
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+64, row_offset,
+            color, f'{abs(break_vertical_induced):5.1f}')
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
+            color, break_direction)
 
 
     def _print_hit_details(self, hit_details: dict):
-        self.display_manager.clear_section(129, 180+24, 240, 216+24)
+        self.display_manager.clear_section(129, 180, 240, 216)
 
         column_offset = 129
-        row_offset = 192 + 24
+        row_offset = 192
 
         color = Colors.white
 
@@ -360,6 +383,7 @@ class Gamecast:
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{launch_angle:5.1f}°')
+
 
     def _print_batting_order(self, batting_order: dict):
         row_offset = 36
@@ -386,6 +410,7 @@ class Gamecast:
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
                 color, rf'{position:>2s} {name[:10]:10s}{slg:>5s}')
 
+
     def _print_pitcher(self, matchup: dict):
         row_offset = 168
         column_offset = 240
@@ -408,7 +433,29 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
             Colors.white, pitch_count)
 
+
     def print_game(self, game: dict):
+        """
+        Print the game information to the screen.
+        This function is called when the gamecast is updated.
+
+        Args:
+            game (dict): The game information to print.
+                The game information is a dictionary with the following keys:
+                - away: The away team information (dict)
+                - home: The home team information (dict)
+                - inning: The current inning (int)
+                - inning_state: The current inning state (str)
+                - runners: The runners on base (int)
+                - count: The current count (dict)
+                - umpire: The umpire information (dict)
+                - run_expectancy: The run expectancy information (dict)
+                - win_probability: The win probability information (dict)
+                - pitch_details: The pitch details information (dict)
+                - hit_details: The hit details information (dict)
+                - batting_order: The batting order information (dict)
+                - matchup: The matchup information (dict)
+        """
         self._print_team_names(game['away'], game['home'])
         self._print_linescores(game['away'], game['home'])
         self._print_inning(game['inning'], game['inning_state'])
@@ -422,6 +469,7 @@ class Gamecast:
         self._print_batting_order(game['batting_order'])
         self._print_pitcher(game['matchup'])
         self.display_manager.swap_frame()
+
 
 if __name__ == '__main__':
     print('wrong module dummy')
