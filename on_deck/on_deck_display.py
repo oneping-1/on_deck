@@ -51,6 +51,7 @@ def get_options() -> RGBMatrixOptions:
         options.disable_hardware_pulsing = True
         options.pwm_bits = 2 # Can run 2 with sudo, 1 without
         options.gpio_slowdown = 4
+        options.pwm_dither_bits = 2 # decreaes brightness a little (i think)
 
     return options
 
