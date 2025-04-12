@@ -95,6 +95,10 @@ class Server:
         gamecast_id = request.args.get('gamecast_id', default=None)
 
         if mode is not None:
+            if mode == '0':
+                mode = 'overview'
+            elif mode == '1':
+                mode = 'gamecast'
             self.redis.set('mode', mode)
             self.redis.publish('mode', mode)
         if delay is not None:
@@ -111,10 +115,6 @@ class Server:
         mode = self.redis.get('mode')
         if mode is not None:
             mode = mode.decode('utf-8')
-            if mode == '0':
-                mode = 'overview'
-            elif mode == '1':
-                mode = 'gamecast'
 
         delay = self.redis.get('delay')
         if delay is not None:
@@ -177,4 +177,4 @@ server = Server()
 app = server.app
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=8080)
