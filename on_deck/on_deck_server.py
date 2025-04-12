@@ -111,6 +111,10 @@ class Server:
         mode = self.redis.get('mode')
         if mode is not None:
             mode = mode.decode('utf-8')
+            if mode == '0':
+                mode = 'overview'
+            elif mode == '1':
+                mode = 'gamecast'
 
         delay = self.redis.get('delay')
         if delay is not None:
