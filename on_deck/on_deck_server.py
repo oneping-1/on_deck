@@ -99,6 +99,8 @@ class Server:
 
 
     def _parse_brightness(self, brightness: str):
+        if brightness is None:
+            return
         brightness = int(brightness)
         if not (0 <= brightness <= 3):
             return # brightness not in range
