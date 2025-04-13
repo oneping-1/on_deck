@@ -153,11 +153,16 @@ class Server:
         if gamecast_id is not None:
             gamecast_id = int(gamecast_id)
 
+        num_games = self.redis.get('num_games')
+        if num_games is not None:
+            num_games = int(num_games)
+
         return_dict = {
             'mode': mode,
             'delay': delay,
             'brightness': brightness,
-            'gamecast_id': gamecast_id
+            'gamecast_id': gamecast_id,
+            'num_games': num_games
         }
 
         return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')
