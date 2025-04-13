@@ -325,9 +325,10 @@ class OverviewHandler:
         page_colors = [
             Colors.red,
             Colors.green,
+            Colors.blue,
+            Colors.yellow,
             Colors.magenta,
             Colors.light_blue,
-            Colors.yellow,
         ]
         num_games = len(self.games)
         num_pages = math.ceil(num_games / 6)
