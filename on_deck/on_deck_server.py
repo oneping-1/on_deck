@@ -113,7 +113,7 @@ class Server:
         if gamecast_id is None:
             return
         gamecast_id = int(gamecast_id)
-        max_gamecast_id = int(self.redis.get('num_games') - 1)
+        max_gamecast_id = int(self.redis.get('num_games')) - 1
         if not (0 <= gamecast_id <= max_gamecast_id):
             return
         self.redis.set('gamecast_id', gamecast_id)
