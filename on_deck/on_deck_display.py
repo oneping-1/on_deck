@@ -24,6 +24,7 @@ from on_deck.overview import Overview
 from on_deck.gamecast import Gamecast
 from on_deck.matrix_loader import RGBMatrixOptions
 from on_deck.emulator_checker import is_emulator
+from on_deck.colors import Colors
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
 REDIS_IP = '192.168.1.90'
@@ -320,6 +321,14 @@ class OverviewHandler:
         The iterator is stored in the self._page variable. This function
         will only print the current page of games and will wait 5 seconds
         """
+        page_colors = [
+            Colors.red,
+            Colors.green,
+            Colors.blue,
+            Colors.yellow,
+            Colors.magenta,
+            Colors.light_blue,
+        ]
         num_games = len(self.games)
         num_pages = math.ceil(num_games / 6)
 
@@ -328,6 +337,7 @@ class OverviewHandler:
             if mode != b'gamecast':
                 return
             self.print_gamecast_page()
+            self.display_manager.draw_pixel(129, 0, page_colors[self._page])
             time.sleep(5)
 
 
