@@ -62,23 +62,63 @@ class Server:
         os.system('sudo reboot')
 
 
-    def _parse_delay(self, delay: str) -> int:
-        if delay[0] not in ('p', 'm'):
-            return delay
+    def _parse_mode(self, mode: str):
+        if mode is None:
+            return
+        if mode in ('overview', '0'):
+            mode = 'overview'
+        elif mode in ('gamecast', '1'):
+            mode = 'gamecast'
+        else:
+            return
+        self.redis.set('mode', mode)
+        self.redis.publish('mode', mode)
 
+
+    def _parse_delay_delta(self, delay: str) -> int:
+        if delay is None or delay[0] not in ('p', 'm'):
+            return int(delay)
         old_delay = int(self.redis.get('delay'))
         delay_delta = int(delay[1:])
-
         if delay[0] == 'p':
             return int(old_delay + delay_delta)
-
         if delay[0] == 'm':
-            new_delay = int(old_delay - delay_delta)
-            if new_delay < 0:
-                return 0
-            return new_delay
+            return max(0, int(old_delay - delay_delta))
+        return
 
-        raise ValueError("Invalid delay format. Must start with '+' or '-'.")
+
+    def _parse_delay(self, delay: str):
+        if delay is None:
+            return
+        if delay[0] in ('p', 'm'):
+            delay = self._parse_delay_delta(delay)
+        delay = max(0, int(delay))
+        self.redis.set('delay', delay)
+        self.redis.publish('delay', delay)
+        return
+
+
+    def _parse_brightness(self, brightness: str):
+        if brightness is None:
+            return
+        brightness = int(brightness)
+        if not (0 <= brightness <= 3):
+            return # brightness not in range
+        self.redis.set('brightness', brightness)
+        self.redis.publish('brightness', brightness)
+        return
+
+
+    def _parse_gamecast_id(self, gamecast_id: str):
+        if gamecast_id is None:
+            return
+        gamecast_id = int(gamecast_id)
+        max_gamecast_id = int(self.redis.get('num_games')) - 1
+        if not (0 <= gamecast_id <= max_gamecast_id):
+            return
+        self.redis.set('gamecast_id', gamecast_id)
+        self.redis.publish('gamecast_id', gamecast_id)
+        return
 
 
     def settings(self):
@@ -94,19 +134,10 @@ class Server:
         brightness = request.args.get('brightness', default=None)
         gamecast_id = request.args.get('gamecast_id', default=None)
 
-        if mode is not None:
-            self.redis.set('mode', mode)
-            self.redis.publish('mode', mode)
-        if delay is not None:
-            delay = self._parse_delay(delay)
-            self.redis.set('delay', delay)
-            self.redis.publish('delay', delay)
-        if brightness is not None:
-            self.redis.set('brightness', brightness)
-            self.redis.publish('brightness', brightness)
-        if gamecast_id is not None:
-            self.redis.set('gamecast_id', gamecast_id)
-            self.redis.publish('gamecast_id', gamecast_id)
+        self._parse_mode(mode)
+        self._parse_delay(delay)
+        self._parse_brightness(brightness)
+        self._parse_gamecast_id(gamecast_id)
 
         mode = self.redis.get('mode')
         if mode is not None:
@@ -124,11 +155,16 @@ class Server:
         if gamecast_id is not None:
             gamecast_id = int(gamecast_id)
 
+        num_games = self.redis.get('num_games')
+        if num_games is not None:
+            num_games = int(num_games)
+
         return_dict = {
             'mode': mode,
             'delay': delay,
             'brightness': brightness,
-            'gamecast_id': gamecast_id
+            'gamecast_id': gamecast_id,
+            'num_games': num_games
         }
 
         return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')

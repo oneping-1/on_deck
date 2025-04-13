@@ -89,12 +89,16 @@ class GamecastFetcher:
         database.
         """
         delay = int(self.redis.get('delay'))
+        max_gamecast_id = int(self.redis.get('num_games')) - 1
 
         try:
             gamecast_id = int(self.redis.get('gamecast_id'))
         except TypeError:
             gamecast_id = 0
             self.redis.set('gamecast_id', gamecast_id)
+
+        if gamecast_id > max_gamecast_id:
+            gamecast_id = 0
 
         game_dict = json.loads(self.redis.get(gamecast_id))
         gamepk = int(game_dict['gamepk'])
