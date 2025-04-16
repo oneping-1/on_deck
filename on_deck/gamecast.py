@@ -222,7 +222,7 @@ class Gamecast:
         row_offset = 48
 
         umpire_missed_call = pitch_details['umpire_missed_call']
-        color = Colors.white if umpire_missed_call is False else Colors.yellow
+        color = Colors.yellow if umpire_missed_call is True else Colors.white
 
         num_missed = umpire['num_missed']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
