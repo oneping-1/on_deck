@@ -215,13 +215,14 @@ class Gamecast:
                 out_row_offset, radius, thickness, outs[2], Colors.white)
 
 
-    def _print_umpire(self, umpire: dict, away: dict, home: dict):
+    def _print_umpire(self, umpire: dict, away: dict, home: dict, pitch_details: dict):
         self.display_manager.clear_section(129, 36, 240, 72)
 
         column_offset = 129
         row_offset = 48
 
-        color = Colors.white
+        umpire_missed_call = pitch_details['umpire_missed_call']
+        color = Colors.white if umpire_missed_call is False else Colors.red
 
         num_missed = umpire['num_missed']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
@@ -461,7 +462,7 @@ class Gamecast:
         self._print_inning(game['inning'], game['inning_state'])
         self._print_bases(game['runners'])
         self._print_count(game['count'])
-        self._print_umpire(game['umpire'], game['away'], game['home'])
+        self._print_umpire(game['umpire'], game['away'], game['home'], game['pitch_details'])
         self._print_run_expectancy(game['run_expectancy'])
         self._print_win_probability(game['win_probability'], game['away'], game['home'])
         self._print_pitch_details(game['pitch_details'])
