@@ -7,8 +7,8 @@ User=on_deck
 Type=simple
 WorkingDirectory=/home/on_deck/on_deck/on_deck
 ExecStart=/home/on_deck/venv/bin/python -u on_deck_display.py --use-emulator
-StandardOutput=journal
-StandardError=journal
+StandardOutput=none
+StandardError=none
 Restart=always
 RestartSec=5
 

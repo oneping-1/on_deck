@@ -6,8 +6,8 @@ After=update.target
 Type=simple
 WorkingDirectory=/home/on_deck/on_deck/on_deck
 ExecStart=python -u on_deck_display.py
-StandardOutput=journal
-StandardError=journal
+StandardOutput=none
+StandardError=none
 Restart=always
 RestartSec=5
 
