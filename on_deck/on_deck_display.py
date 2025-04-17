@@ -12,11 +12,9 @@ changes.
 
 from typing import Union, List
 import json
-import platform
 import threading
 import time
 import math
-import argparse
 import redis
 
 from on_deck.display_manager import DisplayManager

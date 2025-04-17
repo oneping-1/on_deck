@@ -17,7 +17,6 @@ from at_bat.scoreboard_data import ScoreboardData, ScoreboardStandings
 from on_deck.colors import Colors
 from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
-
 from on_deck.matrix_loader import RGBMatrixOptions
 
 ABV_A = 'CLE'
