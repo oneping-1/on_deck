@@ -372,22 +372,22 @@ class Gamecast:
             return
 
         exit_velo = hit_details['exit_velo']
+        xba = round(hit_details['xba'], 3)
+        xba = str(xba)[1:]
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{exit_velo:5.1f} MPH')
+            color, f'{exit_velo:5.1f} MPH {xba}')
 
         launch_angle = hit_details['launch_angle']
-        xba = hit_details['xba']
-        xba = str(xba)[1:5]
+        xslg = round(hit_details['xslg'], 3)
+        xslg = f' {str(xslg)[1:5]}' if xslg < 1 else str(xslg)
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{launch_angle:5.1f}°    {xba}')
+            color, f'{launch_angle:5.1f}°   {xslg}')
 
         distance = hit_details['distance']
-        xslg = hit_details['xslg']
-        xslg = str(xslg)[1:5]
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{distance:5.1f} ft  {xslg}')
+            color, f'{distance:5.1f} ft')
 
         # row_offset += 12
         # self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
