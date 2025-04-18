@@ -371,19 +371,27 @@ class Gamecast:
                 column_offset+128, row_offset+24)
             return
 
-        distance = hit_details['distance']
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{distance:5.1f} ft')
-
         exit_velo = hit_details['exit_velo']
-        row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{exit_velo:5.1f} MPH')
 
         launch_angle = hit_details['launch_angle']
+        xslg = f'{hit_details["xslg"]:.3f}'
+        xslg = f' {xslg[1:]}' if xslg[0] == '0' else xslg
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{launch_angle:5.1f}°')
+            color, f'{launch_angle:5.1f}°  {xslg}')
+
+        distance = hit_details['distance']
+        xba = f'{hit_details["xba"]:.3f}'
+        xba = f' {xba[1:]}' if xba[0] == '0' else xba
+        row_offset += 12
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            color, f'{distance:5.1f} ft{xba}')
+
+        # row_offset += 12
+        # self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+        #     color, f'{xba} {xslg}')
 
 
     def _print_batting_order(self, batting_order: dict):
