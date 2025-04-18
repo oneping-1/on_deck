@@ -372,22 +372,22 @@ class Gamecast:
             return
 
         exit_velo = hit_details['exit_velo']
-        xba = round(hit_details['xba'], 3)
-        xba = str(xba)[1:]
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{exit_velo:5.1f} MPH {xba}')
+            color, f'{exit_velo:5.1f} MPH')
 
         launch_angle = hit_details['launch_angle']
-        xslg = round(hit_details['xslg'], 3)
-        xslg = f' {str(xslg)[1:5]}' if xslg < 1 else str(xslg)
+        xslg = f'{hit_details["xslg"]:.3f}'
+        xslg = f' {xslg[1:]}' if xslg[0] == '0' else xslg
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{launch_angle:5.1f}°   {xslg}')
+            color, f'{launch_angle:5.1f}°  {xslg}')
 
         distance = hit_details['distance']
+        xba = f'{hit_details["xba"]:.3f}'
+        xba = f' {xba[1:]}' if xba[0] == '0' else xba
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'{distance:5.1f} ft')
+            color, f'{distance:5.1f} ft{xba}')
 
         # row_offset += 12
         # self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
