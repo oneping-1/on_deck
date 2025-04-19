@@ -425,7 +425,7 @@ class Gamecast:
         column_offset = 240
 
         # self.display_manager.draw_box(240, 156, 386, 168+12, Colors.white)
-        self.display_manager.clear_section(240, 156, 386, 180)
+        self.display_manager.clear_section(240, 156, 290, 204)
 
         pitcher = matchup['pitcher']
 
@@ -433,14 +433,22 @@ class Gamecast:
             return
 
         pitcher_name = f' P {pitcher["name"][:10]:10s}{pitcher["era"]:>5s}'
-        pitch_count = f'{pitcher["strikes"]}/{pitcher["pitches"]}'
-        outcome = f'{pitcher["strike_outs"]}/{pitcher["walks"]}'
-        # pitch_count = f'  {pitch_count:7s}    {outcome:>5s}'
-        pitch_count = f'   {outcome:5s}   {pitch_count:>7s}'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             Colors.white, pitcher_name)
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
-            Colors.white, pitch_count)
+
+        row_offset += 12
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            Colors.white, ' IP H R K BB  S/P')
+
+        row_offset += 12
+        pitch_count = f'{pitcher["strikes"]}/{pitcher["pitches"]}'
+        innings_pitched = pitcher['innings_pitched']
+        hits = pitcher['hits_allowed']
+        runs = pitcher['runs_allowed']
+        strike_outs = pitcher['strike_outs']
+        walks = pitcher['walks']
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
+            Colors.white, f'{innings_pitched}{hits:>2d}{runs:>2d} {strike_outs:<2d}{walks:>2d} {pitch_count}')
 
 
     def print_game(self, game: dict):
