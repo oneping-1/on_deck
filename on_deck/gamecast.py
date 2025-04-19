@@ -424,8 +424,8 @@ class Gamecast:
         row_offset = 168
         column_offset = 240
 
-        # self.display_manager.draw_box(240, 156, 356, 204, Colors.white)
-        self.display_manager.clear_section(240, 156, 356, 204)
+        # self.display_manager.draw_box(240, 156, 384, 204, Colors.white)
+        self.display_manager.clear_section(240, 156, 384, 204)
 
         pitcher = matchup['pitcher']
 
