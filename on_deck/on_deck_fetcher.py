@@ -9,7 +9,7 @@ from typing import List, Union
 import json
 import threading
 from datetime import datetime
-import platform
+import hashlib
 import pytz
 import redis
 
@@ -80,6 +80,8 @@ class GamecastFetcher:
         self.gamepk: int = None
         self.game: ScoreboardData = None
 
+        self.displayed_games = set()
+
 
     def initialize_gamecast(self):
         """
@@ -108,6 +110,9 @@ class GamecastFetcher:
 
         print('Gamecast initialized')
 
+    def sha256_hash(self, d):
+        text = json.dumps(d)
+        return hashlib.sha256(text.encode('utf-8')).hexdigest()
 
     def update_gamecast(self):
         """
@@ -119,9 +124,14 @@ class GamecastFetcher:
         delay = int(self.redis.get('delay'))
 
         new_data = self.game.update_return_difference(delay)
+        full_dict = self.game.to_dict()
+        full_hash = self.sha256_hash(full_dict)
+        if full_hash in self.displayed_games:
+            return
+        self.displayed_games.add(full_hash)
         if new_data:
             # Update gamecast and cooresponding overview game
-            gamecast_dict = json.dumps(self.game.to_dict())
+            gamecast_dict = json.dumps(full_dict)
             new_data = json.dumps(new_data)
 
             self.redis.set('gamecast', gamecast_dict)
@@ -157,7 +167,7 @@ class GamecastFetcher:
         while True:
             self.update_settings()
             self.update_gamecast()
-            time.sleep(.1)
+            time.sleep(.2)
 
 
 class Fetcher:
