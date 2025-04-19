@@ -429,7 +429,10 @@ class Gamecast:
 
         pitcher = matchup['pitcher']
 
-        if (pitcher is None) or (pitcher['name'] is None) or (pitcher['hits'] is None):
+        if pitcher is None:
+            return
+
+        if (pitcher.get('name', None) is None) or (pitcher.get('hits_allowed', None) is None):
             return
 
         pitcher_name = f' P {pitcher["name"][:10]:10s}{pitcher["era"]:>5s}'
