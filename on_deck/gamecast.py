@@ -22,20 +22,23 @@ class Gamecast:
     def _print_team_names(self, away: dict, home: dict):
         color = Colors.white
 
-        # self.display_manager.clear_section(129, 0, 200, 28)
-        self.display_manager.clear_section(129, 0, 200, 28)
-        self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, away['name'])
-        self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, home['name'])
+        self.display_manager.clear_section(129, 0, 155, 28)
+        # self.display_manager.draw_box(129, 0, 155, 28, Colors.white, False)
+        self.display_manager.draw_text(Fonts.ter_u16b, 129, 12, color, away['abv'])
+        self.display_manager.draw_text(Fonts.ter_u16b, 129, 24, color, home['abv'])
 
 
-    def _print_linescore(self, home: bool, runs: int, hits: int, errors: int, lob: int):
+    def _print_linescore(self, home: bool, runs: int, hits: int, errors: int,
+        lob: int, xba: float, xslg: float):
         color = Colors.white
         row_offset = 24 if home else 12
 
-        run_column_offset = 80
-        hit_column_offset = 100
-        error_column_offset = 116
-        lob_column_offset = 132
+        run_column_offset = 168
+        hit_column_offset = 188
+        error_column_offset = 204
+        lob_column_offset = 220
+        xba_column_offset = 238
+        xslg_column_offset = 268
 
         if runs is None:
             runs = 0
@@ -45,56 +48,76 @@ class Gamecast:
             errors = 0
         if lob is None:
             lob = 0
+        if xba is None:
+            xba = 0
+        if xslg is None:
+            xslg = 0
 
         run_column_offset -= self._ddo if runs >= 10 else 0
         hit_column_offset -= self._ddo if hits >= 10 else 0
         lob_column_offset -= self._ddo if lob >= 10 else 0
 
         if runs >= 10:
-            self.display_manager.draw_text(Fonts.ter_u16b, 128 + run_column_offset,
+            self.display_manager.draw_text(Fonts.ter_u16b, run_column_offset,
                 row_offset, Colors.yellow, f'{runs}')
         else:
-            self.display_manager.draw_text(Fonts.ter_u16b, 128 + run_column_offset,
+            self.display_manager.draw_text(Fonts.ter_u16b, run_column_offset,
                 row_offset, Colors.yellow, f'{runs}')
 
         if hits >= 10:
-            self.display_manager.draw_text(Fonts.ter_u16b, 128 + hit_column_offset,
+            self.display_manager.draw_text(Fonts.ter_u16b, hit_column_offset,
                 row_offset, color, f'{hits}')
         else:
-            self.display_manager.draw_text(Fonts.ter_u16b, 128 + hit_column_offset,
+            self.display_manager.draw_text(Fonts.ter_u16b, + hit_column_offset,
                 row_offset, color, f'{hits}')
 
-        self.display_manager.draw_text(Fonts.ter_u16b, 128 + error_column_offset,
+        self.display_manager.draw_text(Fonts.ter_u16b, error_column_offset,
             row_offset, color, f'{errors}')
 
         if lob >= 10:
-            self.display_manager.draw_text(Fonts.ter_u16b, 128 + lob_column_offset,
+            self.display_manager.draw_text(Fonts.ter_u16b, lob_column_offset,
                 row_offset, color, f'{lob}')
         else:
-            self.display_manager.draw_text(Fonts.ter_u16b, 128 + lob_column_offset,
+            self.display_manager.draw_text(Fonts.ter_u16b, lob_column_offset,
                 row_offset, color, f'{lob}')
+
+        xba = f'{xba:.2f}'
+        xba = f'{xba[1:]}' if xba[0] == '0' else f'{xba[0:3]}'
+        self.display_manager.draw_text(Fonts.ter_u16b, xba_column_offset,
+            row_offset, Colors.yellow, xba)
+
+        xslg = f'{xslg:.2f}'
+        xslg = f'{xslg[1:]}' if xslg[0] == '0' else f'{xslg[0:3]}'
+        self.display_manager.draw_text(Fonts.ter_u16b, xslg_column_offset,
+            row_offset, Colors.yellow, xslg)
 
 
     def _print_linescores(self, away: dict, home: dict):
-        self.display_manager.clear_section(200, 0, 275, 24)
+        self.display_manager.clear_section(156, 0, 295, 28)
+        # self.display_manager.draw_box(156, 0, 295, 28, Colors.white, False)
 
         runs = away['runs']
         hits = away['hits']
         errors = away['errors']
         lob = away['left_on_base']
-        self._print_linescore(False, runs, hits, errors, lob)
+        xba = away['xba']
+        xslg = away['xslg']
+        self._print_linescore(False, runs, hits, errors, lob, xba, xslg)
 
         runs = home['runs']
         hits = home['hits']
         errors = home['errors']
         lob = home['left_on_base']
-        self._print_linescore(True, runs, hits, errors, lob)
+        xba = home['xba']
+        xslg = home['xslg']
+        self._print_linescore(True, runs, hits, errors, lob, xba, xslg)
 
 
     def _print_inning(self, inning: int, inning_state: str):
-        self.display_manager.clear_section(275, 0, 293, 24)
+        self.display_manager.clear_section(295, 0, 315, 24)
+        # self.display_manager.draw_box(295, 0, 315, 24, Colors.white, False)
 
-        column_offset = 128 + 152
+        column_offset = 302
         row_offset = 18
         arrow_size = 5
 
@@ -116,9 +139,10 @@ class Gamecast:
 
 
     def _print_bases(self, runners: int):
-        self.display_manager.clear_section(293, 0, 328, 24)
+        self.display_manager.clear_section(315, 0, 350, 24)
+        # self.display_manager.draw_box(315, 0, 350, 24, Colors.white, False)
 
-        second_base_column_offset = 128 + 182
+        second_base_column_offset = 333
         second_base_row_offset = 8
 
         base_length = 6
@@ -145,9 +169,10 @@ class Gamecast:
 
 
     def _print_count(self, count: dict):
-        self.display_manager.clear_section(328, 0, 370, 24)
+        self.display_manager.clear_section(350, 0, 384, 24)
+        # self.display_manager.draw_box(350, 0, 384, 24, Colors.white, False)
 
-        circle_column_offset = 128 + 206
+        circle_column_offset = 355
         ball_row_offset = 4
         strike_row_offset = 12
         out_row_offset = 20
@@ -262,7 +287,7 @@ class Gamecast:
             return
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'AVG:{re_avg:5.2f}')
+            color, f'AVG:{re_avg:4.2f}')
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset+12,
             color, f'1+:{re_ts:5.1%}')
 
