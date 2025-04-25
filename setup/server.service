@@ -5,7 +5,7 @@ After=update.target
 [Service]
 Type=simple
 WorkingDirectory=/home/on_deck/on_deck/on_deck
-ExecStart=/home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:80 --timeout 120 on_deck_server:app
+ExecStart=/home/on_deck/venv/bin/gunicorn -w 2 -b 0.0.0.0:8889 --timeout 120 on_deck_server:app
 StandardOutput=none
 StandardError=none
 Restart=always
