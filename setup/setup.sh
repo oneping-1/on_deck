@@ -1,12 +1,12 @@
 #!/bin/bash
 
 # setup comitup
-wget https://davesteele.github.io/comitup/deb/davesteele-comitup-apt-source_1.2_all.deb
-sudo dpkg -i davesteele-comitup-apt-source*.deb
-sudo apt-get update
-sudo apt-get install comitup pip nginx python3-dev python3-redis cython3 redis-server -y
-sudo apt-get upgrade -y
-rm davesteele-comitup-apt-source*.deb
+# wget https://davesteele.github.io/comitup/deb/davesteele-comitup-apt-source_1.2_all.deb
+# sudo dpkg -i davesteele-comitup-apt-source*.deb
+# sudo apt-get update
+# sudo apt-get install comitup pip nginx python3-dev python3-redis cython3 redis-server -y
+# sudo apt-get upgrade -y
+# rm davesteele-comitup-apt-source*.deb
 
 # download repositories
 git clone https://github.com/hzeller/rpi-rgb-led-matrix
