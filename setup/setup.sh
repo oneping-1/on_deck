@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt-get install pip nginx python3-dev python3-redis cython3 redis-server -y
+sudo apt-get install python3-pip nginx python3-dev python3-redis cython3 redis-server -y
 
 # setup comitup
 # wget https://davesteele.github.io/comitup/deb/davesteele-comitup-apt-source_1.2_all.deb
@@ -68,7 +68,7 @@ sudo systemctl enable fetcher.service
 sudo systemctl start fetcher.service
 
 # emulator script
-sudo cp ~/on_deck/setup/display.service /etc/systemd/system/emulator.service
+sudo cp ~/on_deck/setup/emulator.service /etc/systemd/system/emulator.service
 sudo systemctl daemon-reload
 sudo systemctl enable emulator.service
 sudo systemctl start emulator.service
