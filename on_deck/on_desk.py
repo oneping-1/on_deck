@@ -249,7 +249,7 @@ class Scoreboard:
             else:
                 self.print_off_day(i)
         self.display_manager.swap_frame()
-        time.sleep(10)
+        time.sleep(60)
 
 
     def print_off_day(self, i):
@@ -527,7 +527,7 @@ def main():
 
 
 if __name__ == '__main__':
-    on_time = datetime.time(0, 0)
-    off_time = datetime.time(23, 59)
+    on_time = datetime.time(7, 30)
+    off_time = datetime.time(17, 30)
 
     main()
