@@ -101,13 +101,6 @@ def is_connected(host="8.8.8.8", port=53, timeout=3):
     except OSError:
         return False
 
-# wait until we can reach the internet
-while not is_connected():
-    print("Waiting for internet connection...")
-    time.sleep(5)
-
-print("Internet is up—continuing with the rest of the script.")
-# ... rest of your code here ...
 
 
 class GameHandler:
@@ -214,6 +207,7 @@ class Scoreboard:
 
         while not is_connected():
             time.sleep(5)
+        print('internet connected')
 
         for i in range(120):
             self.display_manager.draw_line(0, 63, i+8, 63, Colors.middle_blue)
