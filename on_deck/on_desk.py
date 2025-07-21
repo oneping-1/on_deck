@@ -117,6 +117,11 @@ class GameHandler:
         """
         This method is used to start the game updater
         """
+
+        while not is_connected():
+            time.sleep(5)
+        print('internet connected game handler')
+
         self.games[0] = None
         self.games[1] = None
         self.standings[0] = None
@@ -207,7 +212,7 @@ class Scoreboard:
 
         while not is_connected():
             time.sleep(5)
-        print('internet connected')
+        print('internet connected scoreboard')
 
         for i in range(120):
             self.display_manager.draw_line(0, 63, i+8, 63, Colors.middle_blue)
