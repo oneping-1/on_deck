@@ -88,6 +88,28 @@ def _convert_streak(streak):
     return streak
 
 
+def is_connected(host="8.8.8.8", port=53, timeout=3):
+    """
+    Attempts to open a socket to a well-known DNS server (Google).
+    Returns True if successful, False otherwise.
+    """
+    try:
+        socket.setdefaulttimeout(timeout)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((host, port))
+        return True
+    except OSError:
+        return False
+
+# wait until we can reach the internet
+while not is_connected():
+    print("Waiting for internet connection...")
+    time.sleep(5)
+
+print("Internet is up—continuing with the rest of the script.")
+# ... rest of your code here ...
+
+
 class GameHandler:
     """
     This class is used to handle the games
@@ -189,6 +211,9 @@ class Scoreboard:
         message and then start the loop to print the games and standings.
         """
         self._print_welcome()
+
+        while not is_connected():
+            time.sleep(5)
 
         for i in range(120):
             self.display_manager.draw_line(0, 63, i+8, 63, Colors.middle_blue)
