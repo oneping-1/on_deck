@@ -116,6 +116,8 @@ class GameHandler:
             if ABV_B in (game.away.abv, game.home.abv):
                 self.games[1] = game
 
+        self.update_standings()
+
         self.loop()
 
 
@@ -392,6 +394,10 @@ class Scoreboard:
 
         self.display_manager.draw_text(Fonts.ter_u22b, 0, 15 + offset, color, TEAMS[i])
 
+        if self.standings is None:
+            self._print_standing(i, False, 0,0,'W0',0,0)
+            print(f'{self.standings=}')
+            return
 
         wins = self.standings[i].wins
         losses = self.standings[i].losses
@@ -496,7 +502,7 @@ def main():
 
 
 if __name__ == '__main__':
-    on_time = datetime.time(8, 30)
-    off_time = datetime.time(17, 15)
+    on_time = datetime.time(0, 0)
+    off_time = datetime.time(23, 59)
 
     main()
