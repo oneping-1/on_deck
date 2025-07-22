@@ -440,7 +440,7 @@ class Scoreboard:
 
         if games_back == 0:
             games_back = '  0.0'
-        elif games_back > 10:
+        elif games_back >= 10:
             games_back = f'-{games_back:.1f}'
         elif games_back < 0:
             games_back = f' +{-games_back:.1f}'
