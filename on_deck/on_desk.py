@@ -107,8 +107,7 @@ class GameHandler:
     """
     This class is used to handle the games
     """
-    def __init__(self, ready: bool, games: List[ScoreboardData], standings: List[ScoreboardStandings]):
-        self.ready = ready
+    def __init__(self, games: List[ScoreboardData], standings: List[ScoreboardStandings]):
         self.games = games
         self.standings = standings
         self.gamepks = None
@@ -119,7 +118,8 @@ class GameHandler:
         This method is used to start the game updater
         """
 
-        self.ready = False
+        global ready
+        ready = False
 
         while not is_connected():
             time.sleep(5)
@@ -139,7 +139,7 @@ class GameHandler:
             if ABV_B in (game.away.abv, game.home.abv):
                 self.games[1] = game
 
-        self.ready = True
+        ready = True
         self.update_standings()
         self.loop()
 
@@ -198,9 +198,7 @@ class Scoreboard:
     """
     This class handles all the logic for printing the data on the display
     """
-    def __init__(self, ready: bool, games: List[ScoreboardData], standings: List[ScoreboardStandings]):
-        self.ready = ready
-
+    def __init__(self, games: List[ScoreboardData], standings: List[ScoreboardStandings]):
         self.display_manager = DisplayManager(get_options())
         self.display_manager.swap_frame()
 
@@ -245,7 +243,8 @@ class Scoreboard:
             time.sleep(60)
             return
 
-        if self.ready is False:
+        global ready
+        if ready is False:
             self.display_manager.clear_section(0, 0, 128, 64)
             self._print_welcome()
             self.display_manager.swap_frame()
@@ -524,12 +523,11 @@ def main():
     Description: This function is used to start the scoreboard
     """
 
-    ready: bool = False
     games: List[ScoreboardData] = [None, None]
     standings: List[ScoreboardStandings] = [None, None]
 
-    game_handler = GameHandler(ready, games, standings)
-    scoreboard = Scoreboard(ready, games, standings)
+    game_handler = GameHandler(games, standings)
+    scoreboard = Scoreboard(games, standings)
 
     game_handler_thread = threading.Thread(target=start_game_handler, args=(game_handler,))
     scoreboard_thread = threading.Thread(target=start_scoreboard, args=(scoreboard,))
@@ -539,6 +537,7 @@ def main():
 
 
 if __name__ == '__main__':
+    ready: bool = False
     on_time = datetime.time(7, 30)
     off_time = datetime.time(17, 30)
 
