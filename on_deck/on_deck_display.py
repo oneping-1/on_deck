@@ -25,6 +25,9 @@ from on_deck.emulator_checker import is_emulator
 from on_deck.colors import Colors
 
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
+brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
+# brightness_dict = {i: i for i in range(256)}
+brightness_duct = brightness_dict_3pwm
 REDIS_IP = '192.168.1.90'
 REDIS_PASSWORD = 'on_deck'
 
@@ -48,7 +51,7 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-        options.pwm_bits = 2 # Can run 2 with sudo, 1 without
+        options.pwm_bits = 3 # Can run 2 with sudo, 1 without
         options.gpio_slowdown = 4
         options.pwm_dither_bits = 2 # decreaes brightness a little (i think)
 
@@ -130,7 +133,7 @@ class GamecastHandler:
         except TypeError:
             brightness = 3
 
-        self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
+        self.display_manager.set_brightness(brightness_dict[brightness])
 
         self.gamecast: Gamecast = Gamecast(self.display_manager)
         self.gamecast_game: dict = None
@@ -169,7 +172,7 @@ class GamecastHandler:
 
         if channel == b'brightness':
             brightness = int(message['data'])
-            self.display_manager.set_brightness(brightness_dict_2pwm[brightness])
+            self.display_manager.set_brightness(brightness_dict[brightness])
 
         mode = self.redis.get('mode')
         if channel == b'mode':
@@ -362,7 +365,7 @@ class OverviewHandler:
 
         if channel == b'brightness':
             x = int(message['data'])
-            self.display_manager.set_brightness(brightness_dict_2pwm[x])
+            self.display_manager.set_brightness(brightness_dict[x])
 
         if channel == b'init':
             self._initialize_games()
