@@ -52,6 +52,17 @@ class Overview:
             if (game['flags']['no_hitter'] is True) or (game['flags']['perfect_game'] is True):
                 return Colors.pink
 
+            away_team = game['away']['abv']
+            home_team = game['home']['abv']
+
+            rival_teams = ('HOU', 'SEA', 'BOS', 'NYY', 'CLE')
+
+            if away_team == 'TEX' or home_team == 'TEX':
+                return Colors.light_blue
+
+            if away_team in rival_teams or home_team in rival_teams:
+                return Colors.magenta
+
         column = math.floor(i / self._games_per_column)
         middle_column = column & 1
 
