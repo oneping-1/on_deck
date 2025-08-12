@@ -102,7 +102,7 @@ class Server:
         if brightness is None:
             return
         brightness = int(brightness)
-        if not (0 <= brightness <= 3):
+        if not (0 <= brightness <= 7):
             return # brightness not in range
         self.redis.set('brightness', brightness)
         self.redis.publish('brightness', brightness)
