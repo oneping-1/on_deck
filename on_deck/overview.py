@@ -55,7 +55,7 @@ class Overview:
             away_team = game['away']['abv']
             home_team = game['home']['abv']
 
-            rival_teams = ('HOU', 'SEA', 'BOS', 'NYY', 'CLE')
+            rival_teams = ('SEA')
 
             if away_team == 'TEX' or home_team == 'TEX':
                 return Colors.light_blue
