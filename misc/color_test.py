@@ -4,14 +4,16 @@ import itertools
 # Initialize the main window
 root = tk.Tk()
 
-# Generate all RGB combinations with pwm bits = 2 (values 0 to 3)
-colors = list(itertools.product(range(4), repeat=3))  # Generate all RGB combinations
+PWM_BITS = 2
+PWM_COLOR = PWM_BITS ** 2
+
+colors = list(itertools.product(range(PWM_COLOR+1), repeat=3))  # Generate all RGB combinations
 
 columns = 8  # Number of columns to fit better on screen
 
 for i, color in enumerate(colors):
     # Convert the RGB values (0-3) to 0-255 scale
-    r, g, b = [int(255 * (value / 3)) for value in color]
+    r, g, b = [int(255 * (value / (PWM_COLOR))) for value in color]
     hex_color = f'#{r:02x}{g:02x}{b:02x}'
 
     # Create a frame for each color
