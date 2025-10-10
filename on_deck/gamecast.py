@@ -310,7 +310,7 @@ class Gamecast:
         if wp_away == wp_home:
             team = ''
             wp = wp_away
-        if wp_away > wp_home:
+        elif wp_away > wp_home:
             team = away['abv']
             wp = wp_away
         else:
