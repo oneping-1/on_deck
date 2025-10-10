@@ -250,8 +250,9 @@ class Gamecast:
         color = Colors.yellow if umpire_missed_call is True else Colors.white
 
         num_missed = umpire['num_missed']
+        total_calls = umpire['total_calls']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-            color, f'# Miss: {num_missed:2d}')
+            color, f'# Miss:{num_missed:2d}/{total_calls}')
 
         row_offset += 12
         favor = umpire['home_favor']
@@ -306,6 +307,9 @@ class Gamecast:
         if (wp_away is None) or (wp_home is None):
             return
 
+        if wp_away == wp_home:
+            team = ''
+            wp = wp_away
         if wp_away > wp_home:
             team = away['abv']
             wp = wp_away
