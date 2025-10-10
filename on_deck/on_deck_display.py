@@ -27,7 +27,7 @@ from on_deck.colors import Colors
 brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
 brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
 # brightness_dict = {i: i for i in range(256)}
-brightness_duct = brightness_dict_3pwm
+brightness_dict = brightness_dict_3pwm
 REDIS_IP = '192.168.1.90'
 REDIS_PASSWORD = 'on_deck'
 
