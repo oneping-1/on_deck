@@ -258,6 +258,8 @@ class Gamecast:
         row_offset += 12
         favor = umpire['home_favor']
         abv = home['abv']
+        if favor == 0:
+            abv = ''
         if favor < 0:
             abv = away['abv']
             favor *= -1
@@ -267,6 +269,8 @@ class Gamecast:
         row_offset += 12
         wpa = umpire['home_wpa']
         abv = home['abv']
+        if wpa == 0:
+            abv = ''
         if wpa < 0:
             abv = away['abv']
             wpa *= -1
