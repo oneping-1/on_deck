@@ -7,6 +7,7 @@ from on_deck.colors import Colors
 from on_deck.fonts import Fonts
 from on_deck.display_manager import DisplayManager
 
+import math
 
 class Gamecast:
     """
@@ -307,7 +308,7 @@ class Gamecast:
         if (wp_away is None) or (wp_home is None):
             return
 
-        if wp_away == wp_home:
+        if math.isclose(wp_away, wp_home):
             team = ''
             wp = wp_away
         elif wp_away > wp_home:
