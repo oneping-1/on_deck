@@ -360,8 +360,11 @@ class Gamecast:
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_speed:.1f}')
-        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+38, row_offset,
-            pitch_color, 'MPH')
+        aditional_offset = 0
+        if pitch_speed > 100:
+            aditional_offset += 8
+        self.display_manager.draw_text(Fonts.ter_u12b, column_offset+38+aditional_offset,
+            row_offset, pitch_color, 'MPH')
 
         pitch_hand = pitch_details['pitch_hand']
         is_rhp = True if pitch_hand == 'R' else False
