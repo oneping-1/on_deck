@@ -18,8 +18,7 @@ from at_bat.scoreboard_data import ScoreboardData
 
 from on_deck.emulator_checker import is_emulator
 
-REDIS_IP = '192.168.1.90'
-REDIS_PASSWORD = 'on_deck'
+REDIS_IP = '192.168.7.100'
 
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
@@ -51,7 +50,7 @@ def seconds_since_iso8601(iso_timestamp: str) -> int:
     return int(difference.total_seconds())
 
 
-def get_daily_gamepks() -> List[int]:
+def get_daily_gamepks(date: str = None) -> List[int]:
     """
     Returns a list of gamepks for a given date.
 
@@ -61,6 +60,9 @@ def get_daily_gamepks() -> List[int]:
     Returns:
         List[int]: List of gamepks
     """
+    if date is not None:
+        gamepks = ssp.get_daily_gamepks(date)
+        return gamepks
     gamepks = ssp.get_daily_gamepks()
     return gamepks
 
@@ -72,7 +74,7 @@ class GamecastFetcher:
     settings and updates the gamecast data accordingly.
     """
     def __init__(self):
-        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0, password=REDIS_PASSWORD)
+        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
         self.pubsub.subscribe('gamecast_id')
@@ -178,10 +180,13 @@ class Fetcher:
     gamecast data and updates the Redis database with the fetched data.
     """
     def __init__(self):
+        delay = seconds_since_iso8601('2025-05-29T12:00:00-05:00')
+        print(f'{delay=}')
+
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
-        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0, password=REDIS_PASSWORD)
+        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay') # do i need this?
 
@@ -204,8 +209,7 @@ class Fetcher:
 
 
     def redis_publish_game(self, key: Union[str, int], new_data: dict):
-        """
-        Publishes the updated game data to the corresponding channel in
+        """asdfchannel in
         the Redis database.
 
         Args:
@@ -224,7 +228,7 @@ class Fetcher:
         the games in the Redis database and publishes the updated data to the
         corresponding channels.
         """
-        self.gamepks = get_daily_gamepks()
+        self.gamepks = get_daily_gamepks('2025-05-29')
         self.games: List[ScoreboardData] = []
 
         try:

@@ -13,6 +13,7 @@ from flask import Flask, request, Response
 
 from at_bat.scoreboard_data import ScoreboardData
 
+
 class Server:
     """
     This class contains the server for the scoreboard. It is used to
@@ -21,7 +22,7 @@ class Server:
     scoreboard, and reboot the Raspberry Pi.
     """
     def __init__(self):
-        self.redis = redis.Redis(host='192.168.1.90', port=6379, db=0, password='on_deck')
+        self.redis = redis.Redis(host='192.168.7.100', port=6379, db=0)
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])

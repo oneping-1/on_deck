@@ -3,3 +3,4 @@
 *.egg-info
 USE_EMULATOR.txt
 on_deck/test.py
+Dockerfile.nas
