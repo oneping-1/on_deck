@@ -10,9 +10,11 @@ import sys
 import json
 import redis
 from flask import Flask, request, Response
+import os
 
 from at_bat.scoreboard_data import ScoreboardData
 
+REDIS_IP = os.environ.get('REDIS_HOST')
 
 class Server:
     """
@@ -22,7 +24,7 @@ class Server:
     scoreboard, and reboot the Raspberry Pi.
     """
     def __init__(self):
-        self.redis = redis.Redis(host='192.168.7.100', port=6379, db=0)
+        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0)
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])

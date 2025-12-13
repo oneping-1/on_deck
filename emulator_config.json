@@ -2,7 +2,10 @@
     "pixel_outline": 0,
     "pixel_size": 8,
     "pixel_style": "circle",
+    "pixel_glow": 6,
+    "emulator_title": "on_deck",
     "display_adapter": "browser",
+    "image_format": "JPEG",
     "suppress_font_warnings": false,
     "suppress_adapter_load_errors": true,
     "browser": {

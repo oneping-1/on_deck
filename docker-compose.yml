@@ -35,4 +35,20 @@ services:
     command:
       - python
       - on_deck/on_deck/on_deck_fetcher.py
+  on_deck_display:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: on_deck_display
+    restart: no
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - 8888:8888
+    command:
+      - python
+      - on_deck/on_deck/on_deck_display.py
 networks: {}

@@ -12,14 +12,14 @@ from datetime import datetime
 import hashlib
 import pytz
 import redis
+import os
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
 from on_deck.emulator_checker import is_emulator
 
-REDIS_IP = '192.168.7.100'
-
+REDIS_IP = os.environ.get('REDIS_HOST')
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """

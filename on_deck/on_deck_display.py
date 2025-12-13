@@ -16,6 +16,7 @@ import threading
 import time
 import math
 import redis
+import os
 
 from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
@@ -28,8 +29,8 @@ brightness_dict_2pwm = {0: 0, 1: 60, 2: 80, 3: 90}
 brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
 # brightness_dict = {i: i for i in range(256)}
 brightness_dict = brightness_dict_3pwm
-REDIS_IP = '192.168.7.100'
 
+REDIS_IP = os.environ.get('REDIS_HOST')
 
 def get_options() -> RGBMatrixOptions:
     """
