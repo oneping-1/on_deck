@@ -135,6 +135,7 @@ class Server:
         mode = request.args.get('mode', default=None)
         delay = request.args.get('delay', default=None)
         brightness = request.args.get('brightness', default=None)
+        gamecast_id = request.args.get('id', default=None)
         gamecast_id = request.args.get('gamecast_id', default=None)
 
         self._parse_mode(mode)

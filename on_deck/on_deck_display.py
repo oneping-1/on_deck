@@ -31,6 +31,7 @@ brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
 brightness_dict = brightness_dict_3pwm
 
 REDIS_IP = os.environ.get('REDIS_HOST')
+REDIS_IP = '192.168.7.100'
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -206,6 +207,7 @@ class GamecastHandler:
             b'gamecast_reset', b'init')
 
         if message['channel'] in settings_channels:
+            print('changing settings')
             self.change_settings(message)
             return False
 

@@ -4,22 +4,23 @@ and updating the Redis database with the fetched data. It also listens
 for changes to the settings and updates the Redis database accordingly.
 """
 
+import os
 import time
 from typing import List, Union
 import json
 import threading
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import hashlib
 import pytz
 import redis
-import os
 
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
 from on_deck.emulator_checker import is_emulator
 
-REDIS_IP = os.environ.get('REDIS_HOST')
+# REDIS_IP = os.environ.get('REDIS_HOST')
+REDIS_IP = '192.168.7.100'
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """
@@ -50,21 +51,31 @@ def seconds_since_iso8601(iso_timestamp: str) -> int:
     return int(difference.total_seconds())
 
 
-def get_daily_gamepks(date: str = None) -> List[int]:
+def get_daily_gamepks(delay: int) -> List[int]:
     """
-    Returns a list of gamepks for a given date.
+    Returns a list of gamepks for the local *system timezone* date from
+    `delay` seconds ago.
 
     Args:
-        date (str): Date in the format 'YYYY-MM-DD'
+        delay (int): Integer seconds ago (>= 0).
 
     Returns:
-        List[int]: List of gamepks
+        List[int]: List of gamepks.
     """
-    if date is not None:
-        gamepks = ssp.get_daily_gamepks(date)
-        return gamepks
-    gamepks = ssp.get_daily_gamepks()
-    return gamepks
+    if not isinstance(delay, int):
+        raise TypeError("seconds_ago must be an int")
+    if delay < 0:
+        raise ValueError("seconds_ago must be >= 0")
+
+    now_local = datetime.now().astimezone()
+    then_local = now_local - timedelta(seconds=delay)
+
+    # adjust for games updating at 10am
+    then_local = then_local - timedelta(hours=10)
+
+    date = then_local.date().isoformat()
+
+    return ssp.get_daily_gamepks(date)
 
 
 class GamecastFetcher:
@@ -180,9 +191,6 @@ class Fetcher:
     gamecast data and updates the Redis database with the fetched data.
     """
     def __init__(self):
-        delay = seconds_since_iso8601('2025-05-29T12:00:00-05:00')
-        print(f'{delay=}')
-
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
@@ -228,14 +236,15 @@ class Fetcher:
         the games in the Redis database and publishes the updated data to the
         corresponding channels.
         """
-        self.gamepks = get_daily_gamepks('2025-05-29')
-        self.games: List[ScoreboardData] = []
-
         try:
             delay = int(self.redis.get('delay'))
         except TypeError:
             delay = 0
             self.redis.set('delay', delay)
+
+        self.gamepks = get_daily_gamepks(delay)
+        self.games: List[ScoreboardData] = []
+
 
         for i, gamepk in enumerate(self.gamepks):
             game = ScoreboardData(gamepk, delay)
@@ -256,8 +265,8 @@ class Fetcher:
         the games in the Redis database and publishes the updated data to the
         corresponding channels.
         """
+        delay = int(self.redis.get('delay'))
         for i, game in enumerate(self.games):
-            delay = int(self.redis.get('delay'))
             new_data = game.update_return_difference(delay)
             if new_data:
                 self.redis_set_game(i, game.to_dict())
@@ -266,7 +275,7 @@ class Fetcher:
 
         if (time.time() - self.last_check) > 60:
             self.last_check = time.time()
-            new_gamepks = get_daily_gamepks()
+            new_gamepks = get_daily_gamepks(delay=delay)
             if new_gamepks != self.gamepks:
                 print('New gamepks detected, reinitializing games')
                 self.initialize_games()
@@ -290,7 +299,5 @@ class Fetcher:
 
 
 if __name__ == '__main__':
-    if is_emulator() is False:
-        time.sleep(30) # Wait for Redis to start
     fetcher = Fetcher()
     fetcher.start()
