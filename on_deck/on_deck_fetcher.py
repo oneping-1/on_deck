@@ -4,7 +4,6 @@ and updating the Redis database with the fetched data. It also listens
 for changes to the settings and updates the Redis database accordingly.
 """
 
-import os
 import time
 from typing import List, Union
 import json
@@ -17,10 +16,8 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
-from on_deck.emulator_checker import is_emulator
-
 # REDIS_IP = os.environ.get('REDIS_HOST')
-REDIS_IP = '192.168.7.100'
+REDIS_IP = '10.0.1.10'
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """
@@ -75,7 +72,9 @@ def get_daily_gamepks(delay: int) -> List[int]:
 
     date = then_local.date().isoformat()
 
-    return ssp.get_daily_gamepks(date)
+    games = ssp.get_daily_gamepks(date)
+
+    return games
 
 
 class GamecastFetcher:
@@ -256,6 +255,8 @@ class Fetcher:
         num_games = len(self.games)
         self.redis.set('num_games', num_games)
         self.redis.publish('init', 'init')
+        self.redis.set('mode', 'overview')
+        self.redis.publish('mode', 'overview')
 
 
     def update_games(self):

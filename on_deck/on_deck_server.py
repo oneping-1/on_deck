@@ -14,7 +14,8 @@ import os
 
 from at_bat.scoreboard_data import ScoreboardData
 
-REDIS_IP = os.environ.get('REDIS_HOST')
+# REDIS_IP = os.environ.get('REDIS_HOST')
+REDIS_IP = '10.0.1.10'
 
 class Server:
     """
