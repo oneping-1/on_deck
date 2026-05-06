@@ -491,6 +491,30 @@ class Gamecast:
             Colors.white, f'{innings_pitched}{hits:>2d}{runs:>2d} {strike_outs:<2d}{walks:>2d} {pitch_count}')
 
 
+    def _print_abs_challenges(self, away: dict, home: dict):
+        y1 = 3
+        y2 = 6
+        y3 = 9
+        
+        if away['abs_challenges'] >= 2:
+            self.display_manager.draw_pixel(155, y1, Colors.white)
+            
+        if away['abs_challenges'] >= 1:
+            self.display_manager.draw_pixel(155, y2, Colors.white)
+            
+        if away['challenges'] >= 1:
+            self.display_manager.draw_line(155, y3, 155, y3+1, Colors.white)
+            
+        if home['abs_challenges'] >= 2:
+            self.display_manager.draw_pixel(155, y1+12, Colors.white)
+            
+        if home['abs_challenges'] >= 1:
+            self.display_manager.draw_pixel(155, y2+12, Colors.white)
+            
+        if home['challenges'] >= 1:
+            self.display_manager.draw_line(155, y3+12, 155, y3+13, Colors.white)
+
+
     def print_game(self, game: dict):
         """
         Print the game information to the screen.
@@ -525,6 +549,7 @@ class Gamecast:
         self._print_hit_details(game['hit_details'])
         self._print_batting_order(game['batting_order'])
         self._print_pitcher(game['matchup'])
+        self._print_abs_challenges(game['away'], game['home'])
         self.display_manager.swap_frame()
 
 
