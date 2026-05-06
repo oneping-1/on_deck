@@ -212,7 +212,7 @@ class GamecastHandler:
             return False
 
         new_data = json.loads(message['data'])
-        print(f'{new_data=}\n')
+        # print(f'{new_data=}\n')
         if new_data == {}:
             return False
 

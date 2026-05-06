@@ -353,6 +353,11 @@ class Gamecast:
         pitch_color = pitch_colors.get(pitch_type, Colors.white)
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_type}')
+        
+        count = pitch_details['at_bat_pitch_count']
+        if count is 'null' or count is None:
+            count = ''
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+96, row_offset, Colors.white, str(count))
 
         pitch_speed = pitch_details['speed']
         if pitch_speed is None:
@@ -393,6 +398,8 @@ class Gamecast:
             color, f'{abs(break_vertical_induced):5.1f}')
         self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
             color, break_direction)
+        
+        
 
 
     def _print_hit_details(self, hit_details: dict):
@@ -539,6 +546,7 @@ class Gamecast:
         """
         self._print_team_names(game['away'], game['home'])
         self._print_linescores(game['away'], game['home'])
+        self._print_abs_challenges(game['away'], game['home'])
         self._print_inning(game['inning'], game['inning_state'])
         self._print_bases(game['runners'])
         self._print_count(game['count'])
@@ -549,7 +557,6 @@ class Gamecast:
         self._print_hit_details(game['hit_details'])
         self._print_batting_order(game['batting_order'])
         self._print_pitcher(game['matchup'])
-        self._print_abs_challenges(game['away'], game['home'])
         self.display_manager.swap_frame()
 
 
