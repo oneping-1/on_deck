@@ -357,7 +357,8 @@ class Gamecast:
         count = pitch_details['at_bat_pitch_count']
         if count is 'null' or count is None:
             count = ''
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+96, row_offset, Colors.white, str(count))
+        dx = 0 if count < 10 else -8
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+96+dx, row_offset, Colors.white, str(count))
 
         pitch_speed = pitch_details['speed']
         if pitch_speed is None:
