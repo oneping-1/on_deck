@@ -489,7 +489,9 @@ class Gamecast:
             Colors.white, ' IP H R K BB  S/P')
 
         row_offset += 12
-        pitches = f'{pitcher["pitches"]:2d}'[1:3] if pitcher['pitches'] >= 100 else f'{pitcher["pitches"]:2d}'
+        
+        pitch_count = pitcher['pitches']
+        pitches = f'{pitcher["pitches"]:2d}'[1:3] if pitcher['pitches'] >= 100 else f'{pitcher["pitches"]:<2d}'
         pitch_count = f'{pitcher["strikes"]:2d}/{pitches}'
         innings_pitched = pitcher['innings_pitched']
         hits = pitcher['hits_allowed']
