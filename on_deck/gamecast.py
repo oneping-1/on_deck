@@ -422,7 +422,7 @@ class Gamecast:
             row_offset += 12            
 
     def _print_hit_details(self, hit_details: dict):
-        self.display_manager.clear_section(129, 180, 240, 216)
+        self.display_manager.clear_section(129, 180, 240, 240)
 
         column_offset = 129
         row_offset = 192
