@@ -5,3 +5,4 @@ USE_EMULATOR.txt
 on_deck/test.py
 Dockerfile.nas
 /.conda
+.vscode/settings.json

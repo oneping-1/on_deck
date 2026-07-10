@@ -9,6 +9,17 @@ from on_deck.display_manager import DisplayManager
 
 import math
 
+PITCH_COLORS = {
+    'Four-Seam': Colors.red,
+    'Sinker': Colors.pink,
+    'Cutter': Colors.pink,
+    'Curveball': Colors.blue,
+    'Slider': Colors.light_blue,
+    'Sweeper': Colors.light_blue,
+    'Changeup': Colors.green,
+    'Splitter': Colors.yellow,
+}
+
 class Gamecast:
     """
     A class to handle the gamecast display for a baseball game.
@@ -340,17 +351,8 @@ class Gamecast:
         if pitch_type == 'Four-Seam Fastball':
             pitch_type = 'Four-Seam'
 
-        pitch_colors = {
-            'Four-Seam': Colors.red,
-            'Sinker': Colors.pink,
-            'Cutter': Colors.pink,
-            'Curveball': Colors.blue,
-            'Slider': Colors.light_blue,
-            'Sweeper': Colors.light_blue,
-            'Changeup': Colors.green,
-            'Splitter': Colors.yellow,
-        }
-        pitch_color = pitch_colors.get(pitch_type, Colors.white)
+
+        pitch_color = PITCH_COLORS.get(pitch_type, Colors.white)
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_type}')
         
@@ -400,8 +402,24 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
             color, break_direction)
         
-        
 
+    def _print_pitch_type_counts(self, pitch_counts: dict):
+        self.display_manager.clear_section(129, 180, 233, 240)
+        pitch_counts = list(pitch_counts.items())[0:6]
+
+        column_offset = 129
+        row_offset = 192
+
+        for pitch, count in pitch_counts:
+            if pitch == 'Four-Seam Fastball':
+                pitch = 'Four-Seam'
+                
+            color = PITCH_COLORS[pitch]
+                
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch)
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+88, row_offset, color, f'{count:2d}')
+            
+            row_offset += 12            
 
     def _print_hit_details(self, hit_details: dict):
         self.display_manager.clear_section(129, 180, 240, 216)
@@ -414,7 +432,7 @@ class Gamecast:
         if hit_details['distance'] is None:
             self.display_manager.clear_section(column_offset, row_offset,
                 column_offset+128, row_offset+24)
-            return
+            return False
 
         exit_velo = hit_details['exit_velo']
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
@@ -438,6 +456,7 @@ class Gamecast:
         # self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
         #     color, f'{xba} {xslg}')
 
+        return True
 
     def _print_batting_order(self, batting_order: dict):
         row_offset = 36
@@ -558,9 +577,10 @@ class Gamecast:
         self._print_run_expectancy(game['run_expectancy'])
         self._print_win_probability(game['win_probability'], game['away'], game['home'])
         self._print_pitch_details(game['pitch_details'])
-        self._print_hit_details(game['hit_details'])
         self._print_batting_order(game['batting_order'])
         self._print_pitcher(game['matchup'])
+        if not self._print_hit_details(game['hit_details']):
+            self._print_pitch_type_counts(game['pitch_counts'])
         self.display_manager.swap_frame()
 
 
