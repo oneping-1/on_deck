@@ -415,7 +415,7 @@ class Gamecast:
         
 
     def _print_pitch_type_counts(self, pitch_counts: dict=None):
-        self.display_manager.clear_section(129, 180, 231, 240)
+        self.display_manager.clear_section(129, 180, 231, 256)
         
         if len(pitch_counts) == 0:
             return False
@@ -450,7 +450,7 @@ class Gamecast:
         return True
 
     def _print_hit_details(self, hit_details: dict):
-        self.display_manager.clear_section(129, 180, 231, 245)
+        self.display_manager.clear_section(129, 180, 231, 256)
 
         column_offset = 129
         row_offset = 192
