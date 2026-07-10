@@ -414,26 +414,36 @@ class Gamecast:
             color, break_direction)
         
 
-    def _print_pitch_type_counts(self, pitch_counts: dict):
+    def _print_pitch_type_counts(self, pitch_counts: dict=None):
         self.display_manager.clear_section(129, 180, 231, 240)
         
         if len(pitch_counts) == 0:
             return False
         
-        pitch_counts = list(pitch_counts.items())[0:6]
-
+        pitch_counts = sorted(
+            (
+                (pitch, count)
+                for pitch, count in pitch_counts.items()
+                if pitch and count is not None
+            ),
+            key=lambda item: item[1],
+            reverse=True,
+            )[:6]
+   
         column_offset = 129
         row_offset = 192
 
         for pitch, count in pitch_counts:
+            if count is None:
+                continue
+            
             if pitch == 'Four-Seam Fastball':
                 pitch = 'Four-Seam'
                 
-            color = PITCH_COLORS[pitch]
+            color = PITCH_COLORS.get(pitch, Colors.white)
                 
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch)
-            if count is not None:
-                self.display_manager.draw_text(Fonts.ter_u16b, column_offset+88, row_offset, color, f'{count:2d}')
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+88, row_offset, color, f'{count:2d}')
             
             row_offset += 12
             
