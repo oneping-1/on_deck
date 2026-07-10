@@ -442,7 +442,7 @@ class Gamecast:
                 
             color = PITCH_COLORS.get(pitch, Colors.white)
                 
-            self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch)
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch[0:10])
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset+88, row_offset, color, f'{count:2d}')
             
             row_offset += 12
@@ -450,7 +450,7 @@ class Gamecast:
         return True
 
     def _print_hit_details(self, hit_details: dict):
-        self.display_manager.clear_section(129, 180, 231, 240)
+        self.display_manager.clear_section(129, 180, 231, 245)
 
         column_offset = 129
         row_offset = 192
