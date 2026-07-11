@@ -10,18 +10,26 @@ from on_deck.display_manager import DisplayManager
 import math
 
 PITCH_COLORS = {
+    # Fastballs
     'Four-Seam': Colors.red,
     '4-Seam': Colors.red,
-    'Sinker': Colors.pink,
-    'Cutter': Colors.pink,
+    'Sinker': Colors.magenta,
+    'Cutter': Colors.yellow,
+
+    # Breaking balls
     'Curveball': Colors.blue,
     'Curve': Colors.blue,
     'Slider': Colors.light_blue,
-    'Sweeper': Colors.light_blue,
+    'Sweeper': Colors.green,
+
+    # Offspeed
     'Changeup': Colors.green,
     'Change': Colors.green,
     'Splitter': Colors.yellow,
-    'Split': Colors.yellow
+    'Split': Colors.yellow,
+
+    # Unknown / rare / edge case
+    'Unknown': Colors.white,
 }
 
 def is_barrel(exit_velocity: float, launch_angle: float) -> bool:
@@ -443,6 +451,14 @@ class Gamecast:
             
             if pitch == 'Four-Seam Fastball':
                 pitch = '4-Seam'
+            if pitch == 'Curveball':
+                pitch = 'Curve'
+            if pitch == 'Splitter':
+                pitch = 'Split'
+            if pitch == 'Knuckle Curve':
+                pitch = 'Knuckle'
+            if pitch == 'Changeup':
+                pitch = 'Change'
                 
             color = PITCH_COLORS.get(pitch, Colors.white)
             
@@ -450,11 +466,11 @@ class Gamecast:
             strikes = count['strikes']
             speed = count['avg_speed']
             
-            x = f'{strikes:2d}/{total:<2d}'
+            x = f'{strikes:d}/{total:>2d}'
             dx = 8*len(x)
                 
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch[0:10])
-            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+112-dx, row_offset, color, x)
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+104-dx, row_offset, color, x)
             
             row_offset += 12
             
