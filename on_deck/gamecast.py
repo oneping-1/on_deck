@@ -14,19 +14,21 @@ PITCH_COLORS = {
     'Four-Seam': Colors.red,
     '4-Seam': Colors.red,
     'Sinker': Colors.magenta,
+
+    # Cutter / slider family
     'Cutter': Colors.yellow,
+    'Slider': Colors.yellow,
 
     # Breaking balls
     'Curveball': Colors.blue,
     'Curve': Colors.blue,
-    'Slider': Colors.light_blue,
-    'Sweeper': Colors.green,
+    'Sweeper': Colors.light_blue,
 
     # Offspeed
     'Changeup': Colors.green,
     'Change': Colors.green,
-    'Splitter': Colors.yellow,
-    'Split': Colors.yellow,
+    'Splitter': Colors.green,
+    'Split': Colors.green,
 
     # Unknown / rare / edge case
     'Unknown': Colors.white,
@@ -480,8 +482,10 @@ class Gamecast:
             
         return True
 
+
     def _print_hit_details(self, hit_details: dict):
-        self.display_manager.clear_section(129, 180, 231, 256)
+        # self.display_manager.clear_section(129, 180, 231, 256)
+        self.display_manager.draw_box(129, 180, 231, 220, Colors.black, True)
 
         column_offset = 129
         row_offset = 192
@@ -518,6 +522,7 @@ class Gamecast:
         #     color, f'{xba} {xslg}')
 
         return True
+
 
     def _print_batting_order(self, batting_order: dict):
         row_offset = 36
@@ -642,10 +647,26 @@ class Gamecast:
         self._print_pitcher(game['matchup'])
         self._print_hit_details(game['hit_details'])
         self._print_pitch_type_counts(game['pitch_counts'])
-        # if not self._print_hit_details(game['hit_details']):
-            # self._print_pitch_type_counts(game['pitch_counts'])
         self.display_manager.swap_frame()
 
+
+    def print_time(self, delay_date: str, delay_time: str, delay: int):
+        self.display_manager.draw_box(129, 220, 231, 256, Colors.black, True)
+        column_offset = 129
+        row_offset = 204+12*3
+        
+        delay_date = delay_date[5:]
+        if delay_date[0] == '0':
+            delay_date = f' {delay_date[1:]}'
+            
+        combined = f'{delay} {delay_date}'
+        
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, Colors.green, combined)
+        
+        row_offset += 12
+        combined2 = f'{delay_time}'
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, Colors.green, combined2)
+        self.display_manager.swap_frame()
 
 if __name__ == '__main__':
     print('wrong module dummy')

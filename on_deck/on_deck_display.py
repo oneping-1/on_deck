@@ -17,6 +17,7 @@ import time
 import math
 import redis
 import os
+import datetime
 
 from on_deck.display_manager import DisplayManager
 from on_deck.overview import Overview
@@ -78,6 +79,28 @@ def recursive_update(d: dict, u: dict) -> dict:
     return d
 
 
+def time_delta_strftime(delay: int) -> str:
+    """
+    Prints delay seconds in a format to the strftime("%I:%M:%S")
+    to match current time and delay time
+
+    Args:
+        delay (int): Delay in seconds
+
+    Returns:
+        str: Formatted time string
+    """
+    hours = math.floor(delay / 3600)
+    minutes = math.floor((delay - hours * 3600) / 60)
+    seconds = delay - hours * 3600 - minutes * 60
+
+    if hours == 0 and minutes == 0:
+        return f'      {seconds:2}'
+    if hours == 0:
+        return f'   {minutes:2}:{seconds:02}'
+    return f'{hours:2}:{minutes:02}:{seconds:02}'
+
+
 class TimeHandler:
     """
     Handles all the logic to print the time on the scoreboard. The time
@@ -85,9 +108,10 @@ class TimeHandler:
     messages from the redis server and update the time based on the
     message received.
     """
-    def __init__(self, display_manager: DisplayManager, overview: Overview):
+    def __init__(self, display_manager: DisplayManager, overview: Overview, gamecast: Gamecast):
         self.display_manager = display_manager
         self.overview = overview
+        self.gamecast = gamecast
 
         self.redis = redis.Redis(REDIS_IP, port=6379, db=0)
 
@@ -101,13 +125,31 @@ class TimeHandler:
         previous_time = None
         while True:
             mode = self.redis.get('mode')
-            if mode != b'overview':
-                continue
             current_time = int(time.time())
             if current_time != previous_time:
                 previous_time = current_time
                 delay = int(self.redis.get('delay'))
-                self.overview.print_time(delay, 17)
+                
+                current_time = datetime.datetime.now()
+                delay_delta = datetime.timedelta(seconds=delay)
+                delay_time = current_time - delay_delta
+
+                current_time = current_time.strftime('%I:%M:%S')
+                delay_date = delay_time.isoformat()[0:10]
+                delay_time = delay_time.strftime('%I:%M:%S')
+                delay_pretty = time_delta_strftime(delay)
+
+                # gets rid of leading 0
+                # but centers it like the 0 is still there
+                if current_time[0] == '0':
+                    current_time = ' ' + current_time[1:]
+                if delay_time[0] == '0':
+                    delay_time = ' ' + delay_time[1:]
+                
+                if mode == b'overview':
+                    self.overview.print_time(delay_date, delay_time, delay_pretty, 17)
+                if mode == b'gamecast':
+                    self.gamecast.print_time(delay_date, delay_time, delay)
             # time.sleep(0.1)
 
 
@@ -118,7 +160,7 @@ class GamecastHandler:
     current game. This class will listen for messages from the redis
     server and update the gamecast data based on the message received.
     """
-    def __init__(self, display_manager: DisplayManager):
+    def __init__(self, display_manager: DisplayManager, gamecast: Gamecast):
         self.display_manager = display_manager
         self.game: dict = None
 
@@ -139,7 +181,7 @@ class GamecastHandler:
 
         self.display_manager.set_brightness(brightness_dict[brightness])
 
-        self.gamecast: Gamecast = Gamecast(self.display_manager)
+        self.gamecast: Gamecast = gamecast
         self.gamecast_game: dict = None
 
     def load_gamecast(self) -> dict:
@@ -259,15 +301,16 @@ class GamecastHandler:
         while True:
             self.print_gamecast_game()
 
+
 class OverviewHandler:
     """
     Handles all the logic for the overview data for the scoreboard. The
     overview data is the small display that just shows scores, inning,
     bases, and outs.
     """
-    def __init__(self, display_manager: DisplayManager):
+    def __init__(self, display_manager: DisplayManager, overview: Overview):
         self.display_manager = display_manager
-        self.overview = Overview(self.display_manager)
+        self.overview = overview
 
         self.redis = redis.Redis(REDIS_IP, port=6379, db=0)
         self.pubsub = self.redis.pubsub()
@@ -450,10 +493,11 @@ class Scoreboard:
         self.display_manager = DisplayManager(get_options())
 
         self.overview = Overview(self.display_manager)
+        self.gamecast = Gamecast(self.display_manager)
 
-        self.time_handler = TimeHandler(self.display_manager, self.overview)
-        self.overview_handler = OverviewHandler(self.display_manager)
-        self.gamecast_handler = GamecastHandler(self.display_manager)
+        self.time_handler = TimeHandler(self.display_manager, self.overview, self.gamecast)
+        self.overview_handler = OverviewHandler(self.display_manager, self.overview)
+        self.gamecast_handler = GamecastHandler(self.display_manager, self.gamecast)
 
 
     def start(self):
