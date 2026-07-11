@@ -60,24 +60,36 @@ def get_options() -> RGBMatrixOptions:
     return options
 
 
-def recursive_update(d: dict, u: dict) -> dict:
-    """
-    Recursively updates a dictionary.
+def recursive_update(d: dict, u: dict, path: tuple = ()) -> dict:
+    """Apply a nested dictionary patch to an existing dictionary."""
 
-    Args:
-        d (dict): Dictionary 1
-        u (dict): Dictionary 2
+    if not isinstance(d, dict):
+        d = {}
 
-    Returns:
-        dict: Updated dictionary
-    """
-    for k, v in u.items():
-        if isinstance(v, dict):
-            d[k] = recursive_update(d.get(k, {}), v)
+    for key, value in u.items():
+        current_path = path + (key,)
+
+        # Within pitch_counts, None means the pitch type disappeared
+        # from the current pitcher's repertoire.
+        if path == ("pitch_counts",) and value is None:
+            d.pop(key, None)
+            continue
+
+        if isinstance(value, dict):
+            existing = d.get(key)
+
+            if not isinstance(existing, dict):
+                existing = {}
+
+            d[key] = recursive_update(
+                existing,
+                value,
+                current_path,
+            )
         else:
-            d[k] = v
-    return d
+            d[key] = value
 
+    return d
 
 def time_delta_strftime(delay: int) -> str:
     """
