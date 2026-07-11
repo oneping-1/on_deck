@@ -135,9 +135,20 @@ class Server:
         """
         mode = request.args.get('mode', default=None)
         delay = request.args.get('delay', default=None)
+        delay_short = request.args.get('d', default=None)
         brightness = request.args.get('brightness', default=None)
-        gamecast_id = request.args.get('id', default=None)
+        brightness_short = request.args.get('b', default=None)
+        gamecast_id_short = request.args.get('id', default=None)
         gamecast_id = request.args.get('gamecast_id', default=None)
+            
+        if delay_short is not None and delay is None:
+            delay = delay_short
+            
+        if brightness_short is not None and brightness is None:
+            brightness_short = brightness
+        
+        if gamecast_id_short is not None and gamecast_id is None:
+            gamecast_id = gamecast_id_short
 
         self._parse_mode(mode)
         self._parse_delay(delay)
