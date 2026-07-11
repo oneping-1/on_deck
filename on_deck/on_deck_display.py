@@ -100,6 +100,9 @@ class TimeHandler:
 
         previous_time = None
         while True:
+            mode = self.redis.get('mode')
+            if mode != b'overview':
+                continue
             current_time = int(time.time())
             if current_time != previous_time:
                 previous_time = current_time

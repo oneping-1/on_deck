@@ -427,7 +427,7 @@ class Gamecast:
         
 
     def _print_pitch_type_counts(self, pitch_counts: dict=None):
-        self.display_manager.clear_section(129, 180, 231, 256)
+        self.display_manager.draw_box(240, 194, 384, 256, Colors.black, True)
         
         if len(pitch_counts) == 0:
             return False
@@ -442,8 +442,8 @@ class Gamecast:
             reverse=True,
             )[:6]
    
-        column_offset = 129
-        row_offset = 192
+        row_offset = 204
+        column_offset = 240
 
         for pitch, count in pitch_counts:
             if count is None:
@@ -466,11 +466,15 @@ class Gamecast:
             strikes = count['strikes']
             speed = count['avg_speed']
             
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch[0:8])
+            
             x = f'{strikes:d}/{total:>2d}'
-            dx = 8*len(x)
-                
-            self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch[0:10])
-            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+104-dx, row_offset, color, x)
+            dx = 8*(18-len(x))
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+dx, row_offset, color, x)
+            
+            x = f'{speed:.1f}'
+            dx = 8*(12-len(x))
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+dx, row_offset, color, x)
             
             row_offset += 12
             
@@ -636,8 +640,10 @@ class Gamecast:
         self._print_pitch_details(game['pitch_details'])
         self._print_batting_order(game['batting_order'])
         self._print_pitcher(game['matchup'])
-        if not self._print_hit_details(game['hit_details']):
-            self._print_pitch_type_counts(game['pitch_counts'])
+        self._print_hit_details(game['hit_details'])
+        self._print_pitch_type_counts(game['pitch_counts'])
+        # if not self._print_hit_details(game['hit_details']):
+            # self._print_pitch_type_counts(game['pitch_counts'])
         self.display_manager.swap_frame()
 
 
