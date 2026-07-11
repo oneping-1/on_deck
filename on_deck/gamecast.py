@@ -15,14 +15,14 @@ PITCH_COLORS = {
     '4-Seam': Colors.red,
     'Sinker': Colors.magenta,
 
-    # Cutter / slider family
+    # Cutter family
     'Cutter': Colors.yellow,
-    'Slider': Colors.yellow,
 
     # Breaking balls
     'Curveball': Colors.blue,
     'Curve': Colors.blue,
     'Sweeper': Colors.light_blue,
+    'Slider': Colors.light_blue,
 
     # Offspeed
     'Changeup': Colors.green,
