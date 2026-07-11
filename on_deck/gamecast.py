@@ -21,6 +21,7 @@ PITCH_COLORS = {
     # Breaking balls
     'Curveball': Colors.blue,
     'Curve': Colors.blue,
+    'Slurve': Colors.blue,
     'Sweeper': Colors.light_blue,
     'Slider': Colors.light_blue,
 
