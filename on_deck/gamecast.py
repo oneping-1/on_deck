@@ -28,6 +28,8 @@ PITCH_COLORS = {
     # Offspeed
     'Changeup': Colors.green,
     'Change': Colors.green,
+    'Knuckle': Colors.blue,
+    'Knuckle Curve': Colors.blue,
     'Splitter': Colors.green,
     'Split': Colors.green,
 
