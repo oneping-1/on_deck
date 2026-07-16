@@ -548,9 +548,10 @@ class Gamecast:
             row_offset += 12
             name = batter['last_name']
             slg = batter['slg']
+            ops = batter['ops']
             position = batter['position']
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-                color, rf'{position:>2s} {name[:10]:10s}{slg:>5s}')
+                color, rf'{position:>2s} {name[:10]:10s}{ops:>5s}')
 
 
     def _print_pitcher(self, matchup: dict):
