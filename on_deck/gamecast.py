@@ -496,6 +496,8 @@ class Gamecast:
         color = Colors.white
         exit_velo = hit_details['exit_velo']
         launch_angle = hit_details['launch_angle']
+        xba = hit_details['xba']
+        xslg = hit_details['xslg']
         if is_barrel(exit_velo, launch_angle):
             color = Colors.red
 
@@ -506,15 +508,19 @@ class Gamecast:
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{exit_velo:5.1f} MPH')
+        
+        bases = f'{xslg/xba:.1f}'
+        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+(8*10), row_offset,
+            Colors.white, bases)
 
-        xslg = f'{hit_details["xslg"]:.3f}'
+        xslg = f'{xslg:.3f}'
         xslg = f' {xslg[1:]}' if xslg[0] == '0' else xslg
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{launch_angle:5.1f}°  {xslg}')
 
         distance = hit_details['distance']
-        xba = f'{hit_details["xba"]:.3f}'
+        xba = f'{xba:.3f}'
         xba = f' {xba[1:]}' if xba[0] == '0' else xba
         row_offset += 12
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
