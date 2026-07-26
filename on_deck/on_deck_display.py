@@ -264,18 +264,18 @@ class GamecastHandler:
             self.change_settings(message)
             return False
         
-        mode = self.redis.get('mode')
-        if mode == b'gamecast':
-            self.display_manager.clear_section(129, 0, 384, 256)
-            self.gamecast.print_game(self.gamecast_game)
-            print('gamecast reloaded')
-            
         new_data = json.loads(message['data'])
         # print(f'{new_data=}\n')
         if new_data == {}:
             return False
 
         self.gamecast_game = recursive_update(self.gamecast_game, new_data)
+            
+        mode = self.redis.get('mode')
+        if mode == b'gamecast':
+            self.display_manager.clear_section(129, 0, 384, 256)
+            self.gamecast.print_game(self.gamecast_game)
+            print('gamecast reloaded')
         return new_data
 
     def print_gamecast_game(self) -> bool:
