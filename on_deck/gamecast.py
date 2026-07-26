@@ -556,8 +556,12 @@ class Gamecast:
             slg = batter['slg']
             ops = batter['ops']
             position = batter['position']
+            scorebook = batter['scorebook']
+            
+            x = scorebook if scorebook is not None else ops
+            
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
-                color, rf'{position:>2s} {name[:10]:10s}{ops:>5s}')
+                color, rf'{position:>2s} {name[:10]:10s}{x:>5s}')
 
 
     def _print_pitcher(self, matchup: dict):
