@@ -232,14 +232,10 @@ class GamecastHandler:
             brightness = int(message['data'])
             self.display_manager.set_brightness(brightness_dict[brightness])
 
-        mode = self.redis.get('mode')
-        if channel == b'mode':
-            mode = message['data']
+        # mode = self.redis.get('mode')
+        # if channel == b'mode':
+        #     mode = message['data']
 
-        if mode == b'gamecast':
-            self.display_manager.clear_section(129, 0, 384, 256)
-            self.gamecast.print_game(self.gamecast_game)
-            print('gamecast reloaded')
 
     def update_gamecast(self) -> Union[bool, dict]:
         """
@@ -267,7 +263,13 @@ class GamecastHandler:
             print('changing settings')
             self.change_settings(message)
             return False
-
+        
+        mode = self.redis.get('mode')
+        if mode == b'gamecast':
+            self.display_manager.clear_section(129, 0, 384, 256)
+            self.gamecast.print_game(self.gamecast_game)
+            print('gamecast reloaded')
+            
         new_data = json.loads(message['data'])
         # print(f'{new_data=}\n')
         if new_data == {}:
