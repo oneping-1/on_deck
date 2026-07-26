@@ -509,7 +509,7 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{exit_velo:5.1f} MPH')
         
-        bases = f'{xslg/xba:.1f}' if xba != 0 else 0
+        bases = f'{xslg/xba:.1f}' if xba != 0 else '0.0'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+(8*10), row_offset,
             color, bases)
 
