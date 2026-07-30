@@ -383,7 +383,7 @@ class Gamecast:
         pitch_color = PITCH_COLORS.get(pitch_type, Colors.white)
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             pitch_color, f'{pitch_type}')
-        
+
         count = pitch_details['at_bat_pitch_count']
         if count is 'null' or count is None:
             count = ''
@@ -417,10 +417,11 @@ class Gamecast:
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, 'Zone:')
         color = Colors.red
-        if pitch_zone > 9:
-            color = Colors.green
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
-            color, f'{pitch_zone:2d}')
+        if pitch_zone is not None:
+            if pitch_zone > 9:
+                color = Colors.green
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset+40, row_offset,
+                color, f'{pitch_zone:2d}')
 
         color = Colors.white
         break_vertical_induced = pitch_details['break_vertical_induced']
@@ -429,14 +430,14 @@ class Gamecast:
             color, f'{abs(break_vertical_induced):5.1f}')
         self.display_manager.draw_text(Fonts.ter_u12b, column_offset+104, row_offset,
             color, break_direction)
-        
+
 
     def _print_pitch_type_counts(self, pitch_counts: dict=None):
         self.display_manager.draw_box(240, 194, 384, 256, Colors.black, True)
-        
+
         if len(pitch_counts) == 0:
             return False
-        
+
         pitch_counts = sorted(
             (
                 (pitch, count)
@@ -446,14 +447,14 @@ class Gamecast:
             key=lambda item: item[1]['total'],
             reverse=True,
             )[:6]
-   
+
         row_offset = 204
         column_offset = 240
 
         for pitch, count in pitch_counts:
             if count is None:
                 continue
-            
+
             if pitch == 'Four-Seam Fastball':
                 pitch = '4-Seam'
             if pitch == 'Curveball':
@@ -464,25 +465,25 @@ class Gamecast:
                 pitch = 'Knuckle'
             if pitch == 'Changeup':
                 pitch = 'Change'
-                
+
             color = PITCH_COLORS.get(pitch, Colors.white)
-            
+
             total = count['total']
             strikes = count['strikes']
             speed = count['avg_speed']
-            
+
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, color, pitch[0:8])
-            
+
             x = f'{strikes:d}/{total:>2d}'
             dx = 8*(18-len(x))
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset+dx, row_offset, color, x)
-            
+
             x = f'{speed:.1f}'
             dx = 8*(12-len(x))
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset+dx, row_offset, color, x)
-            
+
             row_offset += 12
-            
+
         return True
 
 
@@ -508,7 +509,7 @@ class Gamecast:
 
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
             color, f'{exit_velo:5.1f} MPH')
-        
+
         bases = f'{xslg/xba:.1f}' if xba != 0 else '0.0'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset+(8*10), row_offset,
             color, bases)
@@ -557,9 +558,9 @@ class Gamecast:
             ops = batter['ops']
             position = batter['position']
             scorebook = batter['scorebook']
-            
+
             x = scorebook if scorebook is not None else ops
-            
+
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset,
                 color, rf'{position:>2s} {name[:10]:10s}{x:>5s}')
 
@@ -588,7 +589,7 @@ class Gamecast:
             Colors.white, ' IP H R K BB  S/P')
 
         row_offset += 12
-        
+
         pitch_count = pitcher['pitches']
         pitches = f'{pitcher["pitches"]:2d}'[1:3] if pitcher['pitches'] >= 100 else f'{pitcher["pitches"]:>2d}'
         pitch_count = f'{pitcher["strikes"]:2d}/{pitches}'
@@ -605,22 +606,22 @@ class Gamecast:
         y1 = 3
         y2 = 6
         y3 = 9
-        
+
         if away['abs_challenges'] >= 2:
             self.display_manager.draw_pixel(155, y1, Colors.white)
-            
+
         if away['abs_challenges'] >= 1:
             self.display_manager.draw_pixel(155, y2, Colors.white)
-            
+
         if away['challenges'] >= 1:
             self.display_manager.draw_line(155, y3, 155, y3+1, Colors.white)
-            
+
         if home['abs_challenges'] >= 2:
             self.display_manager.draw_pixel(155, y1+12, Colors.white)
-            
+
         if home['abs_challenges'] >= 1:
             self.display_manager.draw_pixel(155, y2+12, Colors.white)
-            
+
         if home['challenges'] >= 1:
             self.display_manager.draw_line(155, y3+12, 155, y3+13, Colors.white)
 
@@ -668,15 +669,15 @@ class Gamecast:
         self.display_manager.draw_box(129, 220, 231, 256, Colors.black, True)
         column_offset = 129
         row_offset = 204+12*3
-        
+
         delay_date = delay_date[5:]
         if delay_date[0] == '0':
             delay_date = f' {delay_date[1:]}'
-            
+
         combined = f'{delay} {delay_date}'
-        
+
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, Colors.green, combined)
-        
+
         row_offset += 12
         combined2 = f'{delay_time}'
         self.display_manager.draw_text(Fonts.ter_u16b, column_offset, row_offset, Colors.green, combined2)
