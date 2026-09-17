@@ -25,7 +25,7 @@ class Server:
     scoreboard, and reboot the Raspberry Pi.
     """
     def __init__(self):
-        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0)
+        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0, decode_responses=True)
 
         self.app = Flask(__name__)
         self.app.add_url_rule('/', 'home', self.home, methods=['GET'])
@@ -126,6 +126,16 @@ class Server:
         return
 
 
+    def _parse_team(self, team: str):
+        if team is None:
+            return
+        if team not in ('TEX','HOU','LAA','ATH','SEA','MIN','CWS','CLE','DET','KC','NYY','BAL','TOR','BOS','TB','NYM','PHI','MIA','ATL','WSH','PIT','CHC','CIN','MIL','STL','LAD','AZ','COL','SF','SD','MAN','MLB'):
+            return
+
+        self.redis.set('team', team)
+        self.redis.publish('team', team)
+
+
     def settings(self):
         """
         Fetches settings from the flask server. Allows the user to
@@ -135,12 +145,17 @@ class Server:
             Response: HTML Response
         """
         mode = request.args.get('mode', default=None)
+        mode_short = request.args.get('m', default=None)
         delay = request.args.get('delay', default=None)
         delay_short = request.args.get('d', default=None)
         brightness = request.args.get('brightness', default=None)
         brightness_short = request.args.get('b', default=None)
         gamecast_id = request.args.get('gamecast_id', default=None)
         gamecast_id_short = request.args.get('id', default=None)
+        team = request.args.get('team', default=None)
+
+        if mode_short is not None and mode is None:
+            mode = mode_short
 
         if delay_short is not None and delay is None:
             delay = delay_short
@@ -155,10 +170,9 @@ class Server:
         self._parse_delay(delay)
         self._parse_brightness(brightness)
         self._parse_gamecast_id(gamecast_id)
+        self._parse_team(team)
 
         mode = self.redis.get('mode')
-        if mode is not None:
-            mode = mode.decode('utf-8')
 
         delay = self.redis.get('delay')
         if delay is not None:
@@ -176,12 +190,15 @@ class Server:
         if num_games is not None:
             num_games = int(num_games)
 
+        team = self.redis.get('team')
+
         return_dict = {
             'mode': mode,
             'delay': delay,
             'brightness': brightness,
             'gamecast_id': gamecast_id,
-            'num_games': num_games
+            'num_games': num_games,
+            'team': team
         }
 
         return Response(json.dumps(return_dict, indent=4), status=200, mimetype='text/plain')
