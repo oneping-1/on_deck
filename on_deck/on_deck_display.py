@@ -31,8 +31,8 @@ brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
 # brightness_dict = {i: i for i in range(256)}
 brightness_dict = brightness_dict_3pwm
 
-REDIS_IP = os.environ.get('REDIS_HOST')
-REDIS_IP = '10.0.1.10'
+REDIS_IP = os.environ.get('REDIS_HOST', 'redis')
+# REDIS_IP = '10.0.1.10'
 
 def get_options() -> RGBMatrixOptions:
     """
