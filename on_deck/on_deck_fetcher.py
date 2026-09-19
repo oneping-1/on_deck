@@ -3,7 +3,7 @@ This module is responsible for fetching data from the MLB Stats API
 and updating the Redis database with the fetched data. It also listens
 for changes to the settings and updates the Redis database accordingly.
 """
-
+import os
 import time
 from typing import List, Union
 import json

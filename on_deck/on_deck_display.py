@@ -9,7 +9,7 @@ on the message received. The scoreboard will also listen for changes
 in the mode and brightness and update the display based on the
 changes.
 """
-
+import os
 from typing import Union, List
 import json
 import threading
