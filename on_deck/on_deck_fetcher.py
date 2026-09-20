@@ -3,7 +3,7 @@ This module is responsible for fetching data from the MLB Stats API
 and updating the Redis database with the fetched data. It also listens
 for changes to the settings and updates the Redis database accordingly.
 """
-
+import os
 import time
 from typing import List, Union
 import json
@@ -16,8 +16,8 @@ import redis
 from at_bat import statsapi_plus as ssp
 from at_bat.scoreboard_data import ScoreboardData
 
-# REDIS_IP = os.environ.get('REDIS_HOST')
-REDIS_IP = '10.0.1.10'
+REDIS_IP = os.environ.get('REDIS_HOST', 'redis')
+# REDIS_IP = '10.0.1.10'
 
 def seconds_since_iso8601(iso_timestamp: str) -> int:
     """
@@ -84,7 +84,7 @@ class GamecastFetcher:
     settings and updates the gamecast data accordingly.
     """
     def __init__(self):
-        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0)
+        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0, decode_responses=True)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay')
         self.pubsub.subscribe('gamecast_id')
@@ -164,7 +164,7 @@ class GamecastFetcher:
         if message['type'] != 'message':
             return
 
-        if message['channel'] in (b'delay', b'gamecast_id'):
+        if message['channel'] in ('delay', 'gamecast_id'):
             self.initialize_gamecast()
 
 
@@ -193,7 +193,7 @@ class Fetcher:
         self.gamepks: List[int] = []
         self.games: List[ScoreboardData] = []
 
-        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0)
+        self.redis = redis.Redis(host=REDIS_IP, port=6379, db=0, decode_responses=True)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('delay') # do i need this?
 
@@ -255,9 +255,27 @@ class Fetcher:
         num_games = len(self.games)
         self.redis.set('num_games', num_games)
         self.redis.publish('init', 'init')
-        self.redis.set('mode', 'overview')
-        self.redis.publish('mode', 'overview')
+        # self.redis.set('mode', 'overview')
+        # self.redis.publish('mode', 'overview')
 
+    def _check_team(self, i, game):
+        team = self.redis.get('team')
+        if team in ('MLB', 'MAN'):
+            return False
+        if team not in (game.away.abv, game.home.abv):
+            return False
+        if game.game_state != 'L':
+            return False
+
+        if (self.redis.get('mode') != 'gamecast'):
+            self.redis.set('mode', 'gamecast')
+            self.redis.publish('mode', 'gamecast')
+
+        if self.redis.get('gamecast_id') != str(i):
+            self.redis.set('gamecast_id', i)
+            self.redis.publish('gamecast_id', i)
+
+        return True
 
     def update_games(self):
         """
@@ -267,12 +285,23 @@ class Fetcher:
         corresponding channels.
         """
         delay = int(self.redis.get('delay'))
+        live_team_game = False
         for i, game in enumerate(self.games):
             new_data = game.update_return_difference(delay)
             if new_data:
                 self.redis_set_game(i, game.to_dict())
                 self.redis_publish_game(i, new_data)
             time.sleep(1)
+
+            if self._check_team(i, game) is True:
+                live_team_game = True
+
+        mode = self.redis.get('mode')
+        team = self.redis.get('team')
+        if (live_team_game is False) and (team not in ('MAN', 'MLB')) and (mode != 'overview'):
+            self.redis.set('mode', 'overview')
+            self.redis.publish('mode', 'overview')
+
 
         if (time.time() - self.last_check) > 60:
             self.last_check = time.time()

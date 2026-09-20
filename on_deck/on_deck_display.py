@@ -9,7 +9,7 @@ on the message received. The scoreboard will also listen for changes
 in the mode and brightness and update the display based on the
 changes.
 """
-
+import os
 from typing import Union, List
 import json
 import threading
@@ -31,8 +31,8 @@ brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
 # brightness_dict = {i: i for i in range(256)}
 brightness_dict = brightness_dict_3pwm
 
-REDIS_IP = os.environ.get('REDIS_HOST')
-REDIS_IP = '10.0.1.10'
+REDIS_IP = os.environ.get('REDIS_HOST', 'redis')
+# REDIS_IP = '10.0.1.10'
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -126,7 +126,7 @@ class TimeHandler:
         self.overview = overview
         self.gamecast = gamecast
 
-        self.redis = redis.Redis(REDIS_IP, port=6379, db=0)
+        self.redis = redis.Redis(REDIS_IP, port=6379, db=0, decode_responses=True)
 
     def start(self):
         """
@@ -161,7 +161,7 @@ class TimeHandler:
 
                 if mode == b'overview':
                     self.overview.print_time(delay_date, delay_time, delay_pretty, 17)
-                if mode == b'gamecast':
+                if mode == 'gamecast':
                     self.gamecast.print_time(delay_date, delay_time, delay)
             # time.sleep(0.1)
 
@@ -177,7 +177,7 @@ class GamecastHandler:
         self.display_manager = display_manager
         self.game: dict = None
 
-        self.redis = redis.Redis(REDIS_IP, port=6379, db=0)
+        self.redis = redis.Redis(REDIS_IP, port=6379, db=0, decode_responses=True)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('gamecast')
         self.pubsub.subscribe('brightness')
@@ -229,15 +229,15 @@ class GamecastHandler:
         new_data = json.loads(new_data)
         self.gamecast_game = new_data
 
-        if channel == b'brightness':
+        if channel == 'brightness':
             brightness = int(message['data'])
             self.display_manager.set_brightness(brightness_dict[brightness])
 
         mode = self.redis.get('mode')
-        if channel == b'mode':
+        if channel == 'mode':
             mode = message['data']
 
-        if mode == b'gamecast':
+        if mode == 'gamecast':
             self.display_manager.clear_section(129, 0, 384, 256)
             self.gamecast.print_game(self.gamecast_game)
             print('gamecast reloaded')
@@ -261,8 +261,8 @@ class GamecastHandler:
         if message['type'] != 'message':
             return False
 
-        settings_channels = (b'gamecast_id', b'brightness', b'mode', b'delay',
-            b'gamecast_reset', b'init')
+        settings_channels = ('gamecast_id', 'brightness', 'mode', 'delay',
+            'gamecast_reset', 'init')
 
         if message['channel'] in settings_channels:
             print('changing settings')
@@ -291,7 +291,7 @@ class GamecastHandler:
             return False
 
         mode = self.redis.get('mode')
-        if mode != b'gamecast':
+        if mode != 'gamecast':
             return False
 
         self.gamecast.print_game(self.gamecast_game)
@@ -308,7 +308,7 @@ class GamecastHandler:
         game = self.load_gamecast()
         mode = self.redis.get('mode')
         time.sleep(1) # i think overview clears the screen after gamecast loads
-        if mode == b'gamecast':
+        if mode == 'gamecast':
             self.gamecast.print_game(game)
 
         while True:
@@ -325,7 +325,7 @@ class OverviewHandler:
         self.display_manager = display_manager
         self.overview = overview
 
-        self.redis = redis.Redis(REDIS_IP, port=6379, db=0)
+        self.redis = redis.Redis(REDIS_IP, port=6379, db=0, decode_responses=True)
         self.pubsub = self.redis.pubsub()
         self.pubsub.subscribe('brightness')
         self.pubsub.subscribe('mode')
@@ -397,7 +397,7 @@ class OverviewHandler:
 
         for self._page in range(num_pages):
             mode = self.redis.get('mode')
-            if mode != b'gamecast':
+            if mode != 'gamecast':
                 return
             self.print_gamecast_page()
             self.display_manager.draw_pixel(129, 0, page_colors[self._page])
@@ -417,24 +417,24 @@ class OverviewHandler:
         """
         channel = message['channel']
 
-        if channel == b'mode':
-            if message['data'] == b'overview':
+        if channel == 'mode':
+            if message['data'] == 'overview':
                 self.display_manager.clear_section(0, 0, 384, 256)
-            elif message['data'] == b'gamecast':
+            elif message['data'] == 'gamecast':
                 self.display_manager.clear_section(0, 0, 128, 256)
             self._page = 0
 
-        if channel == b'brightness':
+        if channel == 'brightness':
             x = int(message['data'])
             self.display_manager.set_brightness(brightness_dict[x])
 
-        if channel == b'init':
+        if channel == 'init':
             self._initialize_games()
 
         mode = self.redis.get('mode')
-        if mode == b'overview':
+        if mode == 'overview':
             self.print_overview()
-        elif mode == b'gamecast':
+        elif mode == 'gamecast':
             self.print_gamecast_page()
 
 
@@ -451,21 +451,21 @@ class OverviewHandler:
         if message['type'] != 'message':
             return
 
-        if message['channel'] in (b'mode', b'brightness', b'init'):
+        if message['channel'] in ('mode', 'brightness', 'init'):
             self.change_settings(message)
             return
 
         # print(f'{message=}\n')
 
         game_id = int(message['channel'])
-        new_data = message['data'].decode('utf-8')
+        new_data = message['data']
         new_data = json.loads(new_data)
         self.games[game_id] = recursive_update(self.games[game_id], new_data)
 
         mode = self.redis.get('mode')
-        if mode == b'overview':
+        if mode == 'overview':
             self.overview.print_game(self.games[game_id], game_id)
-        elif mode == b'gamecast':
+        elif mode == 'gamecast':
             page = math.floor(game_id / 6)
             if page == self._page:
                 self.overview.print_game(self.games[game_id], game_id % 6)
@@ -490,7 +490,7 @@ class OverviewHandler:
         self._initialize_games()
         self.display_manager.clear_section(0, 0, 128, 256)
         mode = self.redis.get('mode')
-        if mode == b'overview':
+        if mode == 'overview':
             self.print_overview()
 
         threading.Thread(target=self.pubsub_thread, daemon=True).start()
