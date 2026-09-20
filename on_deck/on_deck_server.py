@@ -5,7 +5,7 @@ used to fetch the current games, change the settings of the
 scoreboard, and reboot the Raspberry Pi.
 """
 from typing import List
-import os
+import os 
 import sys
 import json
 import redis
