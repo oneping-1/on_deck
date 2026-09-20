@@ -11,7 +11,7 @@ use_emulator_path = os.path.join(parent_dir, "USE_EMULATOR.txt")
 if os.path.exists(use_emulator_path):
     with open(use_emulator_path, encoding='utf-8') as f:
         use_emulator = f.read().strip().lower() == "true"
-elif os.environ("USE_EMULATOR") in ('1', 'true', 1, 'True', True):
+elif os.getenv("USE_EMULATOR") in ('1', 'true', 1, 'True', True):
     use_emulator =  True
 else:
     # Create the file with default content "false"

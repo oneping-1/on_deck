@@ -53,9 +53,10 @@ def get_options() -> RGBMatrixOptions:
         options.chain_length = 4
         options.parallel = 3
         options.disable_hardware_pulsing = True
-        options.pwm_bits = 3 # Can run 2 with sudo, 1 without
+        options.pwm_bits = 4
         options.gpio_slowdown = 4
-        options.pwm_dither_bits = 2 # decreaes brightness a little (i think)
+        options.pwm_dither_bits = 2
+        options.pwm_lsb_nanoseconds = 200 # can go as high as 500 for more brightness
 
     return options
 
@@ -141,7 +142,7 @@ class TimeHandler:
             if current_time != previous_time:
                 previous_time = current_time
                 delay = int(self.redis.get('delay'))
-                
+
                 current_time = datetime.datetime.now()
                 delay_delta = datetime.timedelta(seconds=delay)
                 delay_time = current_time - delay_delta
@@ -157,7 +158,7 @@ class TimeHandler:
                     current_time = ' ' + current_time[1:]
                 if delay_time[0] == '0':
                     delay_time = ' ' + delay_time[1:]
-                
+
                 if mode == b'overview':
                     self.overview.print_time(delay_date, delay_time, delay_pretty, 17)
                 if mode == b'gamecast':
