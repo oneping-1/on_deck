@@ -32,7 +32,7 @@ brightness_dict_3pwm = {0: 0, 1: 42, 2: 58, 3: 68, 4: 77, 5: 84, 6: 90, 7: 95}
 brightness_dict = brightness_dict_3pwm
 
 REDIS_IP = os.environ.get('REDIS_HOST', 'redis')
-# REDIS_IP = '10.0.1.10'
+REDIS_IP = '10.0.1.10'
 
 def get_options() -> RGBMatrixOptions:
     """
@@ -54,9 +54,10 @@ def get_options() -> RGBMatrixOptions:
         options.parallel = 3
         options.disable_hardware_pulsing = True
         options.pwm_bits = 4
+        options.pwm_bits = 4
         options.gpio_slowdown = 4
         options.pwm_dither_bits = 2
-        options.pwm_lsb_nanoseconds = 200 # can go as high as 500 for more brightness
+        options.pwm_lsb_nanoseconds = 400
 
     return options
 
