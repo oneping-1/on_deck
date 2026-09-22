@@ -160,7 +160,7 @@ class TimeHandler:
                 if delay_time[0] == '0':
                     delay_time = ' ' + delay_time[1:]
 
-                if mode == b'overview':
+                if mode == 'overview':
                     self.overview.print_time(delay_date, delay_time, delay_pretty, 17)
                 if mode == 'gamecast':
                     self.gamecast.print_time(delay_date, delay_time, delay)
