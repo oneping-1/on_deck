@@ -57,7 +57,7 @@ def get_options() -> RGBMatrixOptions:
         options.pwm_bits = 4
         options.gpio_slowdown = 4
         options.pwm_dither_bits = 2
-        options.pwm_lsb_nanoseconds = 400
+        options.pwm_lsb_nanoseconds = 130
 
     return options
 
