@@ -71,7 +71,7 @@ for i in range(pwm_bits):
             x1 += ((spacing+1)*pwm_bits*k)
             x2 += ((spacing+1)*pwm_bits*k)
 
-            color = graphics.Color(255*i/pwm_bits, 255*j/pwm_bits, 255*k/pwm_bits)
+            color = graphics.Color(255*i/(pwm_bits-1), 255*j/(pwm_bits-1), 255*k/(pwm_bits-1))
 
             display_manager.draw_box(x1, y1, x2, y2, color, True)
 
