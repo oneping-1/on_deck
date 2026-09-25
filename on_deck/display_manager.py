@@ -209,7 +209,7 @@ if __name__ == '__main__':
     R = 6
     display.draw_circle(10, 10, R, 1, False, Colors.red)
     display.draw_circle(30, 10, R, 2, False, Colors.green)
-    display.draw_circle(50, 10, R, 3, False, Colors.light_blue)
+    display.draw_circle(50, 10, R, 3, False, Colors.cyan)
     display.draw_circle(70, 10, R, 1, True, Colors.yellow)
     display.draw_pixel(10, 10, Colors.white)
     display.draw_pixel(30, 10, Colors.white)
@@ -218,7 +218,7 @@ if __name__ == '__main__':
 
     display.draw_diamond(10, 30, R, 1, False, Colors.red)
     display.draw_diamond(30, 30, R, 2, False, Colors.green)
-    display.draw_diamond(50, 30, R, 3, False, Colors.light_blue)
+    display.draw_diamond(50, 30, R, 3, False, Colors.cyan)
     display.draw_diamond(70, 30, R, 1, True, Colors.yellow)
     display.draw_pixel(10, 30, Colors.white)
     display.draw_pixel(30, 30, Colors.white)

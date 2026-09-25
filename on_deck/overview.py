@@ -54,16 +54,12 @@ class Overview:
             away_team = game['away']['abv']
             home_team = game['home']['abv']
 
-            rival_teams = ('CLE','CWS')
-            rival_teams_2 = ('HOU')
+            rival_teams = ('HOU')
 
             if away_team == 'TEX' or home_team == 'TEX':
-                return Colors.light_blue
+                return Colors.cyan
 
             if away_team in rival_teams or home_team in rival_teams:
-                return Colors.yellow
-
-            if away_team in rival_teams_2 or home_team in rival_teams_2:
                 return Colors.orange
 
         column = math.floor(i / self._games_per_column)

@@ -22,8 +22,8 @@ PITCH_COLORS = {
     'Curveball': Colors.blue,
     'Curve': Colors.blue,
     'Slurve': Colors.blue,
-    'Sweeper': Colors.light_blue,
-    'Slider': Colors.light_blue,
+    'Sweeper': Colors.cyan,
+    'Slider': Colors.cyan,
 
     # Offspeed
     'Changeup': Colors.green,
