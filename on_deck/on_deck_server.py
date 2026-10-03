@@ -5,7 +5,7 @@ used to fetch the current games, change the settings of the
 scoreboard, and reboot the Raspberry Pi.
 """
 from typing import List
-import os 
+import os
 import sys
 import json
 import redis
@@ -129,7 +129,7 @@ class Server:
     def _parse_team(self, team: str):
         if team is None:
             return
-        if team not in ('TEX','HOU','LAA','ATH','SEA','MIN','CWS','CLE','DET','KC','NYY','BAL','TOR','BOS','TB','NYM','PHI','MIA','ATL','WSH','PIT','CHC','CIN','MIL','STL','LAD','AZ','COL','SF','SD','MAN','MLB'):
+        if team not in ('TEX','HOU','LAA','ATH','SEA','MIN','CWS','CLE','DET','KC','NYY','BAL','TOR','BOS','TB','NYM','PHI','MIA','ATL','WSH','PIT','CHC','CIN','MIL','STL','LAD','AZ','COL','SF','SD','MAN','MLB', 'PS'):
             return
 
         self.redis.set('team', team)

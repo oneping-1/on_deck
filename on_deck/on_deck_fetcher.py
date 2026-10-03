@@ -258,13 +258,32 @@ class Fetcher:
         # self.redis.set('mode', 'overview')
         # self.redis.publish('mode', 'overview')
 
+    def _postseason_mode(self):
+        for i, game in enumerate(self.games):
+            if game.game_state == 'L':
+                return i
+
+        return False
+
     def _check_team(self, i, game):
         team = self.redis.get('team')
         if team in ('MLB', 'MAN'):
             return False
-        if team not in (game.away.abv, game.home.abv):
-            return False
         if game.game_state != 'L':
+            return False
+        if team == 'PS':
+            # get live game that started the earliest
+            j = self._postseason_mode()
+
+            # current game is not the earliest live game
+            if i != j:
+                return False
+
+            # no live games
+            if j is False:
+                return False
+
+        elif team not in (game.away.abv, game.home.abv):
             return False
 
         if (self.redis.get('mode') != 'gamecast'):
