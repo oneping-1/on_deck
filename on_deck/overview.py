@@ -307,7 +307,7 @@ class Overview:
             # like it is in offseason testing
             column_offset -= (8 * (len(delay) - 8))
 
-        if delay > 0:
+        if delay != '0':
             self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
                 row_offset+18, color, delay)
 
