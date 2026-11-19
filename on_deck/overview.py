@@ -289,7 +289,8 @@ class Overview:
         self.clear_game(i)
 
         column_offset, row_offset = self._calculate_offset(i)
-        color = self._calculate_color(i, None)
+        # color = self._calculate_color(i, None)
+        color = Colors.yellow
 
         column_offset += 33
 
@@ -305,8 +306,10 @@ class Overview:
             # incase delay is super large
             # like it is in offseason testing
             column_offset -= (8 * (len(delay) - 8))
-        self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
-            row_offset+18, color, delay)
+
+        if delay > 0:
+            self.display_manager.draw_text(Fonts.ter_u16b, column_offset,
+                row_offset+18, color, delay)
 
         self.display_manager.swap_frame()
 

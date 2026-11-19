@@ -320,7 +320,7 @@ class Fetcher:
         if (live_team_game is False) and (team not in ('MAN', 'MLB')) and (mode != 'overview'):
             self.redis.set('mode', 'overview')
             self.redis.publish('mode', 'overview')
-
+            self.redis.publish('gamecast_reset', 'gamecast_reset')
 
         if (time.time() - self.last_check) > 60:
             self.last_check = time.time()
