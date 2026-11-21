@@ -161,7 +161,7 @@ class Server:
             delay = delay_short
 
         if brightness_short is not None and brightness is None:
-            brightness_short = brightness
+            brightness = brightness_short
 
         if gamecast_id_short is not None and gamecast_id is None:
             gamecast_id = gamecast_id_short

@@ -10,7 +10,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: on_deck_server
-    restart: no
+    restart: unless-stopped
     depends_on:
       - redis
     environment:
@@ -26,7 +26,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: on_deck_fetcher
-    restart: no
+    restart: unless-stopped
     depends_on:
       - redis
     environment:
@@ -40,7 +40,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: on_deck_display
-    restart: no
+    restart: unless-stopped
     depends_on:
       - redis
     environment:
